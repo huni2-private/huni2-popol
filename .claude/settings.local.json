@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const d = require\\('./node_modules/daisyui/package.json'\\); console.log\\(d.version\\)\")",
+      "Bash(npm run *)"
+    ]
+  }
+}

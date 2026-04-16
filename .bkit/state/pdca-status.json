@@ -1,0 +1,93 @@
+{
+  "version": "3.0",
+  "lastUpdated": "2026-04-15T21:32:51.094Z",
+  "activeFeatures": [
+    "hunipopol"
+  ],
+  "primaryFeature": "hunipopol",
+  "features": {
+    "hunipopol": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-15T21:30:50.271Z",
+        "lastUpdated": "2026-04-15T21:32:51.090Z"
+      },
+      "lastFile": "e:\\huni_private\\hunipopol\\app\\layout.tsx"
+    }
+  },
+  "pipeline": {
+    "currentPhase": 1,
+    "level": "Dynamic",
+    "phaseHistory": []
+  },
+  "session": {
+    "startedAt": "2026-04-15T00:08:42.499Z",
+    "onboardingCompleted": false,
+    "lastActivity": "2026-04-15T21:32:51.094Z"
+  },
+  "history": [
+    {
+      "timestamp": "2026-04-15T21:30:50.274Z",
+      "feature": "hunipopol",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-15T21:30:59.583Z",
+      "feature": "hunipopol",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-15T21:31:16.863Z",
+      "feature": "hunipopol",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-15T21:32:11.255Z",
+      "feature": "hunipopol",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-15T21:32:15.440Z",
+      "feature": "hunipopol",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-15T21:32:47.086Z",
+      "feature": "hunipopol",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-15T21:32:51.093Z",
+      "feature": "hunipopol",
+      "phase": "do",
+      "action": "updated"
+    }
+  ],
+  "stateMachine": {
+    "defaultWorkflow": "default",
+    "activeWorkflows": {},
+    "totalTransitions": 0
+  },
+  "automation": {
+    "globalLevel": 2,
+    "trustScore": 40,
+    "pendingApprovals": 0,
+    "lastGateResult": null
+  },
+  "team": {
+    "enabled": true,
+    "stateFile": ".bkit/runtime/agent-state.json",
+    "eventsFile": ".bkit/runtime/agent-events.jsonl"
+  }
+}
