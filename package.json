@@ -3,19 +3,27 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.103.0",
+    "@toast-ui/react-editor": "^3.2.3",
     "clsx": "^2.1.1",
     "daisyui": "^5.5.19",
+    "framer-motion": "^12.38.0",
     "lucide-react": "^1.8.0",
     "next": "16.2.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "react-markdown": "^10.1.0",
+    "rehype-pretty-code": "^0.14.3",
+    "rehype-slug": "^6.0.0",
+    "remark-gfm": "^4.0.1",
+    "shiki": "^4.0.2",
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
