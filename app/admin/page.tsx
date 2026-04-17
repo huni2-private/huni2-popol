@@ -1,131 +1,248 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { 
-  BookPlus, LayoutDashboard, LogOut, PlusCircle, Settings, 
-  FileText, BarChart3, Palette, Share2, Eye, PenTool, Sparkles
+import { useEffect, useState } from "react";
+import {
+  LogOut, Plus, Settings, FileText, BarChart3,
+  Sparkles, Loader2, Package, PenTool, Eye, Clock
 } from "lucide-react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+
+interface RecentLog {
+  id: string;
+  title: string;
+  category: string;
+  published: boolean;
+  created_at: string;
+}
+
+interface Stats {
+  projects: number;
+  logs: number;
+  published: number;
+  drafts: number;
+}
 
 export default function AdminPage() {
-  // Local test: Assume admin session is always active
-  const [isAdmin] = useState(true);
+  const [loading, setLoading]           = useState(true);
+  const [user, setUser]                 = useState<any>(null);
+  const [recentLogs, setRecentLogs]     = useState<RecentLog[]>([]);
+  const [stats, setStats]               = useState<Stats>({ projects: 0, logs: 0, published: 0, drafts: 0 });
+  const router  = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { router.push('/admin/login'); return; }
+      setUser(user);
+
+      const [{ data: projects }, { data: logs }] = await Promise.all([
+        supabase.from('projects').select('id', { count: 'exact', head: false }),
+        supabase.from('logs').select('id, title, category, published, created_at').order('created_at', { ascending: false }),
+      ]);
+
+      const allLogs = logs ?? [];
+      setRecentLogs(allLogs.slice(0, 5));
+      setStats({
+        projects: projects?.length ?? 0,
+        logs: allLogs.length,
+        published: allLogs.filter(l => l.published).length,
+        drafts: allLogs.filter(l => !l.published).length,
+      });
+      setLoading(false);
+    };
+    init();
+  }, [router, supabase]); // eslint-disable-line
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/admin/login');
+    router.refresh();
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const CATEGORY_BADGE: Record<string, string> = {
+    log:     'badge-primary',
+    project: 'badge-secondary',
+    note:    'badge-accent',
+  };
 
   return (
     <div className="max-w-6xl mx-auto space-y-10 pb-20 animate-in fade-in duration-700">
-      {/* Dynamic Header with Glassmorphism */}
-      <div className="relative overflow-hidden bg-white/40 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/40 shadow-2xl shadow-slate-200/50 group">
-        <div className="absolute -right-20 -top-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl group-hover:bg-indigo-500/20 transition-all duration-1000"></div>
+
+      {/* Hero Header */}
+      <div className="relative overflow-hidden bg-base-200 p-10 rounded-[2.5rem] border border-base-content/5 shadow-xl">
         <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div className="space-y-3">
-            <div className="inline-flex items-center px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold tracking-wider uppercase">
+            <div className="inline-flex items-center px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-bold tracking-wider uppercase">
               <Sparkles className="w-3 h-3 mr-1" /> Administrator Mode
             </div>
-            <h1 className="text-5xl font-black text-slate-900 tracking-tight leading-tight">
-              Design your <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">Digital Realm</span>
+            <h1 className="text-5xl font-black tracking-tight leading-tight">
+              Welcome back,<br />
+              <span className="text-primary">{user?.email?.split('@')[0]}</span>
             </h1>
-            <p className="text-slate-500 font-medium flex items-center max-w-md">
-              <span className="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
-              현재 로컬 테스트 모드입니다. 모든 관리 기능을 즉시 사용 가능합니다.
+            <p className="text-base-content/50 font-medium flex items-center">
+              <span className="w-2 h-2 bg-success rounded-full mr-2 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+              시스템이 정상 작동 중입니다.
             </p>
           </div>
-          <div className="flex flex-wrap gap-4">
-            <Link href="/" className="px-6 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center shadow-sm active:scale-95">
+          <div className="flex flex-wrap gap-3">
+            <Link href="/" className="btn btn-ghost bg-base-100 rounded-2xl border-base-content/10 shadow-sm">
               <Eye className="w-4 h-4 mr-2" /> Live Site
             </Link>
-            <button className="px-6 py-3 bg-slate-900 text-white rounded-2xl text-sm font-bold hover:bg-slate-800 transition-all flex items-center shadow-lg active:scale-95">
-              <Share2 className="w-4 h-4 mr-2" /> Deploy All
-            </button>
+            <Link href="/admin/write" className="btn btn-primary rounded-2xl shadow-lg shadow-primary/20">
+              <PenTool className="w-4 h-4 mr-2" /> New Post
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Main Administrative Grid */}
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Content Management Group */}
-        <div className="lg:col-span-2 grid sm:grid-cols-2 gap-6">
-          <AdminCard 
-            icon={<PenTool className="w-6 h-6" />}
-            title="소설 업로드"
-            desc="새로운 세계관을 구축하고 회차별로 원고를 업로드하여 관리합니다."
-            color="bg-indigo-600"
-            link="/admin/novels/new"
-          />
-          <AdminCard 
-            icon={<PlusCircle className="w-6 h-6" />}
-            title="포트폴리오 전시"
-            desc="나의 전문성을 증명하는 프로젝트들을 한눈에 보기 좋게 추가합니다."
-            color="bg-emerald-600"
-            link="/admin/portfolio/new"
-          />
-          <AdminCard 
-            icon={<FileText className="w-6 h-6" />}
-            title="콘텐츠 매니저"
-            desc="전체 소설과 프로젝트 리스트를 통합 관리하고 빠르게 수정합니다."
-            color="bg-blue-600"
-            link="/admin/contents"
-          />
-          <AdminCard 
-            icon={<BarChart3 className="w-6 h-6" />}
-            title="인사이트 통계"
-            desc="방문자 수, 독서 패턴, 프로젝트 조회수 등을 시각화하여 분석합니다."
-            color="bg-amber-600"
-            link="/admin/stats"
-          />
-        </div>
+      {/* Stats Row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: 'Projects', value: stats.projects, icon: Package,   color: 'text-primary' },
+          { label: 'Total Logs', value: stats.logs,   icon: FileText,  color: 'text-secondary' },
+          { label: 'Published',  value: stats.published, icon: Eye,    color: 'text-success' },
+          { label: 'Drafts',     value: stats.drafts, icon: Clock,     color: 'text-warning' },
+        ].map(s => (
+          <div key={s.label} className="card bg-base-200 border border-base-content/5">
+            <div className="card-body p-5 gap-1">
+              <s.icon className={`w-5 h-5 ${s.color} opacity-70`} />
+              <p className="text-3xl font-black">{s.value}</p>
+              <p className="text-xs opacity-40 uppercase tracking-widest font-bold">{s.label}</p>
+            </div>
+          </div>
+        ))}
+      </div>
 
-        {/* Sidebar: Customization & System Status */}
-        <div className="space-y-6">
-          <div className="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-[2rem] p-8 text-white shadow-2xl overflow-hidden relative group">
-            <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-indigo-500/20 rounded-full blur-3xl group-hover:bg-indigo-500/30 transition-all"></div>
-            <h3 className="text-2xl font-bold mb-4 flex items-center">
-              <Palette className="w-6 h-6 mr-3 text-indigo-400" /> 커스터마이징
-            </h3>
-            <p className="text-slate-400 text-sm mb-8 leading-relaxed">
-              메인 테마 컬러, 사이트 폰트, 상단 메뉴 구성을 <br />본인의 취향에 맞게 실시간으로 조정합니다.
-            </p>
-            <button className="w-full py-4 bg-white/10 hover:bg-white/20 rounded-2xl font-bold transition-all border border-white/10 backdrop-blur-sm active:scale-95">
-              테마 편집기 열기
-            </button>
+      {/* Main Grid */}
+      <div className="grid lg:grid-cols-3 gap-8">
+
+        {/* Recent Logs */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary" /> 최근 포스트
+            </h2>
+            <Link href="/admin/logs" className="btn btn-ghost btn-sm rounded-full">전체 보기</Link>
           </div>
 
-          <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm">
-            <h3 className="text-xl font-bold mb-6 flex items-center text-slate-900">
-              <Settings className="w-5 h-5 mr-3 text-slate-400" /> 시스템 엔진
-            </h3>
-            <div className="space-y-5">
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 text-sm">배포 서버</span>
-                <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg font-black text-[10px] uppercase tracking-tighter">Connected</span>
+          {recentLogs.length === 0 ? (
+            <div className="card bg-base-200 border-2 border-dashed border-base-content/10">
+              <div className="card-body items-center py-12 gap-3 text-center">
+                <FileText className="w-10 h-10 opacity-20" />
+                <p className="text-sm opacity-40 italic">아직 작성된 포스트가 없습니다.</p>
+                <Link href="/admin/write" className="btn btn-primary btn-sm rounded-full gap-1">
+                  <Plus className="w-4 h-4" /> 첫 포스트 작성
+                </Link>
               </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs font-bold text-slate-400">
-                  <span>DB STORAGE</span>
-                  <span>2% USED</span>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {recentLogs.map(log => (
+                <div
+                  key={log.id}
+                  className={`card bg-base-200 border hover:border-primary/20 transition-all group ${
+                    log.published ? 'border-base-content/5' : 'border-dashed border-base-content/10 opacity-60'
+                  }`}
+                >
+                  <div className="card-body p-4 flex-row items-center gap-3">
+                    <div className={`w-2 h-2 rounded-full shrink-0 ${log.published ? 'bg-success' : 'bg-base-content/20'}`} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className={`badge badge-xs font-bold ${CATEGORY_BADGE[log.category] ?? 'badge-ghost'}`}>
+                          {log.category}
+                        </span>
+                      </div>
+                      <p className="font-bold text-sm truncate group-hover:text-primary transition-colors">
+                        {log.title}
+                      </p>
+                      <p className="text-[10px] font-mono opacity-40 mt-0.5">
+                        {new Date(log.created_at).toLocaleDateString('ko-KR')}
+                      </p>
+                    </div>
+                    <Link
+                      href={`/admin/write?id=${log.id}`}
+                      className="btn btn-ghost btn-xs rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      편집
+                    </Link>
+                  </div>
                 </div>
-                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                  <div className="bg-indigo-600 h-full w-[2%] rounded-full"></div>
+              ))}
+              <Link href="/admin/write" className="btn btn-ghost btn-block rounded-2xl border border-dashed border-base-content/10 gap-2 mt-2">
+                <Plus className="w-4 h-4" /> 새 포스트 작성
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-4">
+          {/* Quick Nav */}
+          <div className="card bg-base-200 border border-base-content/5 rounded-[2rem]">
+            <div className="card-body p-6 gap-3">
+              <h3 className="font-bold text-sm opacity-50 uppercase tracking-widest">관리 메뉴</h3>
+              {[
+                { href: '/admin/portfolio', label: 'Portfolio 관리', icon: Package,  desc: '프로젝트 추가·편집' },
+                { href: '/admin/logs',      label: 'Logs 관리',      icon: FileText, desc: '포스트 목록·편집' },
+                { href: '/admin/write',     label: '새 포스트 작성',  icon: PenTool,  desc: '마크다운 에디터' },
+              ].map(item => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center gap-3 p-3 rounded-2xl hover:bg-base-300 transition-all group"
+                >
+                  <div className="w-9 h-9 bg-base-100 rounded-xl flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                    <item.icon className="w-4 h-4 opacity-60 group-hover:text-primary transition-colors" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm">{item.label}</p>
+                    <p className="text-[10px] opacity-40">{item.desc}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* System */}
+          <div className="card bg-base-200 border border-base-content/5 rounded-[2rem]">
+            <div className="card-body p-6 gap-4">
+              <h3 className="font-bold text-sm flex items-center gap-2">
+                <Settings className="w-4 h-4 opacity-30" /> System
+              </h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="opacity-50">Auth</span>
+                  <span className="badge badge-success badge-sm font-bold">SUPABASE</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="opacity-50">Database</span>
+                  <span className="badge badge-success badge-sm font-bold">ACTIVE</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="opacity-50">{user?.email}</span>
                 </div>
               </div>
-              <button className="w-full py-3 text-slate-400 text-sm font-bold hover:text-red-500 transition-colors flex items-center justify-center">
-                <LogOut className="w-4 h-4 mr-2" /> 로그아웃 (종료)
+              <button
+                onClick={handleLogout}
+                className="btn btn-ghost btn-sm btn-block text-error rounded-2xl mt-2"
+              >
+                <LogOut className="w-4 h-4 mr-2" /> Sign Out
               </button>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
-}
-
-function AdminCard({ icon, title, desc, color, link }: any) {
-  return (
-    <Link href={link} className="group bg-white p-8 rounded-[2rem] border border-slate-200 hover:border-transparent hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 flex flex-col items-start text-left">
-      <div className={`w-16 h-16 ${color} rounded-2xl flex items-center justify-center text-white mb-8 shadow-2xl shadow-${color.split('-')[1]}-500/40 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}>
-        {icon}
-      </div>
-      <h3 className="text-2xl font-black text-slate-900 mb-3 group-hover:text-indigo-600 transition-colors">{title}</h3>
-      <p className="text-slate-500 text-sm leading-relaxed font-medium">{desc}</p>
-    </Link>
   );
 }
