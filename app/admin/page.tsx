@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   LogOut, Plus, Settings, FileText, BarChart3,
-  Sparkles, Loader2, Package, PenTool, Eye, Clock
+  Sparkles, Loader2, Package, PenTool, Eye, Clock, User, Mail
 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -196,6 +196,8 @@ export default function AdminPage() {
                 { href: '/admin/portfolio', label: 'Portfolio 관리', icon: Package,  desc: '프로젝트 추가·편집' },
                 { href: '/admin/logs',      label: 'Logs 관리',      icon: FileText, desc: '포스트 목록·편집' },
                 { href: '/admin/write',     label: '새 포스트 작성',  icon: PenTool,  desc: '마크다운 에디터' },
+                { href: '/admin/about',     label: 'About 관리',     icon: User,     desc: '커리어·기술스택 편집' },
+                { href: '/admin/contact',   label: 'Contact 관리',   icon: Mail,     desc: '연락처·소셜링크 편집' },
               ].map(item => (
                 <Link
                   key={item.href}
