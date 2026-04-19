@@ -115,7 +115,7 @@ INSERT INTO site_settings (key, value) VALUES
     "twitter": "https://twitter.com",
     "resume_pdf": "",
     "greeting_ko": "새로운 기회에 항상 열려 있습니다.",
-    "greeting_en": "I'\''m always open to new opportunities."
+    "greeting_en": "I''m always open to new opportunities."
   }'::jsonb)
 ON CONFLICT (key) DO NOTHING;
 
