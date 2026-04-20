@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- H -->
+  <rect x="8" y="14" width="10" height="36" rx="3" fill="#570df8"/>
+  <rect x="28" y="14" width="10" height="36" rx="3" fill="#570df8"/>
+  <rect x="16" y="28" width="16" height="8" rx="3" fill="#570df8"/>
+
+  <!-- Superscript 2 -->
+  <text x="42" y="20" font-size="18" font-weight="900" font-family="Arial, sans-serif" fill="#570df8">
+    2
+  </text>
+</svg>
