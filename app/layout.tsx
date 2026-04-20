@@ -40,6 +40,7 @@ export default function RootLayout({
             `,
           }}
         />
+        <script src="https://chatbot.congkong.net/widget.js" data-site-id="acme" async />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-base-100 pb-20 md:pb-0 font-sans`}
