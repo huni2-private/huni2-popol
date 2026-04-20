@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import BottomTabNav from "@/components/layout/BottomTabNav";
 import { LanguageProvider } from "@/lib/i18n";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,7 +41,6 @@ export default function RootLayout({
             `,
           }}
         />
-        <script src="https://chatbot.congkong.net/widget.js" data-site-id="acme" async />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-base-100 pb-20 md:pb-0 font-sans`}
@@ -52,6 +52,7 @@ export default function RootLayout({
           </main>
           <BottomTabNav />
         </LanguageProvider>
+        <Script src="https://chatbot.congkong.net/widget.js" data-site-id="acme" strategy="afterInteractive" />
       </body>
     </html>
   );
