@@ -8,11 +8,11 @@ import { useI18n } from '@/lib/i18n';
 
 export default function Header() {
   const pathname = usePathname();
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState('light');
   const { lang, setLang, t } = useI18n();
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'dark';
+    const savedTheme = localStorage.getItem('theme') || 'light';
     setTheme(savedTheme);
   }, []);
 
