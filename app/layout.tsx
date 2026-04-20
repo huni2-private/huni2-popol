@@ -32,7 +32,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                const theme = localStorage.getItem('theme') || 'dark';
+                const theme = localStorage.getItem('theme') || 'light';
                 document.documentElement.setAttribute('data-theme', theme);
                 const lang = localStorage.getItem('pref-lang') || 'ko';
                 document.documentElement.setAttribute('lang', lang);

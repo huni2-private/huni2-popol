@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import {
-  LogOut, Plus, Settings, FileText, BarChart3,
-  Sparkles, Loader2, Package, PenTool, Eye, Clock, User, Mail
+  LogOut, Plus, Settings, FileText,
+  Sparkles, Loader2, Package, PenTool, Eye, Clock, User, Mail, ArrowRight
 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -109,18 +109,18 @@ export default function AdminPage() {
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Projects', value: stats.projects, icon: Package,   color: 'text-primary' },
-          { label: 'Total Logs', value: stats.logs,   icon: FileText,  color: 'text-secondary' },
-          { label: 'Published',  value: stats.published, icon: Eye,    color: 'text-success' },
-          { label: 'Drafts',     value: stats.drafts, icon: Clock,     color: 'text-warning' },
+          { label: 'Projects', value: stats.projects,  icon: Package,  color: 'text-primary',   href: '/admin/portfolio' },
+          { label: 'Total Logs', value: stats.logs,    icon: FileText, color: 'text-secondary', href: '/admin/logs' },
+          { label: 'Published',  value: stats.published, icon: Eye,   color: 'text-success',   href: '/admin/logs' },
+          { label: 'Drafts',     value: stats.drafts,  icon: Clock,    color: 'text-warning',   href: '/admin/logs' },
         ].map(s => (
-          <div key={s.label} className="card bg-base-200 border border-base-content/5">
+          <Link key={s.label} href={s.href} className="card bg-base-200 border border-base-content/5 hover:border-primary/30 transition-all">
             <div className="card-body p-5 gap-1">
               <s.icon className={`w-5 h-5 ${s.color} opacity-70`} />
               <p className="text-3xl font-black">{s.value}</p>
               <p className="text-xs opacity-40 uppercase tracking-widest font-bold">{s.label}</p>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
@@ -193,24 +193,25 @@ export default function AdminPage() {
             <div className="card-body p-6 gap-3">
               <h3 className="font-bold text-sm opacity-50 uppercase tracking-widest">관리 메뉴</h3>
               {[
-                { href: '/admin/portfolio', label: 'Portfolio 관리', icon: Package,  desc: '프로젝트 추가·편집' },
-                { href: '/admin/logs',      label: 'Logs 관리',      icon: FileText, desc: '포스트 목록·편집' },
-                { href: '/admin/write',     label: '새 포스트 작성',  icon: PenTool,  desc: '마크다운 에디터' },
-                { href: '/admin/about',     label: 'About 관리',     icon: User,     desc: '커리어·기술스택 편집' },
-                { href: '/admin/contact',   label: 'Contact 관리',   icon: Mail,     desc: '연락처·소셜링크 편집' },
+                { href: '/admin/portfolio', label: 'Portfolio 관리', icon: Package,  desc: '프로젝트 추가·편집',   color: 'group-hover:text-primary',   bg: 'group-hover:bg-primary/10' },
+                { href: '/admin/logs',      label: 'Logs 관리',      icon: FileText, desc: '포스트 목록·편집',    color: 'group-hover:text-secondary', bg: 'group-hover:bg-secondary/10' },
+                { href: '/admin/write',     label: '새 포스트 작성',  icon: PenTool,  desc: '마크다운 에디터',     color: 'group-hover:text-primary',   bg: 'group-hover:bg-primary/10' },
+                { href: '/admin/about',     label: 'About 관리',     icon: User,     desc: '커리어·기술스택 편집', color: 'group-hover:text-accent',    bg: 'group-hover:bg-accent/10' },
+                { href: '/admin/contact',   label: 'Contact 관리',   icon: Mail,     desc: '연락처·소셜링크 편집', color: 'group-hover:text-success',   bg: 'group-hover:bg-success/10' },
               ].map(item => (
                 <Link
                   key={item.href}
                   href={item.href}
                   className="flex items-center gap-3 p-3 rounded-2xl hover:bg-base-300 transition-all group"
                 >
-                  <div className="w-9 h-9 bg-base-100 rounded-xl flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                    <item.icon className="w-4 h-4 opacity-60 group-hover:text-primary transition-colors" />
+                  <div className={`w-9 h-9 bg-base-100 rounded-xl flex items-center justify-center transition-colors ${item.bg}`}>
+                    <item.icon className={`w-4 h-4 opacity-60 transition-colors ${item.color}`} />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <p className="font-bold text-sm">{item.label}</p>
                     <p className="text-[10px] opacity-40">{item.desc}</p>
                   </div>
+                  <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-30 transition-opacity" />
                 </Link>
               ))}
             </div>
