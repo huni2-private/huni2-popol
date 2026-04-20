@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HUNI² | Personal Digital Realm",
-  description: "Senior Full-stack Developer Portfolio & Log",
+  title: "HUNI² | Portfolio & Log",
+  description: "Junior Full-stack Developer Portfolio & Log",
 };
 
 export default function RootLayout({
