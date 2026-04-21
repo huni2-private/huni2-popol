@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import {
   Plus, Pencil, Trash2, ExternalLink, GitFork, FileText,
-  Loader2, X, GripVertical, Globe, Package
+  Loader2, X, GripVertical, Globe, Package, Upload, ImageIcon
 } from 'lucide-react';
 
 interface Project {
@@ -44,9 +44,11 @@ export default function AdminPortfolio() {
   const [deleting, setDeleting] = useState<string | null>(null);
 
   // Modal state
-  const [open, setOpen]       = useState(false);
-  const [editId, setEditId]   = useState<string | null>(null);
-  const [form, setForm]       = useState({ ...EMPTY, tags: '' as unknown as string });
+  const [open, setOpen]         = useState(false);
+  const [editId, setEditId]     = useState<string | null>(null);
+  const [form, setForm]         = useState({ ...EMPTY, tags: '' as unknown as string });
+  const [uploading, setUploading] = useState(false);
+  const [preview, setPreview]   = useState<string>('');
 
   const supabase = createClient();
 
@@ -64,16 +66,32 @@ export default function AdminPortfolio() {
   const openCreate = () => {
     setEditId(null);
     setForm({ ...EMPTY, tags: '' as unknown as string });
+    setPreview('');
     setOpen(true);
   };
 
   const openEdit = (p: Project) => {
     setEditId(p.id);
-    setForm({
-      ...p,
-      tags: (p.tags ?? []).join(', ') as unknown as string,
-    });
+    setForm({ ...p, tags: (p.tags ?? []).join(', ') as unknown as string });
+    setPreview(p.image_url || '');
     setOpen(true);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const ext  = file.name.split('.').pop();
+    const path = `${Date.now()}.${ext}`;
+
+    const { error } = await supabase.storage.from('portfolio').upload(path, file, { upsert: true });
+    if (error) { alert('업로드 실패: ' + error.message); setUploading(false); return; }
+
+    const { data: { publicUrl } } = supabase.storage.from('portfolio').getPublicUrl(path);
+    field('image_url', publicUrl);
+    setPreview(publicUrl);
+    setUploading(false);
   };
 
   const handleSave = async () => {
@@ -306,14 +324,47 @@ export default function AdminPortfolio() {
                 />
               </div>
 
-              {/* Image URL */}
+              {/* Image Upload */}
               <div className="form-control">
-                <label className="label"><span className="label-text font-bold">이미지 URL</span></label>
+                <label className="label"><span className="label-text font-bold">이미지</span></label>
+
+                {/* Preview */}
+                {preview && (
+                  <div className="relative mb-3 rounded-xl overflow-hidden h-40 bg-base-300">
+                    <img src={preview} alt="preview" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => { setPreview(''); field('image_url', ''); }}
+                      className="absolute top-2 right-2 btn btn-circle btn-xs bg-base-100/80"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Upload button */}
+                <label className={`flex items-center gap-3 p-4 rounded-xl border-2 border-dashed border-base-content/20 hover:border-primary/50 cursor-pointer transition-all ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                  {uploading
+                    ? <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                    : <Upload className="w-5 h-5 text-base-content/40" />}
+                  <span className="text-sm text-base-content/50">
+                    {uploading ? '업로드 중...' : '클릭해서 이미지 선택 (jpg, png, webp)'}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                  />
+                </label>
+
+                {/* OR direct URL */}
+                <div className="divider text-xs opacity-30 my-2">또는 URL 직접 입력</div>
                 <input
                   type="url" placeholder="https://..."
-                  className="input input-bordered bg-base-200"
+                  className="input input-bordered input-sm bg-base-200"
                   value={form.image_url}
-                  onChange={e => field('image_url', e.target.value)}
+                  onChange={e => { field('image_url', e.target.value); setPreview(e.target.value); }}
                 />
               </div>
 
