@@ -63,7 +63,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           </main>
           <BottomTabNav />
         </LanguageProvider>
-        <Script src="https://chatbot-b51c3.web.app/chatbot-widget.iife.js" data-site-id="acme"></Script>
+        <Script
+  src="https://chatbot.congkong.net/widget.js"
+  data-site-id="acme"
+></Script>
       </body>
     </html>
   );
