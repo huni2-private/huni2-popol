@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Save, ArrowLeft, Loader2, Image as ImageIcon, Type, Tag, Eye, EyeOff } from 'lucide-react';
+import { Save, ArrowLeft, Loader2, Image as ImageIcon, Type, Tag, Eye, EyeOff, CalendarDays } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 
@@ -40,6 +40,7 @@ function AdminWriteInner() {
   const [category, setCategory] = useState<'log' | 'project' | 'note'>('log');
   const [tags, setTags]         = useState('');
   const [published, setPublished] = useState(false);
+  const [createdAt, setCreatedAt] = useState(() => new Date().toISOString().slice(0, 16));
   const [loading, setLoading]   = useState(false);
   const [initialLoad, setInitialLoad] = useState(false);
   const router = useRouter();
@@ -63,6 +64,7 @@ function AdminWriteInner() {
         setCategory(data.category);
         setTags((data.tags ?? []).join(', '));
         setPublished(data.published);
+        setCreatedAt(new Date(data.created_at).toISOString().slice(0, 16));
       }
       setInitialLoad(false);
     })();
@@ -80,17 +82,19 @@ function AdminWriteInner() {
     const excerpt = extractExcerpt(content);
     const tagArr  = tags.split(',').map(t => t.trim()).filter(Boolean);
 
+    const created_at = new Date(createdAt).toISOString();
+
     if (editId) {
       const { error } = await supabase
         .from('logs')
-        .update({ title, slug, excerpt, content, category, tags: tagArr, published })
+        .update({ title, slug, excerpt, content, category, tags: tagArr, published, created_at })
         .eq('id', editId);
 
       if (error) { alert(`저장 실패: ${error.message}`); setLoading(false); return; }
     } else {
       const { error } = await supabase
         .from('logs')
-        .insert({ title, slug, excerpt, content, category, tags: tagArr, published });
+        .insert({ title, slug, excerpt, content, category, tags: tagArr, published, created_at });
 
       if (error) { alert(`저장 실패: ${error.message}`); setLoading(false); return; }
     }
@@ -192,6 +196,16 @@ function AdminWriteInner() {
                   />
                 </div>
                 <label className="label"><span className="label-text-alt opacity-40">쉼표로 구분</span></label>
+              </div>
+
+              <div className="form-control">
+                <label className="label"><span className="label-text font-bold flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" /> 작성일</span></label>
+                <input
+                  type="datetime-local"
+                  className="input input-bordered input-sm w-full bg-base-100"
+                  value={createdAt}
+                  onChange={e => setCreatedAt(e.target.value)}
+                />
               </div>
 
               <div className="form-control">

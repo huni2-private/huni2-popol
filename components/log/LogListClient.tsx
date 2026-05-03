@@ -6,11 +6,12 @@ import { Calendar, Clock, ChevronRight, Search } from 'lucide-react';
 import Link from 'next/link';
 
 interface Log {
-  id: number;
+  id: string;
   slug: string;
   title: string;
   excerpt: string;
   created_at: string;
+  readingMinutes: number;
   tags?: string[];
 }
 
@@ -50,13 +51,12 @@ export default function LogListClient({ initialLogs }: { initialLogs: Log[] }) {
                   <div className="card-body p-6 md:p-8">
                     <div className="flex flex-wrap gap-4 text-xs font-mono text-base-content/50 mb-4">
                       <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" /> 
-                        {new Date(log.created_at).toLocaleDateString()}
+                        <Calendar className="w-3 h-3" />
+                        {new Date(log.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
                       </span>
                       <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> 
-                        {/* Static placeholder for now, can be calculated in Phase 5 */}
-                        5 min read
+                        <Clock className="w-3 h-3" />
+                        {log.readingMinutes}분 읽기
                       </span>
                     </div>
                     
