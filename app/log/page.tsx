@@ -37,21 +37,6 @@ export default async function LogPage({
         <p className="text-base-content/70">Insights, tutorials, and troubleshooting notes.</p>
       </div>
 
-      {/* 활성 태그 필터 표시 */}
-      {tag && (
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-base-content/50">태그 필터</span>
-          <a
-            href="/log"
-            className="badge badge-primary gap-1 font-bold cursor-pointer hover:badge-ghost transition-colors"
-          >
-            <Tag className="w-3 h-3" />
-            {tag}
-            <span className="ml-1 opacity-70">×</span>
-          </a>
-        </div>
-      )}
-
       <LogListClient initialLogs={logsWithMeta} activeTag={tag} />
     </div>
   );
