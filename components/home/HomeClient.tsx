@@ -1,9 +1,9 @@
 'use client';
 
-// 홈 화면 — 히어로 캐러셀과 섹션 미리보기 카드 렌더링
-import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+// 홈 벤토 그리드 — 뷰포트 한 화면 레이아웃 + 마우스 빛 반사 효과
+import { useRef, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { ArrowRight, Calendar, Package, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
 
@@ -20,50 +20,29 @@ interface LatestLog {
   created_at: string;
 }
 
-interface SlideConfig {
-  id: number;
-  tag: string;
-  titleKo: string;
-  titleEn: string;
-  descKo: string;
-  descEn: string;
-  cta: string;
-  href: string;
-  accent: string;
-  blob1: string;
-  blob2: string;
+// 마우스 움직임에 따라 CSS 변수로 좌표 전달 — ::before 그라디언트가 따라옴
+function MagicCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  const onMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    ref.current.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+    ref.current.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+  }, []);
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={onMouseMove}
+      whileHover={{ y: -3 }}
+      transition={{ duration: 0.2 }}
+      className={`magic-card bg-base-200 border border-base-content/5 hover:border-primary/30 rounded-3xl transition-colors ${className}`}
+    >
+      {children}
+    </motion.div>
+  );
 }
-
-const NAV_SLIDES: SlideConfig[] = [
-  {
-    id: 1,
-    tag: 'Portfolio',
-    titleKo: '실무와 사이드 프로젝트\n작업물을 공유합니다.',
-    titleEn: 'Explore My\nRecent Work.',
-    descKo: 'SK-hynix 실무부터 사이드 프로젝트까지, 직접 만든 것들을 모아뒀습니다.',
-    descEn: "From SK-hynix production work to side projects — things I've actually shipped.",
-    cta: '포트폴리오 보기',
-    href: '/portfolio',
-    accent: 'text-secondary',
-    blob1: 'bg-secondary/20',
-    blob2: 'bg-accent/15',
-  },
-  {
-    id: 2,
-    tag: 'Dev Log',
-    titleKo: '배우면서 느낀 것들을\n기록합니다.',
-    titleEn: 'Things I learned\nthe hard way.',
-    descKo: '삽질했던 것, 고쳤던 것, 그 과정에서 깨달은 것들.',
-    descEn: 'Bugs I fixed, things I broke, and what I figured out along the way.',
-    cta: '로그 보기',
-    href: '/log',
-    accent: 'text-accent',
-    blob1: 'bg-accent/20',
-    blob2: 'bg-primary/15',
-  },
-];
-
-const INTERVAL = 5000;
 
 export default function HomeClient({
   bio,
@@ -76,229 +55,150 @@ export default function HomeClient({
 }) {
   const { lang } = useI18n();
 
-  const slides: SlideConfig[] = [
-    {
-      id: 0,
-      tag: 'Frontend Developer · 1년차',
-      titleKo: bio.title_ko || '작은 개선 하나하나를\n의미있게 만듭니다.',
-      titleEn: bio.title_en || 'Making every small\nimprovement count.',
-      descKo: bio.desc_ko || 'SK-hynix MAPS 프로젝트에서 23만 개 데이터 로딩 시간을 5초 → 1초로 단축했습니다. 웹 서비스를 만들고 운영하는 팀에서 함께 성장하고 싶습니다.',
-      descEn: bio.desc_en || 'Cut 230K-row load time from 5s → 1s at SK-hynix. Looking to grow with a team that builds and runs web services.',
-      cta: '소개 보기',
-      href: '/about',
-      accent: 'text-primary',
-      blob1: 'bg-primary/20',
-      blob2: 'bg-secondary/15',
-    },
-    ...NAV_SLIDES,
-  ];
+  const title = lang === 'ko'
+    ? (bio.title_ko || '작은 개선 하나하나를 의미있게 만듭니다.')
+    : (bio.title_en || 'Making every small improvement count.');
 
-  const [current, setCurrent] = useState(0);
-  const [direction, setDirection] = useState(1);
-  const [paused, setPaused] = useState(false);
-
-  const go = useCallback((idx: number) => {
-    setDirection(idx > current ? 1 : -1);
-    setCurrent(idx);
-  }, [current]);
-
-  const next = useCallback(() => {
-    setDirection(1);
-    setCurrent(i => (i + 1) % slides.length);
-  }, [slides.length]);
-
-  const prev = useCallback(() => {
-    setDirection(-1);
-    setCurrent(i => (i - 1 + slides.length) % slides.length);
-  }, [slides.length]);
-
-  useEffect(() => {
-    if (paused) return;
-    const t = setInterval(next, INTERVAL);
-    return () => clearInterval(t);
-  }, [paused, next]);
-
-  const slide = slides[current];
-
-  const variants = {
-    enter: (d: number) => ({ x: d > 0 ? '100%' : '-100%', opacity: 0 }),
-    center: { x: 0, opacity: 1 },
-    exit:  (d: number) => ({ x: d > 0 ? '-100%' : '100%', opacity: 0 }),
-  };
-
-  const lines = (lang === 'ko' ? slide.titleKo : slide.titleEn).split('\n');
+  const desc = lang === 'ko'
+    ? (bio.desc_ko || 'SK-hynix MAPS 프로젝트에서 23만 개 데이터 로딩 시간을 5초 → 1초로 단축했습니다. 웹 서비스를 만들고 운영하는 팀에서 함께 성장하고 싶습니다.')
+    : (bio.desc_en || 'Cut 230K-row load time from 5s → 1s at SK-hynix. Looking to grow with a team that builds and runs web services.');
 
   return (
-    <div className="flex flex-col gap-16">
-      {/* Hero Carousel */}
-      <section
-        className="relative min-h-[70vh] flex items-center justify-center overflow-hidden rounded-3xl"
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-      >
-        <div className="absolute inset-0 -z-10 overflow-hidden rounded-3xl bg-base-200">
-          <motion.div
-            key={`blob1-${current}`}
-            animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
-            transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
-            className={`absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] md:w-[550px] md:h-[550px] ${slide.blob1} blur-3xl transition-colors duration-700`}
-          />
-          <motion.div
-            key={`blob2-${current}`}
-            animate={{ scale: [1, 1.3, 1], rotate: [0, -90, 0] }}
-            transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
-            className={`absolute top-1/2 right-1/4 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] md:w-[450px] md:h-[450px] ${slide.blob2} blur-3xl transition-colors duration-700`}
-          />
+    /*
+      모바일: 1열 자유 높이
+      태블릿(sm): 2열 auto-rows
+      데스크톱(lg): 4열 2행 — 헤더(64px) + 상하패딩(64px) 빼고 뷰포트 꽉 채움
+    */
+    <div className="
+      grid gap-4
+      grid-cols-1
+      sm:grid-cols-2 sm:auto-rows-[220px]
+      lg:grid-cols-4 lg:grid-rows-2 lg:auto-rows-[1fr] lg:h-[calc(100svh-8rem)]
+    ">
+
+      {/* ── 1. 히어로 카드 (좌측 절반 전체) ── */}
+      <MagicCard className="
+        flex flex-col justify-between p-8
+        min-h-[300px]
+        sm:col-span-2 sm:row-span-2
+        lg:col-span-2 lg:row-span-2
+      ">
+        <div className="space-y-1">
+          {/* Available 상태 */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-success/10 border border-success/20 text-success text-xs font-bold">
+            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+            Available for Work
+          </div>
         </div>
 
-        <div className="relative w-full max-w-3xl px-6 md:px-12 py-20">
-          <AnimatePresence custom={direction} mode="wait">
-            <motion.div
-              key={current}
-              custom={direction}
-              variants={variants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
-              className="space-y-6 text-center"
-            >
-              {/* 슬라이드 0(자기소개)은 primary 강조 뱃지, 나머지는 ghost */}
-              <span className={`inline-block px-4 py-1.5 rounded-full backdrop-blur text-xs font-black tracking-widest uppercase border transition-colors duration-500 ${
-                slide.id === 0
-                  ? 'bg-primary/15 text-primary border-primary/30'
-                  : 'bg-base-100/60 border-base-content/10'
-              }`}>
-                {slide.tag}
+        <div className="space-y-4 flex-1 flex flex-col justify-center">
+          <p className="text-xs font-mono font-bold uppercase tracking-widest text-primary opacity-70">
+            Frontend Developer · 1년차
+          </p>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-black leading-tight tracking-tight">
+            {title.replace('\n', ' ')}
+          </h1>
+          <p className="text-base-content/60 leading-relaxed text-sm md:text-base line-clamp-3">
+            {desc}
+          </p>
+        </div>
+
+        <Link
+          href="/about"
+          className="btn btn-primary rounded-full w-max gap-2 mt-2"
+        >
+          {lang === 'ko' ? '소개 보기' : 'About Me'} <ArrowRight className="w-4 h-4" />
+        </Link>
+      </MagicCard>
+
+      {/* ── 2. 임팩트 수치 카드 ── */}
+      <MagicCard className="
+        flex flex-col justify-between p-6
+        sm:col-span-1
+        lg:col-span-1 lg:row-span-1
+      ">
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-base-content/40">
+          <Zap className="w-3.5 h-3.5 text-warning" />
+          Impact
+        </div>
+        <div>
+          <p className="text-5xl lg:text-6xl font-black font-mono text-primary leading-none">
+            80<span className="text-3xl lg:text-4xl">%</span>
+          </p>
+          <p className="text-sm font-bold mt-2">로딩 속도 단축</p>
+          <p className="text-xs text-base-content/40 mt-1 font-mono">
+            SK-hynix 23만건 5s → 1s
+          </p>
+        </div>
+      </MagicCard>
+
+      {/* ── 3. 포트폴리오 카드 ── */}
+      <Link href="/portfolio" className="contents">
+        <MagicCard className="
+          flex flex-col justify-between p-6 cursor-pointer group
+          sm:col-span-1
+          lg:col-span-1 lg:row-span-1
+        ">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-base-content/40">
+            <Package className="w-3.5 h-3.5 text-secondary" />
+            Portfolio
+          </div>
+          <div>
+            <p className="text-5xl lg:text-6xl font-black font-mono text-secondary leading-none">
+              {projectCount > 0 ? projectCount : '–'}
+            </p>
+            <p className="text-sm font-bold mt-2">
+              {lang === 'ko' ? '개 프로젝트' : 'Projects'}
+            </p>
+            <p className="text-xs text-base-content/40 mt-1">
+              {lang === 'ko' ? '실무부터 사이드까지' : 'Work to Side Projects'}
+            </p>
+          </div>
+          <div className="flex items-center gap-1 text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+            {lang === 'ko' ? '보러가기' : 'View All'} <ArrowRight className="w-3 h-3" />
+          </div>
+        </MagicCard>
+      </Link>
+
+      {/* ── 4. 최신 Dev Log 카드 (우측 하단 가로 전체) ── */}
+      <Link href={latestLog ? `/log/${latestLog.slug}` : '/log'} className="contents">
+        <MagicCard className="
+          flex flex-col justify-between p-6 cursor-pointer group
+          sm:col-span-2
+          lg:col-span-2 lg:row-span-1
+        ">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-widest text-accent opacity-70">
+              Latest Dev Log
+            </span>
+            {latestLog && (
+              <span className="text-[10px] font-mono text-base-content/40 flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                {new Date(latestLog.created_at).toLocaleDateString('ko-KR', {
+                  year: 'numeric', month: 'long', day: 'numeric',
+                })}
               </span>
+            )}
+          </div>
 
-              {/* 첫 줄은 흐리게, 마지막 줄은 크고 accent 색으로 — 시선 위계 강화 */}
-              <h1 className="font-black tracking-tight leading-tight">
-                {lines.map((line, i) =>
-                  i === lines.length - 1 ? (
-                    <span key={i} className={`block text-5xl md:text-7xl italic ${slide.accent}`}>
-                      {line}
-                    </span>
-                  ) : (
-                    <span key={i} className="block text-3xl md:text-5xl opacity-60">
-                      {line}
-                    </span>
-                  )
-                )}
-              </h1>
-
-              <p className="text-base md:text-lg text-base-content/60 leading-relaxed max-w-xl mx-auto">
-                {lang === 'ko' ? slide.descKo : slide.descEn}
+          <div className="flex-1 flex items-center">
+            {latestLog ? (
+              <h2 className="text-xl md:text-2xl font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                {latestLog.title}
+              </h2>
+            ) : (
+              <p className="text-base-content/40 italic text-sm">
+                {lang === 'ko' ? '아직 작성된 글이 없습니다.' : 'No posts yet.'}
               </p>
+            )}
+          </div>
 
-              <Link href={slide.href} className="btn btn-primary rounded-full px-8 mt-4 inline-flex gap-2">
-                {slide.cta} <ArrowRight className="w-4 h-4" />
-              </Link>
-            </motion.div>
-          </AnimatePresence>
-        </div>
+          <div className="flex items-center gap-1 text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+            {lang === 'ko' ? '읽으러 가기' : 'Read Article'} <ArrowRight className="w-3 h-3" />
+          </div>
+        </MagicCard>
+      </Link>
 
-        <button onClick={prev} className="absolute left-4 top-1/2 -translate-y-1/2 btn btn-circle btn-sm bg-base-100/60 backdrop-blur border-base-content/10 hover:bg-base-100">
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-        <button onClick={next} className="absolute right-4 top-1/2 -translate-y-1/2 btn btn-circle btn-sm bg-base-100/60 backdrop-blur border-base-content/10 hover:bg-base-100">
-          <ChevronRight className="w-4 h-4" />
-        </button>
-
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-          {slides.map((s, i) => (
-            <button
-              key={s.id}
-              onClick={() => go(i)}
-              className={`rounded-full transition-all duration-300 ${
-                i === current ? 'w-6 h-2 bg-primary' : 'w-2 h-2 bg-base-content/20 hover:bg-base-content/40'
-              }`}
-            />
-          ))}
-        </div>
-
-        {!paused && (
-          <motion.div
-            key={`progress-${current}`}
-            className="absolute bottom-0 left-0 h-0.5 bg-primary/50"
-            initial={{ width: '0%' }}
-            animate={{ width: '100%' }}
-            transition={{ duration: INTERVAL / 1000, ease: 'linear' }}
-          />
-        )}
-      </section>
-
-      {/* 섹션 미리보기 카드 — 캐러셀과 중복되지 않도록 실데이터 표시 */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-        {/* About — bio 제목 표시 */}
-        <Link href="/about">
-          <motion.div
-            whileHover={{ y: -4 }}
-            className="card bg-base-200 border border-base-content/5 hover:border-primary/30 transition-all cursor-pointer h-full"
-          >
-            <div className="card-body p-5 gap-2">
-              <span className="text-xs font-bold uppercase tracking-widest text-primary">About</span>
-              <p className="font-bold text-sm leading-snug line-clamp-2">
-                {lang === 'ko'
-                  ? (bio.title_ko || '성장형 프론트엔드 개발자 허창훈')
-                  : (bio.title_en || 'Growth-minded Frontend Developer')}
-              </p>
-              <div className="flex items-center gap-1 text-xs text-base-content/40 mt-1">
-                {lang === 'ko' ? '소개 보기' : 'View About'} <ArrowRight className="w-3 h-3" />
-              </div>
-            </div>
-          </motion.div>
-        </Link>
-
-        {/* Portfolio — 프로젝트 수 표시 */}
-        <Link href="/portfolio">
-          <motion.div
-            whileHover={{ y: -4 }}
-            className="card bg-base-200 border border-base-content/5 hover:border-secondary/30 transition-all cursor-pointer h-full"
-          >
-            <div className="card-body p-5 gap-2">
-              <span className="text-xs font-bold uppercase tracking-widest text-secondary">Portfolio</span>
-              <p className="font-bold text-sm leading-snug">
-                {projectCount > 0
-                  ? (lang === 'ko'
-                    ? `${projectCount}개 프로젝트 · 실무부터 사이드까지`
-                    : `${projectCount} Projects · Work to Side`)
-                  : (lang === 'ko' ? '실무와 사이드 프로젝트' : 'Work & Side Projects')}
-              </p>
-              <div className="flex items-center gap-1 text-xs text-base-content/40 mt-1">
-                {lang === 'ko' ? '포트폴리오 보기' : 'View Works'} <ArrowRight className="w-3 h-3" />
-              </div>
-            </div>
-          </motion.div>
-        </Link>
-
-        {/* Dev Log — 최신 글 제목 표시 */}
-        <Link href="/log">
-          <motion.div
-            whileHover={{ y: -4 }}
-            className="card bg-base-200 border border-base-content/5 hover:border-accent/30 transition-all cursor-pointer h-full"
-          >
-            <div className="card-body p-5 gap-2">
-              <span className="text-xs font-bold uppercase tracking-widest text-accent">Dev Log</span>
-              {latestLog ? (
-                <>
-                  <p className="font-bold text-sm leading-snug line-clamp-2">{latestLog.title}</p>
-                  <div className="flex items-center gap-1 text-xs text-base-content/40 mt-1">
-                    <Calendar className="w-3 h-3" />
-                    {new Date(latestLog.created_at).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })}
-                  </div>
-                </>
-              ) : (
-                <p className="font-bold text-sm leading-snug">
-                  {lang === 'ko' ? '배우면서 느낀 것들을 기록합니다.' : 'Notes from the learning journey.'}
-                </p>
-              )}
-            </div>
-          </motion.div>
-        </Link>
-
-      </section>
     </div>
   );
 }
