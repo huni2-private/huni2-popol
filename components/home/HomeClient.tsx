@@ -120,16 +120,21 @@ export default function HomeClient({
           sm:col-span-2 sm:row-span-2
           lg:col-span-2 lg:row-span-2
         ">
-          <div>
+          <div className="space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-success/10 border border-success/20 text-success text-xs font-bold">
               <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
               Available for Work
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {['React', 'Next.js', 'TypeScript', 'Supabase', 'Tailwind CSS'].map(t => (
+                <span key={t} className="badge badge-sm badge-ghost font-mono opacity-60">{t}</span>
+              ))}
             </div>
           </div>
 
           <div className="space-y-4 flex-1 flex flex-col justify-center">
             <p className="text-xs font-mono font-bold uppercase tracking-widest text-primary opacity-70">
-              Frontend Developer · 1년차
+              허창훈 · Frontend Developer · 1년차
             </p>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-black leading-tight tracking-tight">
               {title.replace('\n', ' ')}
@@ -185,12 +190,11 @@ export default function HomeClient({
             Portfolio
           </div>
           <div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-5xl lg:text-6xl font-black font-mono text-secondary leading-none">
-                {projects.length > 0 ? projects.length : '–'}
-              </span>
-              <span className="text-sm font-bold">{lang === 'ko' ? '개 프로젝트' : 'Projects'}</span>
-            </div>
+            <p className="text-5xl lg:text-6xl font-black font-mono text-secondary leading-none">
+              {projects.length > 0 ? projects.length : '–'}
+              <span className="text-lg font-bold ml-1">{lang === 'ko' ? '개' : ''}</span>
+            </p>
+            <p className="text-sm font-bold">{lang === 'ko' ? '프로젝트' : 'Projects'}</p>
             <p className="text-xs text-base-content/40 mt-1">
               {lang === 'ko' ? '실무부터 사이드까지' : 'Work to Side Projects'}
             </p>
