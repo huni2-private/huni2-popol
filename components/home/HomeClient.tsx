@@ -25,7 +25,8 @@ interface Project {
   title: string;
   description?: string;
   tags?: string[];
-  tech_stack?: string[];
+  type?: string;
+  status?: string;
 }
 
 interface ImpactStat {
@@ -206,17 +207,10 @@ export default function HomeClient({
           sm:col-span-2
           lg:col-span-2 lg:row-span-1
         ">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center">
             <span className="text-xs font-bold uppercase tracking-widest text-accent opacity-70">
               Latest Dev Log
             </span>
-            <Link
-              href="/log"
-              onClick={e => e.stopPropagation()}
-              className="text-[10px] font-mono text-base-content/40 hover:text-primary transition-colors"
-            >
-              {lang === 'ko' ? '모두 보기' : 'All'} →
-            </Link>
           </div>
 
           <div className="flex-1 flex flex-col justify-center gap-2 my-2">
@@ -310,13 +304,6 @@ export default function HomeClient({
                         <h3 className="font-bold">{p.title}</h3>
                         {p.description && (
                           <p className="text-xs text-base-content/60 line-clamp-2">{p.description}</p>
-                        )}
-                        {p.tech_stack && p.tech_stack.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {p.tech_stack.slice(0, 4).map(t => (
-                              <span key={t} className="badge badge-xs badge-ghost font-mono">{t}</span>
-                            ))}
-                          </div>
                         )}
                         {p.tags && p.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-auto pt-1 border-t border-base-content/5">

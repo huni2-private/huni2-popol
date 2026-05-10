@@ -7,7 +7,7 @@ export default async function Home() {
 
   const [{ data: bioData }, { data: projects }, { data: recentLogs }, { data: impactData }] = await Promise.all([
     supabase.from('site_settings').select('value').eq('key', 'about_bio').single(),
-    supabase.from('projects').select('id, title, description, tags, tech_stack').order('created_at', { ascending: false }),
+    supabase.from('projects').select('id, title, description, tags, type, status').order('display_order', { ascending: true }),
     supabase.from('logs').select('title, slug, created_at').eq('published', true).order('created_at', { ascending: false }).limit(6),
     supabase.from('site_settings').select('value').eq('key', 'impact_stats').single(),
   ]);
