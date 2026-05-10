@@ -1,9 +1,9 @@
 'use client';
 
-// 로그 목록 클라이언트 — 검색 필터링, 태그 클라우드, 빈 상태 처리
-import { useState, useMemo } from 'react';
+// 로그 목록 클라이언트 — 검색 필터링, 무한 스크롤, 태그 클라우드 최적화
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, ChevronRight, Search, Tag, X } from 'lucide-react';
+import { Calendar, Clock, ChevronRight, Search, Tag, X, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 interface Log {
@@ -16,6 +16,9 @@ interface Log {
   tags?: string[];
 }
 
+const ITEMS_PER_PAGE = 10;
+const INITIAL_TAGS_COUNT = 12;
+
 export default function LogListClient({
   initialLogs,
   activeTag: initialActiveTag,
@@ -25,6 +28,9 @@ export default function LogListClient({
 }) {
   const [search, setSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(initialActiveTag || null);
+  const [displayLimit, setDisplayLimit] = useState(ITEMS_PER_PAGE);
+  const [showAllTags, setShowAllTags] = useState(false);
+  const observerTarget = useRef<HTMLDivElement>(null);
 
   // 모든 태그 추출 및 빈도수 계산
   const allTags = useMemo(() => {
@@ -37,9 +43,11 @@ export default function LogListClient({
     return Object.entries(counts).sort((a, b) => b[1] - a[1]);
   }, [initialLogs]);
 
+  const displayedTags = showAllTags ? allTags : allTags.slice(0, INITIAL_TAGS_COUNT);
+
   // 검색 및 태그 필터링 로직
   const filteredLogs = useMemo(() => {
-    return initialLogs.filter(log => {
+    const logs = initialLogs.filter(log => {
       const searchLower = search.toLowerCase();
       const matchesSearch = 
         log.title.toLowerCase().includes(searchLower) ||
@@ -50,18 +58,43 @@ export default function LogListClient({
       
       return matchesSearch && matchesTag;
     });
+    return logs;
   }, [initialLogs, search, selectedTag]);
+
+  // 무한 스크롤 관찰자 설정
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && displayLimit < filteredLogs.length) {
+          setDisplayLimit(prev => prev + ITEMS_PER_PAGE);
+        }
+      },
+      { threshold: 1.0 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => observer.disconnect();
+  }, [filteredLogs.length, displayLimit]);
+
+  // 필터 변경 시 리미트 초기화
+  useEffect(() => {
+    setDisplayLimit(ITEMS_PER_PAGE);
+  }, [search, selectedTag]);
+
+  const visibleLogs = filteredLogs.slice(0, displayLimit);
 
   return (
     <div className="space-y-8">
       {/* 상단 필터 영역 */}
       <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
-        {/* 검색바 */}
         <div className="relative group w-full md:max-w-md">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/30 group-focus-within:text-primary transition-colors" />
           <input
             type="text"
-            placeholder="Search by title, content, or tags..."
+            placeholder="Search logs..."
             className="input input-bordered pl-12 bg-base-200 rounded-2xl w-full h-12 focus:ring-2 focus:ring-primary/20 border-base-content/10"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -76,7 +109,6 @@ export default function LogListClient({
           )}
         </div>
 
-        {/* 선택된 태그 표시 (모바일/데스크톱 공통) */}
         {selectedTag && (
           <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
             <span className="text-xs font-bold uppercase tracking-widest text-base-content/30">Active Filter</span>
@@ -92,42 +124,57 @@ export default function LogListClient({
         )}
       </div>
 
-      {/* 태그 클라우드 */}
-      <div className="flex flex-wrap gap-2 pb-4 border-b border-base-content/5">
-        <button
-          onClick={() => setSelectedTag(null)}
-          className={`btn btn-sm rounded-xl px-4 normal-case font-bold ${
-            selectedTag === null ? 'btn-primary' : 'btn-ghost bg-base-200'
-          }`}
-        >
-          All
-        </button>
-        {allTags.map(([tag, count]) => (
+      {/* 태그 클라우드 최적화 */}
+      <div className="space-y-4 pb-6 border-b border-base-content/5">
+        <div className="flex flex-wrap gap-2">
           <button
-            key={tag}
-            onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
-            className={`btn btn-sm rounded-xl px-4 normal-case font-bold gap-2 ${
-              tag === selectedTag ? 'btn-primary' : 'btn-ghost bg-base-200'
+            onClick={() => setSelectedTag(null)}
+            className={`btn btn-sm rounded-xl px-4 normal-case font-bold ${
+              selectedTag === null ? 'btn-primary' : 'btn-ghost bg-base-200'
             }`}
           >
-            <span className="opacity-50">#</span>
-            {tag}
-            <span className="badge badge-xs opacity-50 ml-1">{count}</span>
+            All
           </button>
-        ))}
+          {displayedTags.map(([tag, count]) => (
+            <button
+              key={tag}
+              onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
+              className={`btn btn-sm rounded-xl px-4 normal-case font-bold gap-2 ${
+                tag === selectedTag ? 'btn-primary' : 'btn-ghost bg-base-200'
+              }`}
+            >
+              <span className="opacity-50">#</span>
+              {tag}
+              <span className="badge badge-xs opacity-50 ml-1">{count}</span>
+            </button>
+          ))}
+          
+          {allTags.length > INITIAL_TAGS_COUNT && (
+            <button
+              onClick={() => setShowAllTags(!showAllTags)}
+              className="btn btn-sm btn-ghost rounded-xl px-4 normal-case font-bold gap-2 text-primary"
+            >
+              {showAllTags ? (
+                <>Less <ChevronUp className="w-4 h-4" /></>
+              ) : (
+                <>More Tags (+{allTags.length - INITIAL_TAGS_COUNT}) <ChevronDown className="w-4 h-4" /></>
+              )}
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="grid gap-6">
         <AnimatePresence mode="popLayout">
-          {filteredLogs.length > 0 ? (
-            filteredLogs.map((log, index) => (
+          {visibleLogs.length > 0 ? (
+            visibleLogs.map((log, index) => (
               <motion.article
                 key={log.id}
                 layout
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.2, delay: index * 0.05 }}
+                transition={{ duration: 0.2 }}
                 className="group relative"
               >
                 <Link href={`/log/${log.slug}`} className="block">
@@ -204,7 +251,18 @@ export default function LogListClient({
           )}
         </AnimatePresence>
       </div>
+
+      {/* 무한 스크롤 타겟 및 로딩 표시 */}
+      {displayLimit < filteredLogs.length && (
+        <div ref={observerTarget} className="flex justify-center py-12">
+          <div className="flex flex-col items-center gap-2 text-base-content/30 font-bold uppercase tracking-widest text-xs">
+            <Loader2 className="w-6 h-6 animate-spin" />
+            Loading more logs...
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
 
