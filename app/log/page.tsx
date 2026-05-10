@@ -1,16 +1,29 @@
+// 로그 목록 페이지 — tag 쿼리 파라미터로 서버 사이드 필터링 지원
 import { createClient } from '@/lib/supabase/server';
 import LogListClient from '@/components/log/LogListClient';
+import { Tag } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
-export default async function LogPage() {
+export default async function LogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tag?: string }>;
+}) {
+  const { tag } = await searchParams;
   const supabase = await createClient();
-  
-  // DB에서 데이터 가져오기 (작성일 기준 내림차순)
-  const { data: logs } = await supabase
+
+  let query = supabase
     .from('logs')
-    .select('*')
+    .select('id, slug, title, excerpt, tags, category, published, created_at, content')
+    .eq('published', true)
     .order('created_at', { ascending: false });
+
+  if (tag) {
+    query = query.contains('tags', [tag]);
+  }
+
+  const { data: logs } = await query;
 
   const logsWithMeta = (logs || []).map(({ content, ...log }) => ({
     ...log,
@@ -24,7 +37,22 @@ export default async function LogPage() {
         <p className="text-base-content/70">Insights, tutorials, and troubleshooting notes.</p>
       </div>
 
-      <LogListClient initialLogs={logsWithMeta} />
+      {/* 활성 태그 필터 표시 */}
+      {tag && (
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-base-content/50">태그 필터</span>
+          <a
+            href="/log"
+            className="badge badge-primary gap-1 font-bold cursor-pointer hover:badge-ghost transition-colors"
+          >
+            <Tag className="w-3 h-3" />
+            {tag}
+            <span className="ml-1 opacity-70">×</span>
+          </a>
+        </div>
+      )}
+
+      <LogListClient initialLogs={logsWithMeta} activeTag={tag} />
     </div>
   );
 }

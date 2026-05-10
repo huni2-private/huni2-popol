@@ -1,8 +1,9 @@
 'use client';
 
+// 로그 목록 클라이언트 — 검색 필터링, 태그 링크, 빈 상태 처리
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, ChevronRight, Search } from 'lucide-react';
+import { Calendar, Clock, ChevronRight, Search, Tag } from 'lucide-react';
 import Link from 'next/link';
 
 interface Log {
@@ -15,21 +16,27 @@ interface Log {
   tags?: string[];
 }
 
-export default function LogListClient({ initialLogs }: { initialLogs: Log[] }) {
+export default function LogListClient({
+  initialLogs,
+  activeTag,
+}: {
+  initialLogs: Log[];
+  activeTag?: string;
+}) {
   const [search, setSearch] = useState('');
 
   const filteredLogs = initialLogs.filter(log =>
     log.title.toLowerCase().includes(search.toLowerCase()) ||
-    log.excerpt.toLowerCase().includes(search.toLowerCase())
+    (log.excerpt ?? '').toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div className="space-y-12">
       <div className="relative group max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/30 group-focus-within:text-primary transition-colors" />
-        <input 
-          type="text" 
-          placeholder="Search logs..." 
+        <input
+          type="text"
+          placeholder="Search logs..."
           className="input input-bordered pl-10 bg-base-200 rounded-full w-full"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -59,7 +66,7 @@ export default function LogListClient({ initialLogs }: { initialLogs: Log[] }) {
                         {log.readingMinutes}분 읽기
                       </span>
                     </div>
-                    
+
                     <h2 className="text-2xl font-bold group-hover:text-primary transition-colors mb-2">
                       {log.title}
                     </h2>
@@ -68,12 +75,22 @@ export default function LogListClient({ initialLogs }: { initialLogs: Log[] }) {
                     </p>
 
                     <div className="flex items-center justify-between">
-                      <div className="flex gap-2">
+                      {/* 태그 — 클릭 시 해당 태그로 필터링 */}
+                      <div className="flex flex-wrap gap-2" onClick={e => e.preventDefault()}>
                         {log.tags?.map(tag => (
-                          <span key={tag} className="badge badge-ghost text-[10px] font-bold uppercase tracking-wider">{tag}</span>
+                          <Link
+                            key={tag}
+                            href={`/log?tag=${encodeURIComponent(tag)}`}
+                            className={`badge text-[10px] font-bold uppercase tracking-wider gap-1 hover:badge-primary transition-colors ${
+                              tag === activeTag ? 'badge-primary' : 'badge-ghost'
+                            }`}
+                          >
+                            <Tag className="w-2.5 h-2.5" />
+                            {tag}
+                          </Link>
                         ))}
                       </div>
-                      <span className="flex items-center gap-1 text-sm font-bold text-primary opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
+                      <span className="flex items-center gap-1 text-sm font-bold text-primary opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0 shrink-0">
                         Read Article <ChevronRight className="w-4 h-4" />
                       </span>
                     </div>
@@ -83,8 +100,17 @@ export default function LogListClient({ initialLogs }: { initialLogs: Log[] }) {
             </motion.article>
           ))
         ) : (
-          <div className="text-center py-20 opacity-50 italic">
-            No logs found matching your search.
+          <div className="text-center py-20 space-y-3">
+            <p className="opacity-50 italic">
+              {activeTag
+                ? `'${activeTag}' 태그의 글이 없습니다.`
+                : 'No logs found matching your search.'}
+            </p>
+            {activeTag && (
+              <Link href="/log" className="btn btn-ghost btn-sm rounded-full">
+                전체 글 보기
+              </Link>
+            )}
           </div>
         )}
       </div>
