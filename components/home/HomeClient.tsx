@@ -1,8 +1,9 @@
 'use client';
 
+// 홈 화면 — 히어로 캐러셀과 섹션 미리보기 카드 렌더링
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
 
@@ -11,6 +12,12 @@ interface Bio {
   title_en?: string;
   desc_ko?: string;
   desc_en?: string;
+}
+
+interface LatestLog {
+  title: string;
+  slug: string;
+  created_at: string;
 }
 
 interface SlideConfig {
@@ -58,7 +65,15 @@ const NAV_SLIDES: SlideConfig[] = [
 
 const INTERVAL = 5000;
 
-export default function HomeClient({ bio }: { bio: Bio }) {
+export default function HomeClient({
+  bio,
+  projectCount,
+  latestLog,
+}: {
+  bio: Bio;
+  projectCount: number;
+  latestLog: LatestLog | null;
+}) {
   const { lang } = useI18n();
 
   const slides: SlideConfig[] = [
@@ -111,6 +126,8 @@ export default function HomeClient({ bio }: { bio: Bio }) {
     exit:  (d: number) => ({ x: d > 0 ? '-100%' : '100%', opacity: 0 }),
   };
 
+  const lines = (lang === 'ko' ? slide.titleKo : slide.titleEn).split('\n');
+
   return (
     <div className="flex flex-col gap-16">
       {/* Hero Carousel */}
@@ -146,15 +163,27 @@ export default function HomeClient({ bio }: { bio: Bio }) {
               transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
               className="space-y-6 text-center"
             >
-              <span className="inline-block px-3 py-1 rounded-full bg-base-100/60 backdrop-blur text-xs font-bold tracking-widest uppercase border border-base-content/10">
+              {/* 슬라이드 0(자기소개)은 primary 강조 뱃지, 나머지는 ghost */}
+              <span className={`inline-block px-4 py-1.5 rounded-full backdrop-blur text-xs font-black tracking-widest uppercase border transition-colors duration-500 ${
+                slide.id === 0
+                  ? 'bg-primary/15 text-primary border-primary/30'
+                  : 'bg-base-100/60 border-base-content/10'
+              }`}>
                 {slide.tag}
               </span>
 
-              <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-tight">
-                {(lang === 'ko' ? slide.titleKo : slide.titleEn).split('\n').map((line, i, arr) =>
-                  i === arr.length - 1
-                    ? <span key={i} className={`italic ${slide.accent}`}>{line}</span>
-                    : <span key={i}>{line}<br /></span>
+              {/* 첫 줄은 흐리게, 마지막 줄은 크고 accent 색으로 — 시선 위계 강화 */}
+              <h1 className="font-black tracking-tight leading-tight">
+                {lines.map((line, i) =>
+                  i === lines.length - 1 ? (
+                    <span key={i} className={`block text-5xl md:text-7xl italic ${slide.accent}`}>
+                      {line}
+                    </span>
+                  ) : (
+                    <span key={i} className="block text-3xl md:text-5xl opacity-60">
+                      {line}
+                    </span>
+                  )
                 )}
               </h1>
 
@@ -199,26 +228,76 @@ export default function HomeClient({ bio }: { bio: Bio }) {
         )}
       </section>
 
-      {/* Nav cards */}
+      {/* 섹션 미리보기 카드 — 캐러셀과 중복되지 않도록 실데이터 표시 */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {slides.map((s) => (
-          <Link key={s.id} href={s.href}>
-            <motion.div
-              whileHover={{ y: -4 }}
-              className="card bg-base-200 border border-base-content/5 hover:border-primary/30 transition-all cursor-pointer h-full"
-            >
-              <div className="card-body p-5 gap-2">
-                <span className={`text-xs font-bold uppercase tracking-widest ${s.accent}`}>{s.tag}</span>
-                <p className="font-bold text-sm leading-snug">
-                  {(lang === 'ko' ? s.titleKo : s.titleEn).replace('\n', ' ')}
-                </p>
-                <div className="flex items-center gap-1 text-xs text-base-content/40 mt-1">
-                  {s.cta} <ArrowRight className="w-3 h-3" />
-                </div>
+
+        {/* About — bio 제목 표시 */}
+        <Link href="/about">
+          <motion.div
+            whileHover={{ y: -4 }}
+            className="card bg-base-200 border border-base-content/5 hover:border-primary/30 transition-all cursor-pointer h-full"
+          >
+            <div className="card-body p-5 gap-2">
+              <span className="text-xs font-bold uppercase tracking-widest text-primary">About</span>
+              <p className="font-bold text-sm leading-snug line-clamp-2">
+                {lang === 'ko'
+                  ? (bio.title_ko || '성장형 프론트엔드 개발자 허창훈')
+                  : (bio.title_en || 'Growth-minded Frontend Developer')}
+              </p>
+              <div className="flex items-center gap-1 text-xs text-base-content/40 mt-1">
+                {lang === 'ko' ? '소개 보기' : 'View About'} <ArrowRight className="w-3 h-3" />
               </div>
-            </motion.div>
-          </Link>
-        ))}
+            </div>
+          </motion.div>
+        </Link>
+
+        {/* Portfolio — 프로젝트 수 표시 */}
+        <Link href="/portfolio">
+          <motion.div
+            whileHover={{ y: -4 }}
+            className="card bg-base-200 border border-base-content/5 hover:border-secondary/30 transition-all cursor-pointer h-full"
+          >
+            <div className="card-body p-5 gap-2">
+              <span className="text-xs font-bold uppercase tracking-widest text-secondary">Portfolio</span>
+              <p className="font-bold text-sm leading-snug">
+                {projectCount > 0
+                  ? (lang === 'ko'
+                    ? `${projectCount}개 프로젝트 · 실무부터 사이드까지`
+                    : `${projectCount} Projects · Work to Side`)
+                  : (lang === 'ko' ? '실무와 사이드 프로젝트' : 'Work & Side Projects')}
+              </p>
+              <div className="flex items-center gap-1 text-xs text-base-content/40 mt-1">
+                {lang === 'ko' ? '포트폴리오 보기' : 'View Works'} <ArrowRight className="w-3 h-3" />
+              </div>
+            </div>
+          </motion.div>
+        </Link>
+
+        {/* Dev Log — 최신 글 제목 표시 */}
+        <Link href="/log">
+          <motion.div
+            whileHover={{ y: -4 }}
+            className="card bg-base-200 border border-base-content/5 hover:border-accent/30 transition-all cursor-pointer h-full"
+          >
+            <div className="card-body p-5 gap-2">
+              <span className="text-xs font-bold uppercase tracking-widest text-accent">Dev Log</span>
+              {latestLog ? (
+                <>
+                  <p className="font-bold text-sm leading-snug line-clamp-2">{latestLog.title}</p>
+                  <div className="flex items-center gap-1 text-xs text-base-content/40 mt-1">
+                    <Calendar className="w-3 h-3" />
+                    {new Date(latestLog.created_at).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })}
+                  </div>
+                </>
+              ) : (
+                <p className="font-bold text-sm leading-snug">
+                  {lang === 'ko' ? '배우면서 느낀 것들을 기록합니다.' : 'Notes from the learning journey.'}
+                </p>
+              )}
+            </div>
+          </motion.div>
+        </Link>
+
       </section>
     </div>
   );
