@@ -276,7 +276,7 @@ export default function AdminPortfolio() {
               <div className="form-control">
                 <label className="label"><span className="label-text font-bold">설명</span></label>
                 <textarea
-                  placeholder="프로젝트 한 줄 소개"
+                  placeholder={"문제 · 접근 · 결과 순으로 작성하면 임팩트가 강해집니다.\n예: 23만건 데이터 로딩을 가상스크롤로 5s → 1s 단축"}
                   className="textarea textarea-bordered bg-base-200 resize-none h-24"
                   value={form.description}
                   onChange={e => field('description', e.target.value)}
