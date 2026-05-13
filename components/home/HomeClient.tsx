@@ -93,8 +93,8 @@ export default function HomeClient({
     : (bio.title_en || 'Making every small improvement count.');
 
   const desc = lang === 'ko'
-    ? (bio.desc_ko || 'SK-hynix MAPS 프로젝트에서 23만 개 데이터 로딩 시간을 5초 → 1초로 단축했습니다. 웹 서비스를 만들고 운영하는 팀에서 함께 성장하고 싶습니다.')
-    : (bio.desc_en || 'Cut 230K-row load time from 5s → 1s at SK-hynix. Looking to grow with a team that builds and runs web services.');
+    ? (bio.desc_ko || 'SK-hynix MAPS에서 23만 건 데이터 로딩을 5s → 1s로 단축했습니다. React · Next.js로 실서비스를 만들고, 채팅 위젯까지 직접 구현한 실행력 있는 프론트엔드 개발자입니다.')
+    : (bio.desc_en || 'Cut 230K-row load time from 5s → 1s at SK-hynix MAPS. Frontend developer who ships — from React/Next.js services to a custom chat widget built from scratch.');
 
   const latestLog = recentLogs[0] ?? null;
   const moreLogs = recentLogs.slice(1, 4);
@@ -157,7 +157,7 @@ export default function HomeClient({
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-base-content/40">
-              <Zap className="w-3.5 h-3.5 text-warning" />
+              <Zap className="w-3.5 h-3.5 text-primary" />
               Impact
             </div>
             {impactStats.length > 1 && (
@@ -186,11 +186,11 @@ export default function HomeClient({
           className="flex flex-col justify-between p-6 sm:col-span-1 lg:col-span-1 lg:row-span-1"
         >
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-base-content/40">
-            <Package className="w-3.5 h-3.5 text-secondary" />
+            <Package className="w-3.5 h-3.5 text-primary" />
             Portfolio
           </div>
           <div>
-            <p className="text-5xl lg:text-6xl font-black font-mono text-secondary leading-none">
+            <p className="text-5xl lg:text-6xl font-black font-mono text-primary leading-none">
               {projects.length > 0 ? projects.length : '–'}
               <span className="text-lg font-bold ml-1">{lang === 'ko' ? '개' : ''}</span>
             </p>
@@ -212,7 +212,7 @@ export default function HomeClient({
           lg:col-span-2 lg:row-span-1
         ">
           <div className="flex items-center">
-            <span className="text-xs font-bold uppercase tracking-widest text-accent opacity-70">
+            <span className="text-xs font-bold uppercase tracking-widest text-primary opacity-50">
               Latest Dev Log
             </span>
           </div>
@@ -286,7 +286,7 @@ export default function HomeClient({
             <div className="space-y-4 pt-2">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold flex items-center gap-2">
-                  <Package className="w-5 h-5 text-secondary" />
+                  <Package className="w-5 h-5 text-primary" />
                   {lang === 'ko' ? '포트폴리오' : 'Portfolio'}
                 </h2>
                 <div className="flex gap-2">
@@ -344,7 +344,7 @@ export default function HomeClient({
             <div className="space-y-4 pt-2">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-warning" />
+                  <Zap className="w-5 h-5 text-primary" />
                   Impact
                 </h2>
                 <button onClick={() => setActiveSection(null)} className="btn btn-ghost btn-sm btn-circle">

@@ -21,6 +21,12 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  background-image: radial-gradient(
+    circle,
+    oklch(var(--bc) / 0.07) 1px,
+    transparent 1px
+  );
+  background-size: 24px 24px;
 }
 
 /* 마우스 추적 빛 반사 효과 — DaisyUI primary 색상 기반 */
