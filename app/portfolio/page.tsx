@@ -12,8 +12,8 @@ export default async function PortfolioPage() {
   return (
     <div className="space-y-12 animate-in fade-in duration-1000">
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold italic">Curated <span className="text-primary underline">Works</span></h1>
-        <p className="text-base-content/70">A showcase of projects ranging from personal experiments to enterprise solutions.</p>
+        <h1 className="text-4xl font-bold italic">직접 만들고 <span className="text-primary underline">운영한 것들</span></h1>
+        <p className="text-base-content/70">실무와 사이드 프로젝트, 지금도 살아있는 프로덕트들.</p>
       </div>
 
       <PortfolioClient initialProjects={projects || []} />
