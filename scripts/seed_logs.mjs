@@ -1,9 +1,20 @@
+// 로그 데이터 시딩 스크립트 — node --env-file=.env.local scripts/seed_logs.mjs
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  'https://sbmekgmjzbksmfzthidu.supabase.co',
-  process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
-);
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!url || !key) {
+  console.error('❌ 환경변수 누락:');
+  if (!url) console.error('   NEXT_PUBLIC_SUPABASE_URL 이 없습니다.');
+  if (!key) console.error('   SUPABASE_SERVICE_ROLE_KEY 가 없습니다.');
+  console.error('\n실행 방법: node --env-file=.env.local scripts/seed_logs.mjs');
+  process.exit(1);
+}
+
+console.log(`🎯 대상: ${url}`);
+
+const supabase = createClient(url, key);
 
 const logs = [
   {
@@ -213,7 +224,7 @@ Firebase Hosting의 headers 규칙은 순서가 중요하다. \`**/*.js\`에 \`m
 - **방문자 추적**: Firestore 기반의 방문자 실시간 추적 안정성을 개선했습니다.
 
 ### Imagine AX 2026
-- **Agenda 섹션 업데이트**: Figma 최신 시안을 반영하여 세션 카드 색상, 간격, 구분선 디자인을 수정했습니다. 점심 시간 아이콘 및 배경색도 세밀하게 조정했습니다.
+- **Agenda 섹션 업데이트**: Figma 최신 시안을 반영하여 세션 카드 색상, 간격, 구분선 디자인을 수정했습니다.
 
 ### TimeSlot (보안 및 제어)
 - **이벤트 접근 제어**: 이벤트 블록 숨김, PIN 번호 기반 입장 제한, 종료(Closed) 모드 등 이벤트 운영 환경에 필요한 다양한 보안 제어 기능을 구현했습니다.`,
@@ -251,10 +262,35 @@ Firebase Hosting의 headers 규칙은 순서가 중요하다. \`**/*.js\`에 \`m
 - **Storage Bucket 업데이트**: Firebase의 최신 권장 사항에 따라 스토리지 버킷 도메인을 \`appspot.com\`에서 \`firebasestorage.app\`으로 변경했습니다.
 - **위젯 설정 최적화**: 변경된 버킷 도메인을 위젯 설정에 반영하여 파일 첨부 시 발생할 수 있는 잠재적 이슈를 예방했습니다.`,
   },
+  {
+    title: 'CongKong 주간 개발 로그: IMAGINE AX 2026 모바일 최적화 및 포트폴리오 고도화',
+    slug: 'congkong-weekly-log-2026-05-14',
+    category: 'log',
+    tags: ['ImagineAX', 'Chatbot', 'Portfolio', 'UI/UX'],
+    published: true,
+    created_at: '2026-05-14T21:00:00+09:00',
+    content: `## IMAGINE AX 2026 및 프로젝트 고도화
+
+이번 주에는 **IMAGINE AX 2026** 랜딩페이지의 모바일 최적화 작업을 마무리하고, **Chatbot** 및 **Portfolio(hunipopol)** 사이트의 기능을 정교하게 다듬었습니다.
+
+### IMAGINE AX 2026 (단독 개발)
+- **모바일 최적화**: Invitation, Agenda, Location 섹션의 모바일 가독성을 극대화했습니다.
+- **디자인 폴리싱**: 데스크톱 Invitation 섹션에도 모바일의 그라데이션 스타일을 이식하여 일관성을 높였습니다.
+
+### Chatbot 기능 강화
+- **상담 기능 고도화**: 상담 내역 로딩 시 페이징 처리를 안정화하고, 모바일 위젯의 UI 안내 문구를 사용자 친화적으로 개선했습니다.
+- **인터랙션**: 채팅창 진입 및 메시지 전송 시의 애니메이션과 피드백을 강화했습니다.
+
+### Portfolio (hunipopol)
+- **UI 리파인**: Impact, Portfolio, DevLog 섹션 테마 컬러와 컴포넌트 스타일 개선.`,
+  },
 ];
 
 async function main() {
-  console.log('inserting logs...');
+  console.log(`\n로그 ${logs.length}건 삽입 시작...\n`);
+  let ok = 0;
+  let fail = 0;
+
   for (const log of logs) {
     const excerpt = log.content
       .replace(/```[\s\S]*?```/g, '')
@@ -268,11 +304,15 @@ async function main() {
       .upsert({ ...log, excerpt }, { onConflict: 'slug' });
 
     if (error) {
-      console.error(`failed [${log.title}]:`, error.message);
+      console.error(`❌ [${log.slug}]: ${error.message}`);
+      fail++;
     } else {
-      console.log(`ok: ${log.title}`);
+      console.log(`✅ ${log.title}`);
+      ok++;
     }
   }
+
+  console.log(`\n완료: 성공 ${ok}건 / 실패 ${fail}건`);
 }
 
 main();

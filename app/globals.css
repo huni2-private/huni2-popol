@@ -7,6 +7,21 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* DaisyUI 기본 파란색 대신 인디고-바이올렛 계열로 교체 */
+[data-theme='light'] {
+  --color-primary: oklch(50% 0.24 272);
+  --color-primary-content: oklch(98% 0.01 272);
+  --color-secondary: oklch(58% 0.18 310);
+  --color-secondary-content: oklch(98% 0.01 310);
+}
+
+[data-theme='dark'] {
+  --color-primary: oklch(68% 0.2 272);
+  --color-primary-content: oklch(15% 0.05 272);
+  --color-secondary: oklch(70% 0.16 310);
+  --color-secondary-content: oklch(15% 0.03 310);
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
