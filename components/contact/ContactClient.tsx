@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Mail, Download, Send } from 'lucide-react';
+import { Mail, Download, Send, CheckCircle, AlertCircle, Loader } from 'lucide-react';
 import { Github, Linkedin, Twitter } from '@/components/icons/SocialIcons';
 import { useI18n } from '@/lib/i18n';
 import { useState } from 'react';
@@ -16,11 +16,14 @@ interface ContactInfo {
   greeting_en?: string;
 }
 
+type Status = 'idle' | 'sending' | 'success' | 'error';
+
 export default function ContactClient({ info }: { info: ContactInfo }) {
   const { lang, t } = useI18n();
   const [name, setName]       = useState('');
   const [email, setEmail]     = useState('');
   const [message, setMessage] = useState('');
+  const [status, setStatus]   = useState<Status>('idle');
 
   const greeting = lang === 'ko' ? info.greeting_ko : info.greeting_en;
 
@@ -29,6 +32,28 @@ export default function ContactClient({ info }: { info: ContactInfo }) {
     info.linkedin && { name: 'LinkedIn', icon: Linkedin, href: info.linkedin },
     info.twitter  && { name: 'Twitter',  icon: Twitter,  href: info.twitter },
   ].filter(Boolean) as { name: string; icon: React.ElementType; href: string }[];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('sending');
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, message }),
+      });
+      if (res.ok) {
+        setStatus('success');
+        setName('');
+        setEmail('');
+        setMessage('');
+      } else {
+        setStatus('error');
+      }
+    } catch {
+      setStatus('error');
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-12">
@@ -112,28 +137,75 @@ export default function ContactClient({ info }: { info: ContactInfo }) {
           transition={{ delay: 0.2 }}
           className="card bg-base-200 border border-base-content/5"
         >
-          <div className="card-body gap-4">
+          <form onSubmit={handleSubmit} className="card-body gap-4">
             <h2 className="card-title">{t.contact.form_title}</h2>
+
             <div className="form-control">
               <label className="label"><span className="label-text">{lang === 'ko' ? '이름' : 'Name'}</span></label>
-              <input type="text" placeholder={t.contact.name_placeholder} className="input input-bordered bg-base-100" value={name} onChange={e => setName(e.target.value)} />
+              <input
+                type="text"
+                required
+                placeholder={t.contact.name_placeholder}
+                className="input input-bordered bg-base-100"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                disabled={status === 'sending' || status === 'success'}
+              />
             </div>
+
             <div className="form-control">
               <label className="label"><span className="label-text">Email</span></label>
-              <input type="email" placeholder={t.contact.email_placeholder} className="input input-bordered bg-base-100" value={email} onChange={e => setEmail(e.target.value)} />
+              <input
+                type="email"
+                required
+                placeholder={t.contact.email_placeholder}
+                className="input input-bordered bg-base-100"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                disabled={status === 'sending' || status === 'success'}
+              />
             </div>
+
             <div className="form-control">
               <label className="label"><span className="label-text">{lang === 'ko' ? '메시지' : 'Message'}</span></label>
-              <textarea placeholder={t.contact.message_placeholder} className="textarea textarea-bordered h-32 bg-base-100" value={message} onChange={e => setMessage(e.target.value)} />
+              <textarea
+                required
+                placeholder={t.contact.message_placeholder}
+                className="textarea textarea-bordered h-32 bg-base-100"
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                disabled={status === 'sending' || status === 'success'}
+              />
             </div>
-            <a
-              href={info.email ? `mailto:${info.email}?subject=From Portfolio&body=${encodeURIComponent(`Name: ${name}\n\n${message}`)}` : '#'}
-              className="btn btn-primary mt-4 gap-2"
+
+            {status === 'success' && (
+              <div className="flex items-center gap-2 text-success text-sm font-bold">
+                <CheckCircle className="w-4 h-4" />
+                {lang === 'ko' ? '메시지가 전송됐습니다. 곧 연락드릴게요.' : 'Message sent! I\'ll get back to you soon.'}
+              </div>
+            )}
+
+            {status === 'error' && (
+              <div className="flex items-center gap-2 text-error text-sm font-bold">
+                <AlertCircle className="w-4 h-4" />
+                {lang === 'ko' ? '전송에 실패했습니다. 다시 시도해주세요.' : 'Send failed. Please try again.'}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={status === 'sending' || status === 'success'}
+              className="btn btn-primary mt-2 gap-2 disabled:opacity-60"
             >
-              <Send className="w-4 h-4" />
-              {t.contact.send_btn}
-            </a>
-          </div>
+              {status === 'sending' ? (
+                <><Loader className="w-4 h-4 animate-spin" /> {lang === 'ko' ? '전송 중...' : 'Sending...'}</>
+              ) : status === 'success' ? (
+                <><CheckCircle className="w-4 h-4" /> {lang === 'ko' ? '전송 완료' : 'Sent'}</>
+              ) : (
+                <><Send className="w-4 h-4" /> {t.contact.send_btn}</>
+              )}
+            </button>
+          </form>
         </motion.div>
       </div>
     </div>
