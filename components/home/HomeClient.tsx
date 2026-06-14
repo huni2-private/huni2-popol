@@ -185,7 +185,7 @@ export default function HomeClient({
           </div>
 
           <Link
-            href="/impact"
+            href="/portfolio"
             className="flex items-center gap-1 text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity"
           >
             {lang === 'ko' ? '전체 보기' : 'View All'} <ArrowRight className="w-3 h-3" />
