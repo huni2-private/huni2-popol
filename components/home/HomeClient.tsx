@@ -34,6 +34,7 @@ interface ImpactStat {
   metric: string;
   title: string;
   context: string;
+  log_slug?: string | null;
 }
 
 function MagicCard({
@@ -169,7 +170,16 @@ export default function HomeClient({
                     {impactStats[0].metric}
                   </p>
                   <p className="text-sm font-bold mt-2">{impactStats[0].title}</p>
-                  <p className="text-xs text-base-content/40 mt-0.5 font-mono">{impactStats[0].context}</p>
+                  {impactStats[0].log_slug ? (
+                    <Link
+                      href={`/log/${impactStats[0].log_slug}`}
+                      className="text-xs text-base-content/40 mt-0.5 font-mono hover:text-primary transition-colors block truncate"
+                    >
+                      {impactStats[0].context} →
+                    </Link>
+                  ) : (
+                    <p className="text-xs text-base-content/40 mt-0.5 font-mono">{impactStats[0].context}</p>
+                  )}
                 </div>
                 {impactStats.slice(1).length > 0 && (
                   <div className="space-y-2 border-t border-base-content/5 pt-2">
@@ -182,7 +192,16 @@ export default function HomeClient({
                             <span className="truncate">{stat.title}</span>
                           </div>
                           {stat.context && (
-                            <p className="text-[10px] font-mono truncate opacity-50 mt-0.5">{stat.context}</p>
+                            stat.log_slug ? (
+                              <Link
+                                href={`/log/${stat.log_slug}`}
+                                className="text-[10px] font-mono truncate opacity-50 mt-0.5 hover:opacity-100 hover:text-primary transition-colors block"
+                              >
+                                {stat.context} →
+                              </Link>
+                            ) : (
+                              <p className="text-[10px] font-mono truncate opacity-50 mt-0.5">{stat.context}</p>
+                            )
                           )}
                         </div>
                       </div>

@@ -4,7 +4,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ExternalLink, FileText, Tag } from 'lucide-react';
+import { ExternalLink, FileText, Tag, ArrowRight } from 'lucide-react';
 import { Github } from '@/components/icons/SocialIcons';
 import { useState } from 'react';
 
@@ -26,6 +26,7 @@ interface ImpactStat {
   metric: string;
   title: string;
   context: string;
+  log_slug?: string | null;
 }
 
 export default function PortfolioClient({
@@ -200,6 +201,14 @@ export default function PortfolioClient({
                       <p className="text-sm text-base-content/50 font-mono leading-relaxed">
                         {stat.context}
                       </p>
+                    )}
+                    {stat.log_slug && (
+                      <Link
+                        href={`/log/${stat.log_slug}`}
+                        className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline mt-1 w-fit"
+                      >
+                        관련 개발 로그 <ArrowRight className="w-3 h-3" />
+                      </Link>
                     )}
                   </div>
                 </motion.div>
