@@ -86,7 +86,7 @@ export default function HomeClient({
   impactStats: ImpactStat[];
 }) {
   const { lang } = useI18n();
-  const [activeSection, setActiveSection] = useState<'portfolio' | 'impact' | null>(null);
+  const [activeSection, setActiveSection] = useState<'portfolio' | null>(null);
 
   const title = lang === 'ko'
     ? (bio.title_ko || '작은 개선 하나하나를 의미있게 만듭니다.')
@@ -98,9 +98,8 @@ export default function HomeClient({
 
   const latestLog = recentLogs[0] ?? null;
   const moreLogs = recentLogs.slice(1, 4);
-  const firstImpact = impactStats[0] ?? null;
 
-  const toggle = (section: 'portfolio' | 'impact') => {
+  const toggle = (section: 'portfolio') => {
     setActiveSection(prev => prev === section ? null : section);
   };
 
@@ -120,7 +119,12 @@ export default function HomeClient({
           sm:col-span-2 sm:row-span-2
           lg:col-span-2 lg:row-span-2
         ">
-          <div className="space-y-3">
+          {/* 배경 블롭 */}
+          <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl -z-0">
+            <div className="absolute -top-10 -left-10 w-64 h-64 rounded-full bg-primary/15 blur-3xl" />
+            <div className="absolute bottom-0 right-0 w-48 h-48 rounded-full bg-secondary/10 blur-3xl" />
+          </div>
+          <div className="space-y-3 relative z-10">
             <div className="inline-flex items-center px-2.5 py-1 border border-success/50 text-success text-xs font-mono font-bold tracking-wider rounded">
               {lang === 'ko' ? '구직 중' : 'Available for Work'}
             </div>
@@ -131,7 +135,7 @@ export default function HomeClient({
             </div>
           </div>
 
-          <div className="space-y-4 flex-1 flex flex-col justify-center">
+          <div className="space-y-4 flex-1 flex flex-col justify-center relative z-10">
             <p className="text-xs font-mono font-bold uppercase tracking-widest text-primary opacity-70">
               허창훈 · Frontend Developer · 1년차
             </p>
@@ -143,38 +147,32 @@ export default function HomeClient({
             </p>
           </div>
 
-          <Link href="/about" className="btn btn-primary rounded-full w-max gap-2 mt-2">
+          <Link href="/about" className="btn btn-primary rounded-full w-max gap-2 mt-2 relative z-10">
             {lang === 'ko' ? '소개 보기' : 'About Me'} <ArrowRight className="w-4 h-4" />
           </Link>
         </MagicCard>
 
         {/* ── 2. 임팩트 카드 ── */}
-        <MagicCard
-          onClick={() => toggle('impact')}
-          isActive={activeSection === 'impact'}
-          className="flex flex-col justify-between p-6 sm:col-span-1 lg:col-span-1 lg:row-span-1"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-base-content/40">
-              <Zap className="w-3.5 h-3.5 text-primary" />
-              Impact
-            </div>
-            {impactStats.length > 1 && (
-              <span className="text-[10px] font-mono text-base-content/30">+{impactStats.length - 1}개 더</span>
-            )}
+        <MagicCard className="flex flex-col gap-4 p-6 sm:col-span-1 lg:col-span-1 lg:row-span-1">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-base-content/40">
+            <Zap className="w-3.5 h-3.5 text-primary" />
+            Impact
           </div>
-          <div>
-            <p className="text-5xl lg:text-6xl font-black font-mono text-primary leading-none">
-              {firstImpact ? firstImpact.metric : '80%'}
-            </p>
-            <p className="text-sm font-bold mt-2">{firstImpact ? firstImpact.title : '로딩 속도 단축'}</p>
-            <p className="text-xs text-base-content/40 mt-1 font-mono">
-              {firstImpact ? firstImpact.context : 'SK-hynix 23만건 5s → 1s'}
-            </p>
-          </div>
-          <div className="flex items-center gap-1 text-xs font-bold text-primary opacity-60">
-            {activeSection === 'impact' ? '접기' : '전체 보기'}
-            <ChevronRight className={`w-3 h-3 transition-transform ${activeSection === 'impact' ? 'rotate-90' : ''}`} />
+          <div className="grid grid-cols-2 gap-x-4 gap-y-5 flex-1">
+            {(impactStats.length > 0 ? impactStats : [
+              { id: '1', metric: '80%', title: '로딩 단축', context: '' },
+              { id: '2', metric: '5×', title: '업로드 향상', context: '' },
+              { id: '3', metric: '6+', title: '프로젝트', context: '' },
+              { id: '4', metric: '0', title: '다운타임', context: '' },
+            ]).slice(0, 4).map(stat => (
+              <div key={stat.id} className="flex flex-col gap-0.5 min-w-0">
+                <p className="text-2xl lg:text-3xl font-black font-mono text-primary leading-none">{stat.metric}</p>
+                <p className="text-[11px] font-bold text-base-content/70 leading-tight truncate">{stat.title}</p>
+                {stat.context && (
+                  <p className="text-[10px] text-base-content/35 font-mono leading-tight truncate hidden lg:block">{stat.context}</p>
+                )}
+              </div>
+            ))}
           </div>
         </MagicCard>
 
@@ -331,45 +329,6 @@ export default function HomeClient({
           </motion.div>
         )}
 
-        {activeSection === 'impact' && (
-          <motion.div
-            key="impact-panel"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden"
-          >
-            <div className="space-y-4 pt-2">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-primary" />
-                  Impact
-                </h2>
-                <button onClick={() => setActiveSection(null)} className="btn btn-ghost btn-sm btn-circle">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              {impactStats.length === 0 ? (
-                <p className="text-sm text-base-content/40 italic py-8 text-center">등록된 임팩트 수치가 없습니다.</p>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {impactStats.map(stat => (
-                    <div key={stat.id} className="card bg-base-200 border border-base-content/5">
-                      <div className="card-body p-5 gap-1">
-                        <p className="text-4xl font-black font-mono text-warning leading-none">{stat.metric}</p>
-                        <p className="font-bold text-sm mt-2">{stat.title}</p>
-                        {stat.context && (
-                          <p className="text-xs text-base-content/40 font-mono">{stat.context}</p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
       </AnimatePresence>
     </div>
   );
