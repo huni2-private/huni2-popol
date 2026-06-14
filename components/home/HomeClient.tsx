@@ -89,12 +89,12 @@ export default function HomeClient({
   const [activeSection, setActiveSection] = useState<'portfolio' | null>(null);
 
   const title = lang === 'ko'
-    ? (bio.title_ko || '작은 개선 하나하나를 의미있게 만듭니다.')
-    : (bio.title_en || 'Making every small improvement count.');
+    ? (bio.title_ko || 'SK-하이닉스 MAPS, 23만 건 로딩을 5s→1s로. Next.js로 실서비스 6개를 만들고 운영합니다.')
+    : (bio.title_en || '5s→1s on 230K rows at SK-hynix MAPS. Shipped 6 live services with Next.js.');
 
   const desc = lang === 'ko'
-    ? (bio.desc_ko || 'SK-hynix MAPS에서 23만 건 데이터 로딩을 5s → 1s로 단축했습니다. React · Next.js로 실서비스를 만들고, 채팅 위젯까지 직접 구현한 실행력 있는 프론트엔드 개발자입니다.')
-    : (bio.desc_en || 'Cut 230K-row load time from 5s → 1s at SK-hynix MAPS. Frontend developer who ships — from React/Next.js services to a custom chat widget built from scratch.');
+    ? (bio.desc_ko || '실무에서 측정된 성과(로딩 80% 단축, 업로드 5× 향상)와 사이드에서 직접 기획·배포한 6개 실서비스. 기능 구현을 넘어 성능과 사용성까지 책임지는 프론트엔드 개발자입니다.')
+    : (bio.desc_en || 'Measured outcomes at work: 80% faster load, 5× upload speed. On the side: 6 live services built and shipped solo — from concept to production. A frontend developer who owns the outcome, not just the code.');
 
   const latestLog = recentLogs[0] ?? null;
   const moreLogs = recentLogs.slice(1, 4);
@@ -137,7 +137,7 @@ export default function HomeClient({
 
           <div className="space-y-4 flex-1 flex flex-col justify-center relative z-10">
             <p className="text-xs font-mono font-bold uppercase tracking-widest text-primary opacity-70">
-              허창훈 · Frontend Developer · 1년차
+              허창훈 · Frontend Developer
             </p>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-black leading-tight tracking-tight">
               {title.replace('\n', ' ')}
