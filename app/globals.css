@@ -67,7 +67,7 @@ body {
 .magic-card:hover::before {
   opacity: 1;
 }
-.magic-card > * {
+.magic-card > :not([aria-hidden]) {
   position: relative;
   z-index: 1;
 }

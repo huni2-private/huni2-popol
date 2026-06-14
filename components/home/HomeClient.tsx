@@ -48,12 +48,20 @@ function MagicCard({
   isActive?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
 
   const onMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    ref.current.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-    ref.current.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+    if (!ref.current || rafRef.current !== null) return;
+    const x = e.clientX;
+    const y = e.clientY;
+    rafRef.current = requestAnimationFrame(() => {
+      if (ref.current) {
+        const rect = ref.current.getBoundingClientRect();
+        ref.current.style.setProperty('--mouse-x', `${x - rect.left}px`);
+        ref.current.style.setProperty('--mouse-y', `${y - rect.top}px`);
+      }
+      rafRef.current = null;
+    });
   }, []);
 
   return (
@@ -108,7 +116,7 @@ export default function HomeClient({
       <div className="
         grid gap-4
         grid-cols-1
-        sm:grid-cols-2 sm:auto-rows-[260px]
+        sm:grid-cols-2 sm:auto-rows-[minmax(240px,auto)]
         lg:grid-cols-4 lg:grid-rows-2 lg:auto-rows-[1fr] lg:h-[calc(100svh-8rem)]
       ">
 
@@ -119,8 +127,7 @@ export default function HomeClient({
           sm:col-span-2 sm:row-span-2
           lg:col-span-2 lg:row-span-2
         ">
-          {/* 배경 블롭 — magic-card > * 가 position:relative를 강제하므로 !important로 override */}
-          <div aria-hidden className="pointer-events-none !absolute inset-0 overflow-hidden rounded-3xl [z-index:0]">
+          <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl [z-index:0]">
             <div className="absolute -top-10 -left-10 w-64 h-64 rounded-full bg-primary/15 blur-3xl" />
             <div className="absolute bottom-0 right-0 w-48 h-48 rounded-full bg-secondary/10 blur-3xl" />
           </div>
@@ -153,7 +160,7 @@ export default function HomeClient({
         </MagicCard>
 
         {/* ── 2. 임팩트 카드 ── */}
-        <MagicCard className="flex flex-col justify-between p-6 group sm:col-span-1 lg:col-span-1 lg:row-span-1">
+        <MagicCard className="flex flex-col justify-between p-6 group min-h-[200px] sm:col-span-1 lg:col-span-1 lg:row-span-1">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-base-content/40">
             <Zap className="w-3.5 h-3.5 text-primary" />
             Impact
@@ -196,7 +203,7 @@ export default function HomeClient({
         <MagicCard
           onClick={() => toggle('portfolio')}
           isActive={activeSection === 'portfolio'}
-          className="flex flex-col justify-between p-6 sm:col-span-1 lg:col-span-1 lg:row-span-1"
+          className="flex flex-col justify-between p-6 min-h-[200px] sm:col-span-1 lg:col-span-1 lg:row-span-1"
         >
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-base-content/40">
             <Package className="w-3.5 h-3.5 text-primary" />
@@ -221,7 +228,7 @@ export default function HomeClient({
         {/* ── 4. Dev Log 카드 ── */}
         <MagicCard className="
           flex flex-col justify-between p-6 group
-          sm:col-span-2
+          min-h-[220px] sm:col-span-2
           lg:col-span-2 lg:row-span-1
         ">
           <div className="flex items-center">
