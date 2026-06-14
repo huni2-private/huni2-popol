@@ -12,24 +12,28 @@ const stats = [
     metric: '5×',
     title: '업로드 속도 향상',
     context: '글방 — Firestore 청크 5개 병렬 처리',
+    log_slug: 'geulbang-firestore-chunk-rewrite-2026-05',
   },
   {
     id: 'load-time',
     metric: '80%',
     title: '로딩 시간 단축',
     context: 'SK-hynix MAPS — 23만 건 5s → 1s',
+    log_slug: null,
   },
   {
     id: 'projects-shipped',
     metric: '6+',
     title: '실서비스 출시',
     context: 'TimeSlot · 챗봇 · 글방 · RoundWait · ImagineAX · hunipopol',
+    log_slug: null,
   },
   {
     id: 'zero-downtime',
     metric: '0',
     title: '다운타임 마이그레이션',
     context: 'RoundWait — Dual Write로 RTDB 무중단 전환',
+    log_slug: 'roundwait-firebase-migration-2026-05-06',
   },
 ];
 
