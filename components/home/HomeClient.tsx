@@ -108,7 +108,7 @@ export default function HomeClient({
       <div className="
         grid gap-4
         grid-cols-1
-        sm:grid-cols-2 sm:auto-rows-[220px]
+        sm:grid-cols-2 sm:auto-rows-[260px]
         lg:grid-cols-4 lg:grid-rows-2 lg:auto-rows-[1fr] lg:h-[calc(100svh-8rem)]
       ">
 
@@ -119,8 +119,8 @@ export default function HomeClient({
           sm:col-span-2 sm:row-span-2
           lg:col-span-2 lg:row-span-2
         ">
-          {/* 배경 블롭 */}
-          <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl -z-0">
+          {/* 배경 블롭 — magic-card > * 가 position:relative를 강제하므로 !important로 override */}
+          <div aria-hidden className="pointer-events-none !absolute inset-0 overflow-hidden rounded-3xl [z-index:0]">
             <div className="absolute -top-10 -left-10 w-64 h-64 rounded-full bg-primary/15 blur-3xl" />
             <div className="absolute bottom-0 right-0 w-48 h-48 rounded-full bg-secondary/10 blur-3xl" />
           </div>
