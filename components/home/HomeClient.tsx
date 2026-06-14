@@ -185,10 +185,10 @@ export default function HomeClient({
           </div>
 
           <Link
-            href="/about"
+            href="/impact"
             className="flex items-center gap-1 text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity"
           >
-            {lang === 'ko' ? '소개 보기' : 'About Me'} <ArrowRight className="w-3 h-3" />
+            {lang === 'ko' ? '전체 보기' : 'View All'} <ArrowRight className="w-3 h-3" />
           </Link>
         </MagicCard>
 
