@@ -1,23 +1,25 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Briefcase, Code, Layout, Server, Database } from 'lucide-react';
+import { Briefcase, Code, Layout, Server, Database, Zap } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
 
 const ICON_MAP: Record<string, React.ElementType> = {
   Layout, Server, Database, Code, Briefcase,
 };
 
-interface Bio     { title_ko?: string; title_en?: string; desc_ko?: string; desc_en?: string }
-interface Career  { year: string; title_ko?: string; title_en?: string; company: string; desc_ko?: string; desc_en?: string }
-interface Stack   { name_ko?: string; name_en?: string; icon?: string; items: string[] }
+interface Bio        { title_ko?: string; title_en?: string; desc_ko?: string; desc_en?: string }
+interface Career     { year: string; title_ko?: string; title_en?: string; company: string; desc_ko?: string; desc_en?: string }
+interface Stack      { name_ko?: string; name_en?: string; icon?: string; items: string[] }
+interface ImpactStat { id: string; metric: string; title: string; context: string }
 
 export default function AboutClient({
-  bio, career, stack,
+  bio, career, stack, impactStats = [],
 }: {
   bio: Bio;
   career: Career[];
   stack: Stack[];
+  impactStats?: ImpactStat[];
 }) {
   const { lang, t } = useI18n();
 
@@ -74,6 +76,35 @@ export default function AboutClient({
                   <p className="text-sm text-base-content/70 mt-2">
                     {lang === 'ko' ? item.desc_ko : item.desc_en}
                   </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Impact */}
+      {impactStats.length > 0 && (
+        <section className="space-y-8">
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <Zap className="w-6 h-6 text-primary" /> Impact
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {impactStats.map((stat, i) => (
+              <motion.div
+                key={stat.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="card bg-base-200 border border-base-content/5 hover:border-primary/20 transition-colors"
+              >
+                <div className="card-body p-6 gap-2">
+                  <p className="text-5xl font-black font-mono text-primary leading-none">{stat.metric}</p>
+                  <p className="font-bold">{stat.title}</p>
+                  {stat.context && (
+                    <p className="text-sm text-base-content/50 font-mono">{stat.context}</p>
+                  )}
                 </div>
               </motion.div>
             ))}
