@@ -13,6 +13,14 @@ interface Bio {
   desc_en?: string;
 }
 
+interface ImpactMetric {
+  value: string;
+  label_ko: string;
+  label_en: string;
+  desc_ko: string;
+  desc_en: string;
+}
+
 interface SlideConfig {
   id: number;
   tag: string;
@@ -58,7 +66,7 @@ const NAV_SLIDES: SlideConfig[] = [
 
 const INTERVAL = 5000;
 
-export default function HomeClient({ bio }: { bio: Bio }) {
+export default function HomeClient({ bio, impactMetrics }: { bio: Bio; impactMetrics: ImpactMetric[] }) {
   const { lang } = useI18n();
 
   const slides: SlideConfig[] = [
@@ -198,6 +206,31 @@ export default function HomeClient({ bio }: { bio: Bio }) {
           />
         )}
       </section>
+
+      {/* Impact Metrics */}
+      {impactMetrics.length > 0 && (
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {impactMetrics.map((metric, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.08 }}
+              className="card bg-base-200 border border-base-content/5 hover:border-primary/30 transition-colors"
+            >
+              <div className="card-body p-5 gap-1">
+                <span className="text-3xl font-black text-primary">{metric.value}</span>
+                <p className="font-bold text-sm leading-snug">
+                  {lang === 'ko' ? metric.label_ko : metric.label_en}
+                </p>
+                <p className="text-xs text-base-content/40 leading-relaxed">
+                  {lang === 'ko' ? metric.desc_ko : metric.desc_en}
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </section>
+      )}
 
       {/* Nav cards */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
