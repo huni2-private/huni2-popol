@@ -121,9 +121,8 @@ export default function HomeClient({
           lg:col-span-2 lg:row-span-2
         ">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-success/10 border border-success/20 text-success text-xs font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-              Available for Work
+            <div className="inline-flex items-center px-2.5 py-1 border border-success/50 text-success text-xs font-mono font-bold tracking-wider rounded">
+              {lang === 'ko' ? '구직 중' : 'Available for Work'}
             </div>
             <div className="flex flex-wrap gap-1.5">
               {['React', 'Next.js', 'TypeScript', 'Supabase', 'Tailwind CSS'].map(t => (
