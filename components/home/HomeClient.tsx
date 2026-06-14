@@ -1,9 +1,9 @@
 'use client';
 
 // 홈 벤토 그리드 — 뷰포트 한 화면 레이아웃 + 마우스 빛 반사 + 인라인 섹션 확장
-import { useRef, useCallback, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Calendar, Package, Zap, X, ChevronRight, Tag } from 'lucide-react';
+import { useRef, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { ArrowRight, Calendar, Package, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
 
@@ -94,7 +94,6 @@ export default function HomeClient({
   impactStats: ImpactStat[];
 }) {
   const { lang } = useI18n();
-  const [activeSection, setActiveSection] = useState<'portfolio' | null>(null);
 
   const title = lang === 'ko'
     ? (bio.title_ko || 'SK-하이닉스 MAPS, 23만 건 로딩을 5s→1s로. Next.js로 실서비스 6개를 만들고 운영합니다.')
@@ -106,10 +105,6 @@ export default function HomeClient({
 
   const latestLog = recentLogs[0] ?? null;
   const moreLogs = recentLogs.slice(1, 4);
-
-  const toggle = (section: 'portfolio') => {
-    setActiveSection(prev => prev === section ? null : section);
-  };
 
   return (
     <div className="space-y-4">
@@ -177,12 +172,19 @@ export default function HomeClient({
                   <p className="text-xs text-base-content/40 mt-0.5 font-mono">{impactStats[0].context}</p>
                 </div>
                 {impactStats.slice(1).length > 0 && (
-                  <div className="space-y-1.5 border-t border-base-content/5 pt-2">
+                  <div className="space-y-2 border-t border-base-content/5 pt-2">
                     {impactStats.slice(1).map(stat => (
-                      <div key={stat.id} className="flex items-center gap-2 text-xs text-base-content/40 truncate">
-                        <span className="w-1 h-1 rounded-full bg-base-content/20 shrink-0" />
-                        <span className="font-mono font-bold text-primary shrink-0">{stat.metric}</span>
-                        <span className="truncate">{stat.title}</span>
+                      <div key={stat.id} className="flex items-start gap-2 text-xs text-base-content/40">
+                        <span className="w-1 h-1 rounded-full bg-base-content/20 shrink-0 mt-1.5" />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1">
+                            <span className="font-mono font-bold text-primary shrink-0">{stat.metric}</span>
+                            <span className="truncate">{stat.title}</span>
+                          </div>
+                          {stat.context && (
+                            <p className="text-[10px] font-mono truncate opacity-50 mt-0.5">{stat.context}</p>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -200,11 +202,7 @@ export default function HomeClient({
         </MagicCard>
 
         {/* ── 3. 포트폴리오 카드 ── */}
-        <MagicCard
-          onClick={() => toggle('portfolio')}
-          isActive={activeSection === 'portfolio'}
-          className="flex flex-col justify-between p-6 min-h-[200px] sm:col-span-1 lg:col-span-1 lg:row-span-1"
-        >
+        <MagicCard className="flex flex-col justify-between p-6 group min-h-[200px] sm:col-span-1 lg:col-span-1 lg:row-span-1">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-base-content/40">
             <Package className="w-3.5 h-3.5 text-primary" />
             Portfolio
@@ -219,10 +217,12 @@ export default function HomeClient({
               {lang === 'ko' ? '실무부터 사이드까지' : 'Work to Side Projects'}
             </p>
           </div>
-          <div className="flex items-center gap-1 text-xs font-bold text-primary opacity-60">
-            {activeSection === 'portfolio' ? '접기' : (lang === 'ko' ? '보러가기' : 'View All')}
-            <ChevronRight className={`w-3 h-3 transition-transform ${activeSection === 'portfolio' ? 'rotate-90' : ''}`} />
-          </div>
+          <Link
+            href="/portfolio"
+            className="flex items-center gap-1 text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            {lang === 'ko' ? '전체 보기' : 'View All'} <ArrowRight className="w-3 h-3" />
+          </Link>
         </MagicCard>
 
         {/* ── 4. Dev Log 카드 ── */}
@@ -292,67 +292,6 @@ export default function HomeClient({
 
       </div>
 
-      {/* ── 인라인 확장 패널 ── */}
-      <AnimatePresence>
-        {activeSection === 'portfolio' && (
-          <motion.div
-            key="portfolio-panel"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden"
-          >
-            <div className="space-y-4 pt-2">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold flex items-center gap-2">
-                  <Package className="w-5 h-5 text-primary" />
-                  {lang === 'ko' ? '포트폴리오' : 'Portfolio'}
-                </h2>
-                <div className="flex gap-2">
-                  <Link href="/portfolio" className="btn btn-ghost btn-sm rounded-full gap-1">
-                    {lang === 'ko' ? '전체 보기' : 'View All'} <ArrowRight className="w-3 h-3" />
-                  </Link>
-                  <button onClick={() => setActiveSection(null)} className="btn btn-ghost btn-sm btn-circle">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-              {projects.length === 0 ? (
-                <p className="text-sm text-base-content/40 italic py-8 text-center">등록된 프로젝트가 없습니다.</p>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {projects.map(p => (
-                    <div key={p.id} className="card bg-base-200 border border-base-content/5 hover:border-primary/20 transition-all">
-                      <div className="card-body p-5 gap-3">
-                        <h3 className="font-bold">{p.title}</h3>
-                        {p.description && (
-                          <p className="text-xs text-base-content/60 line-clamp-2">{p.description}</p>
-                        )}
-                        {p.tags && p.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-auto pt-1 border-t border-base-content/5">
-                            {p.tags.map(tag => (
-                              <Link
-                                key={tag}
-                                href={`/log?tag=${encodeURIComponent(tag)}`}
-                                className="badge badge-xs badge-primary gap-1 hover:badge-secondary transition-colors"
-                                onClick={e => e.stopPropagation()}
-                              >
-                                <Tag className="w-2.5 h-2.5" /> {tag}
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-
-      </AnimatePresence>
     </div>
   );
 }
