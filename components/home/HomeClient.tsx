@@ -153,27 +153,43 @@ export default function HomeClient({
         </MagicCard>
 
         {/* ── 2. 임팩트 카드 ── */}
-        <MagicCard className="flex flex-col gap-4 p-6 sm:col-span-1 lg:col-span-1 lg:row-span-1">
+        <MagicCard className="flex flex-col justify-between p-6 group sm:col-span-1 lg:col-span-1 lg:row-span-1">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-base-content/40">
             <Zap className="w-3.5 h-3.5 text-primary" />
             Impact
           </div>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-5 flex-1">
-            {(impactStats.length > 0 ? impactStats : [
-              { id: '1', metric: '80%', title: '로딩 단축', context: '' },
-              { id: '2', metric: '5×', title: '업로드 향상', context: '' },
-              { id: '3', metric: '6+', title: '프로젝트', context: '' },
-              { id: '4', metric: '0', title: '다운타임', context: '' },
-            ]).slice(0, 4).map(stat => (
-              <div key={stat.id} className="flex flex-col gap-0.5 min-w-0">
-                <p className="text-2xl lg:text-3xl font-black font-mono text-primary leading-none">{stat.metric}</p>
-                <p className="text-[11px] font-bold text-base-content/70 leading-tight truncate">{stat.title}</p>
-                {stat.context && (
-                  <p className="text-[10px] text-base-content/35 font-mono leading-tight truncate hidden lg:block">{stat.context}</p>
+
+          <div className="flex-1 flex flex-col justify-center gap-2 my-2">
+            {impactStats[0] && (
+              <>
+                <div>
+                  <p className="text-5xl lg:text-6xl font-black font-mono text-primary leading-none">
+                    {impactStats[0].metric}
+                  </p>
+                  <p className="text-sm font-bold mt-2">{impactStats[0].title}</p>
+                  <p className="text-xs text-base-content/40 mt-0.5 font-mono">{impactStats[0].context}</p>
+                </div>
+                {impactStats.slice(1).length > 0 && (
+                  <div className="space-y-1.5 border-t border-base-content/5 pt-2">
+                    {impactStats.slice(1).map(stat => (
+                      <div key={stat.id} className="flex items-center gap-2 text-xs text-base-content/40 truncate">
+                        <span className="w-1 h-1 rounded-full bg-base-content/20 shrink-0" />
+                        <span className="font-mono font-bold text-primary shrink-0">{stat.metric}</span>
+                        <span className="truncate">{stat.title}</span>
+                      </div>
+                    ))}
+                  </div>
                 )}
-              </div>
-            ))}
+              </>
+            )}
           </div>
+
+          <Link
+            href="/about"
+            className="flex items-center gap-1 text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            {lang === 'ko' ? '소개 보기' : 'About Me'} <ArrowRight className="w-3 h-3" />
+          </Link>
         </MagicCard>
 
         {/* ── 3. 포트폴리오 카드 ── */}
