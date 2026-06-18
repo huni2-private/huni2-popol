@@ -95,7 +95,15 @@ export default function PortfolioClient({
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center opacity-20">No Image</div>
+                    <div className={`w-full h-full flex items-center justify-center ${
+                      project.type === 'company'
+                        ? 'bg-gradient-to-br from-secondary/20 to-secondary/5'
+                        : 'bg-gradient-to-br from-primary/20 to-primary/5'
+                    }`}>
+                      <span className="text-5xl font-black font-mono opacity-30 select-none">
+                        {project.title.slice(0, 2).toUpperCase()}
+                      </span>
+                    </div>
                   )}
                 </figure>
 
