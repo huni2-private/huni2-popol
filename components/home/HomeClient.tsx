@@ -128,11 +128,8 @@ export default function HomeClient({
             <div className="absolute bottom-0 right-0 w-48 h-48 rounded-full bg-secondary/10 blur-3xl" />
           </div>
           <div className="space-y-3 relative z-10">
-            <div className="inline-flex items-center px-2.5 py-1 border border-success/50 text-success text-xs font-mono font-bold tracking-wider rounded">
-              {lang === 'ko' ? '구직 중' : 'Available for Work'}
-            </div>
             <div className="flex flex-wrap gap-1.5">
-              {['React', 'Next.js', 'TypeScript', 'Supabase', 'Tailwind CSS'].map(t => (
+              {['Go', 'Next.js', 'TypeScript', 'Vue 3', 'Firebase', 'Tailwind CSS'].map(t => (
                 <span key={t} className="badge badge-sm badge-ghost font-mono opacity-60">{t}</span>
               ))}
             </div>
@@ -150,9 +147,22 @@ export default function HomeClient({
             </p>
           </div>
 
-          <Link href="/about" className="btn btn-primary rounded-full w-max gap-2 mt-2 relative z-10">
-            {lang === 'ko' ? '소개 보기' : 'About Me'} <ArrowRight className="w-4 h-4" />
-          </Link>
+          <div className="flex flex-wrap items-center gap-3 mt-2 relative z-10">
+            <div className="inline-flex items-center px-2.5 py-1 border border-success/50 text-success text-xs font-mono font-bold tracking-wider rounded">
+              {lang === 'ko' ? '구직 중' : 'Available for Work'}
+            </div>
+            <Link href="/about" className="btn btn-primary rounded-full gap-2">
+              {lang === 'ko' ? '소개 보기' : 'About Me'} <ArrowRight className="w-4 h-4" />
+            </Link>
+            <a
+              href="/files/resume.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-outline rounded-full gap-2"
+            >
+              {lang === 'ko' ? '이력서 PDF' : 'Resume PDF'}
+            </a>
+          </div>
         </MagicCard>
 
         {/* ── 2. 임팩트 카드 ── */}
@@ -226,15 +236,30 @@ export default function HomeClient({
             <Package className="w-3.5 h-3.5 text-primary" />
             Portfolio
           </div>
-          <div>
-            <p className="text-5xl lg:text-6xl font-black font-mono text-primary leading-none">
-              {projects.length > 0 ? projects.length : '–'}
-              <span className="text-lg font-bold ml-1">{lang === 'ko' ? '개' : ''}</span>
-            </p>
-            <p className="text-sm font-bold">{lang === 'ko' ? '프로젝트' : 'Projects'}</p>
-            <p className="text-xs text-base-content/40 mt-1">
-              {lang === 'ko' ? '실무부터 사이드까지' : 'Work to Side Projects'}
-            </p>
+          <div className="flex-1 flex flex-col justify-center gap-2 my-2">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-4xl font-black font-mono text-primary leading-none">
+                {projects.length > 0 ? projects.length : '–'}
+              </span>
+              <span className="text-sm font-bold text-base-content/50">
+                {lang === 'ko' ? '개 프로젝트' : 'Projects'}
+              </span>
+            </div>
+            {projects.length > 0 && (
+              <div className="space-y-1.5 border-t border-base-content/5 pt-2">
+                {projects.slice(0, 4).map(p => (
+                  <div key={p.id} className="flex items-center gap-2 text-xs">
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                      p.type === 'company' ? 'bg-secondary' : 'bg-primary'
+                    }`} />
+                    <span className="truncate font-medium text-base-content/70">{p.title}</span>
+                    {p.status === 'live' && (
+                      <span className="shrink-0 text-[9px] font-bold text-success ml-auto">LIVE</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           <Link
             href="/portfolio"
