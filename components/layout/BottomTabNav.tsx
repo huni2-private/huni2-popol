@@ -6,11 +6,11 @@ import { Home, User, Briefcase, BookOpen, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const tabs = [
-  { name: 'Home', path: '/', icon: Home },
-  { name: 'About', path: '/about', icon: User },
+  { name: 'Home',      path: '/',          icon: Home },
+  { name: 'About',     path: '/about',     icon: User },
   { name: 'Portfolio', path: '/portfolio', icon: Briefcase },
-  { name: 'Log', path: '/log', icon: BookOpen },
-  { name: 'Contact', path: '/contact', icon: Mail },
+  { name: 'Log',       path: '/log',       icon: BookOpen },
+  { name: 'Contact',   path: '/contact',   icon: Mail },
 ];
 
 export default function BottomTabNav() {
@@ -24,20 +24,22 @@ export default function BottomTabNav() {
           return (
             <Link key={tab.path} href={tab.path} className="relative flex flex-col items-center justify-center w-full h-full gap-1">
               <motion.div
-                whileTap={{ scale: 0.9 }}
-                className={`flex flex-col items-center justify-center transition-colors ${
-                  isActive ? 'text-primary' : 'text-base-content/50'
+                whileTap={{ scale: 0.88 }}
+                className={`flex flex-col items-center justify-center gap-1 transition-colors ${
+                  isActive ? 'text-primary' : 'text-base-content/40'
                 }`}
               >
-                <tab.icon className="w-6 h-6" />
-                <span className="text-[10px] font-medium">{tab.name}</span>
+                <tab.icon className="w-5 h-5" strokeWidth={isActive ? 2 : 1.5} />
+                <span className={`text-[10px] font-medium transition-all ${isActive ? 'opacity-100' : 'opacity-60'}`}>
+                  {tab.name}
+                </span>
               </motion.div>
-              
+
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute -top-[1px] w-12 h-[2px] bg-primary"
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  className="absolute bottom-1.5 w-6 h-1 rounded-full bg-primary"
+                  transition={{ type: 'spring', stiffness: 400, damping: 32 }}
                 />
               )}
             </Link>
