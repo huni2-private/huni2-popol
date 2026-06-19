@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sun, Moon, Terminal } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 
@@ -32,25 +32,29 @@ export default function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-base-100/80 backdrop-blur-md border-b border-base-content/10 hidden md:block">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl group">
-          <Terminal className="w-6 h-6 text-primary group-hover:rotate-12 transition-transform" />
-          <span>HUNI<sup className="text-primary text-xs">2</sup></span>
+    <header className="sticky top-0 z-50 w-full bg-base-100/80 backdrop-blur-md border-b border-base-content/5 hidden md:block">
+      <div className="container mx-auto px-4 h-14 flex items-center justify-between">
+        <Link href="/" className="font-black text-lg tracking-tight">
+          HUNI<sup className="text-primary text-[10px] align-super">2</sup>
         </Link>
 
-        <nav className="flex items-center gap-6">
+        <nav className="flex items-center gap-1">
           {navItems.map((item) => (
             <Link
               key={item.path}
               href={item.path}
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                pathname === item.path ? 'text-primary' : 'text-base-content/70'
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                pathname === item.path
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-base-content/60 hover:text-primary hover:bg-base-content/5'
               }`}
             >
               {item.name}
             </Link>
           ))}
+
+          {/* 구분선 */}
+          <div className="w-px h-4 bg-base-content/10 mx-2" />
 
           {/* Language Toggle */}
           <div className="flex bg-base-200 rounded-full p-0.5 text-xs font-bold">
@@ -74,7 +78,7 @@ export default function Header() {
             className="btn btn-ghost btn-circle btn-sm"
             aria-label="Toggle Theme"
           >
-            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
         </nav>
       </div>

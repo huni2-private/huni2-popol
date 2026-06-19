@@ -72,7 +72,7 @@ function MagicCard({
       whileHover={{ y: -3 }}
       transition={{ duration: 0.2 }}
       onClick={onClick}
-      className={`magic-card bg-base-200 rounded-3xl transition-colors ${
+      className={`magic-card bg-base-200 rounded-2xl transition-colors ${
         isActive
           ? 'border border-primary/50 ring-2 ring-primary/20'
           : 'border border-base-content/5 hover:border-primary/30'
@@ -139,7 +139,10 @@ export default function HomeClient({
             <p className="text-xs font-mono font-bold uppercase tracking-widest text-primary opacity-70">
               허창훈 · Frontend Developer
             </p>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-black leading-tight tracking-tight">
+            <h1
+              className="font-black leading-tight"
+              style={{ fontSize: 'clamp(1.6rem, 3.8vw, 2.8rem)', letterSpacing: '-0.03em' }}
+            >
               {title.replace('\n', ' ')}
             </h1>
             <p className="text-base-content/60 leading-relaxed text-sm md:text-base line-clamp-3">
@@ -176,7 +179,7 @@ export default function HomeClient({
             {impactStats[0] && (
               <>
                 <div>
-                  <p className="text-5xl lg:text-6xl font-black font-mono text-primary leading-none">
+                  <p className="text-5xl lg:text-6xl font-black font-mono text-primary leading-none tabular-nums tracking-tight">
                     {impactStats[0].metric}
                   </p>
                   <p className="text-sm font-bold mt-2">{impactStats[0].title}</p>
