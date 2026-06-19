@@ -21,8 +21,7 @@ export default function AboutClient({
 }) {
   const { lang, t } = useI18n();
 
-  const title = lang === 'ko' ? bio.title_ko : bio.title_en;
-  const desc  = lang === 'ko' ? bio.desc_ko  : bio.desc_en;
+  const desc = lang === 'ko' ? bio.desc_ko : bio.desc_en;
 
   return (
     <div className="max-w-4xl mx-auto space-y-20">
@@ -33,8 +32,17 @@ export default function AboutClient({
           animate={{ opacity: 1, x: 0 }}
           className="text-4xl font-bold"
         >
-          {title ?? 'Building for the'}{' '}
-          <span className="text-primary italic">Web</span>
+          {lang === 'ko' ? (
+            <>
+              {bio.title_ko ?? 'AI로 실서비스를 만드는'}{' '}
+              <span className="text-primary italic">개발자</span>
+            </>
+          ) : (
+            <>
+              {bio.title_en ?? 'AI-augmented developer shipping real products on the'}{' '}
+              <span className="text-primary italic">Web</span>
+            </>
+          )}
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, x: -20 }}
