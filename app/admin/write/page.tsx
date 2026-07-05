@@ -3,9 +3,10 @@
 import dynamic from 'next/dynamic';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Save, ArrowLeft, Loader2, Image as ImageIcon, Type, Tag, Eye, EyeOff, CalendarDays } from 'lucide-react';
+import { Save, ArrowLeft, Loader2, Image as ImageIcon, Type, Tag, Eye, EyeOff, CalendarDays, Check } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { AdminToast, useAdminToast } from '@/components/admin/AdminToast';
 
 const Editor = dynamic(() => import('@/components/admin/Editor'), {
   ssr: false,
@@ -38,11 +39,13 @@ function AdminWriteInner() {
   const [title, setTitle]       = useState('');
   const [content, setContent]   = useState('');
   const [category, setCategory] = useState<'log' | 'project' | 'note'>('log');
+  const [project, setProject]   = useState('');
   const [tags, setTags]         = useState('');
   const [published, setPublished] = useState(false);
   const [createdAt, setCreatedAt] = useState(() => new Date().toISOString().slice(0, 16));
-  const [loading, setLoading]   = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [initialLoad, setInitialLoad] = useState(false);
+  const { toast, showToast } = useAdminToast();
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get('id');
@@ -62,6 +65,7 @@ function AdminWriteInner() {
         setTitle(data.title);
         setContent(data.content);
         setCategory(data.category);
+        setProject(data.project ?? '');
         setTags((data.tags ?? []).join(', '));
         setPublished(data.published);
         setCreatedAt(new Date(data.created_at).toISOString().slice(0, 16));
@@ -73,34 +77,37 @@ function AdminWriteInner() {
 
   const handleSave = async () => {
     if (!title.trim() || !content.trim()) {
-      alert('제목과 내용을 입력해주세요.');
+      showToast('제목과 내용을 입력해주세요.', 'error');
       return;
     }
-    setLoading(true);
+    setSaveStatus('saving');
 
     const slug    = slugify(title) || `post-${Date.now()}`;
     const excerpt = extractExcerpt(content);
     const tagArr  = tags.split(',').map(t => t.trim()).filter(Boolean);
+    const projectVal = project.trim() || null;
 
     const created_at = new Date(createdAt).toISOString();
 
     if (editId) {
       const { error } = await supabase
         .from('logs')
-        .update({ title, slug, excerpt, content, category, tags: tagArr, published, created_at })
+        .update({ title, slug, excerpt, content, category, project: projectVal, tags: tagArr, published, created_at })
         .eq('id', editId);
 
-      if (error) { alert(`저장 실패: ${error.message}`); setLoading(false); return; }
+      if (error) { showToast(`저장 실패: ${error.message}`, 'error'); setSaveStatus('idle'); return; }
+      setSaveStatus('saved');
+      showToast('저장됨', 'success');
+      setTimeout(() => setSaveStatus('idle'), 2000);
     } else {
       const { error } = await supabase
         .from('logs')
-        .insert({ title, slug, excerpt, content, category, tags: tagArr, published, created_at });
+        .insert({ title, slug, excerpt, content, category, project: projectVal, tags: tagArr, published, created_at });
 
-      if (error) { alert(`저장 실패: ${error.message}`); setLoading(false); return; }
+      if (error) { showToast(`저장 실패: ${error.message}`, 'error'); setSaveStatus('idle'); return; }
+      router.push('/admin/logs');
+      router.refresh();
     }
-
-    router.push('/admin/logs');
-    router.refresh();
   };
 
   if (initialLoad) {
@@ -113,6 +120,7 @@ function AdminWriteInner() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-20">
+      <AdminToast toast={toast} />
       {/* Toolbar */}
       <div className="flex items-center justify-between border-b border-base-content/10 pb-6">
         <div className="flex items-center gap-4">
@@ -136,11 +144,17 @@ function AdminWriteInner() {
           </button>
           <button
             onClick={handleSave}
-            disabled={loading}
-            className="btn btn-primary px-8 rounded-full shadow-lg hover:shadow-primary/20 transition-all"
+            disabled={saveStatus !== 'idle'}
+            className={`btn px-8 rounded-full shadow-lg transition-all ${
+              saveStatus === 'saved'
+                ? 'btn-success shadow-success/20'
+                : 'btn-primary hover:shadow-primary/20'
+            }`}
           >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            저장
+            {saveStatus === 'saving' && <span className="loading loading-dots loading-sm" />}
+            {saveStatus === 'saved' && <Check className="w-4 h-4" />}
+            {saveStatus === 'idle' && <Save className="w-4 h-4" />}
+            {saveStatus === 'saving' ? '저장 중' : saveStatus === 'saved' ? '저장됨' : '저장'}
           </button>
         </div>
       </div>
@@ -184,18 +198,30 @@ function AdminWriteInner() {
               </div>
 
               <div className="form-control">
+                <label className="label"><span className="label-text font-bold">프로젝트</span></label>
+                <input
+                  type="text"
+                  placeholder="RoundWait, Timeslot, ..."
+                  className="input input-bordered input-sm w-full bg-base-100"
+                  value={project}
+                  onChange={e => setProject(e.target.value)}
+                />
+                <label className="label"><span className="label-text-alt opacity-40">없으면 비워두기</span></label>
+              </div>
+
+              <div className="form-control">
                 <label className="label"><span className="label-text font-bold">태그</span></label>
                 <div className="relative">
                   <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-30" />
                   <input
                     type="text"
-                    placeholder="Next.js, React, ..."
+                    placeholder="Firebase, BugFix, ..."
                     className="input input-bordered input-sm w-full pl-9 bg-base-100"
                     value={tags}
                     onChange={e => setTags(e.target.value)}
                   />
                 </div>
-                <label className="label"><span className="label-text-alt opacity-40">쉼표로 구분</span></label>
+                <label className="label"><span className="label-text-alt opacity-40">기술·유형만, 쉼표 구분</span></label>
               </div>
 
               <div className="form-control">

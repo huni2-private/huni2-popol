@@ -6,15 +6,21 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Plus, Pencil, Trash2, Save, X, Loader2, Zap } from 'lucide-react';
+import { AdminToast, useAdminToast } from '@/components/admin/AdminToast';
 
 interface ImpactStat {
   id: string;
+  project?: string;
   metric: string;
   title: string;
+  before?: string;
+  after?: string;
   context: string;
+  log_slug?: string;
 }
 
-const EMPTY: Omit<ImpactStat, 'id'> = { metric: '', title: '', context: '' };
+const PROJECTS = ['RoundWait', 'SalesPulse', 'Timeslot', 'Chatbot', '글방', 'ImagineAX', 'BLE미들웨어', 'hunipopol'];
+const EMPTY: Omit<ImpactStat, 'id'> = { project: '', metric: '', title: '', before: '', after: '', context: '', log_slug: '' };
 
 export default function AdminImpactPage() {
   const router = useRouter();
@@ -26,9 +32,7 @@ export default function AdminImpactPage() {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ ...EMPTY });
-  const [toast, setToast] = useState('');
-
-  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
+  const { toast, showToast } = useAdminToast();
 
   useEffect(() => {
     const init = async () => {
@@ -45,14 +49,14 @@ export default function AdminImpactPage() {
     setSaving(true);
     const { error } = await supabase.from('site_settings').upsert({ key: 'impact_stats', value: next });
     setSaving(false);
-    if (error) { showToast('저장 실패: ' + error.message); return false; }
+    if (error) { showToast('저장 실패: ' + error.message, 'error'); return false; }
     setStats(next);
     showToast('저장됨');
     return true;
   };
 
   const handleSave = async () => {
-    if (!form.metric.trim() || !form.title.trim()) { showToast('수치와 제목은 필수입니다.'); return; }
+    if (!form.metric.trim() || !form.title.trim()) { showToast('수치와 제목은 필수입니다.', 'error'); return; }
     const next = editId
       ? stats.map(s => s.id === editId ? { ...form, id: editId } : s)
       : [...stats, { ...form, id: Date.now().toString(36) }];
@@ -60,23 +64,23 @@ export default function AdminImpactPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('삭제하시겠습니까?')) return;
     await persist(stats.filter(s => s.id !== id));
+    showToast('삭제됨');
   };
 
   const openCreate = () => { setEditId(null); setForm({ ...EMPTY }); setOpen(true); };
-  const openEdit = (s: ImpactStat) => { setEditId(s.id); setForm({ metric: s.metric, title: s.title, context: s.context }); setOpen(true); };
+  const openEdit = (s: ImpactStat) => {
+    setEditId(s.id);
+    setForm({ project: s.project ?? '', metric: s.metric, title: s.title, before: s.before ?? '', after: s.after ?? '', context: s.context, log_slug: s.log_slug ?? '' });
+    setOpen(true);
+  };
   const field = (k: keyof typeof EMPTY) => (e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, [k]: e.target.value }));
 
   if (loading) return <div className="min-h-[60vh] flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-20">
-      {toast && (
-        <div className="toast toast-top toast-center z-50">
-          <div className="alert alert-success font-bold shadow-lg text-sm">{toast}</div>
-        </div>
-      )}
+      <AdminToast toast={toast} />
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -109,13 +113,25 @@ export default function AdminImpactPage() {
             <div key={stat.id} className="card bg-base-200 border border-base-content/5 hover:border-primary/20 transition-all">
               <div className="card-body p-6 gap-2">
                 <div className="flex items-start justify-between">
-                  <span className="text-4xl font-black font-mono text-warning leading-none">{stat.metric}</span>
+                  <div className="space-y-0.5">
+                    {stat.project && (
+                      <span className="badge badge-xs badge-outline font-bold mb-1">{stat.project}</span>
+                    )}
+                    <span className="block text-3xl font-black font-mono text-warning leading-none">{stat.metric}</span>
+                  </div>
                   <div className="flex gap-1 shrink-0 ml-2">
                     <button onClick={() => openEdit(stat)} className="btn btn-ghost btn-xs"><Pencil className="w-3 h-3" /></button>
                     <button onClick={() => handleDelete(stat.id)} className="btn btn-ghost btn-xs text-error"><Trash2 className="w-3 h-3" /></button>
                   </div>
                 </div>
                 <p className="font-bold text-sm">{stat.title}</p>
+                {(stat.before || stat.after) && (
+                  <div className="flex items-center gap-1 text-xs font-mono">
+                    {stat.before && <span className="opacity-40 line-through">{stat.before}</span>}
+                    {stat.before && stat.after && <span className="opacity-30">→</span>}
+                    {stat.after && <span className="text-success font-bold">{stat.after}</span>}
+                  </div>
+                )}
                 {stat.context && <p className="text-xs text-base-content/40 font-mono">{stat.context}</p>}
               </div>
             </div>
@@ -132,7 +148,7 @@ export default function AdminImpactPage() {
       {/* Modal */}
       {open && (
         <div className="modal modal-open">
-          <div className="modal-box max-w-md rounded-3xl">
+          <div className="modal-box max-w-lg rounded-3xl">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold">{editId ? '수치 편집' : '새 임팩트 수치'}</h3>
               <button onClick={() => setOpen(false)} className="btn btn-ghost btn-circle btn-sm"><X className="w-5 h-5" /></button>
@@ -141,29 +157,73 @@ export default function AdminImpactPage() {
             <div className="space-y-4">
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text font-bold">수치 *</span>
-                  <span className="label-text-alt opacity-40">예: 80%, 5s→1s, 95+</span>
+                  <span className="label-text font-bold">프로젝트</span>
+                  <span className="label-text-alt opacity-40">없으면 비워두기</span>
                 </label>
-                <input type="text" placeholder="80%" className="input input-bordered bg-base-200 font-mono font-bold text-xl" value={form.metric} onChange={field('metric')} />
+                <input
+                  type="text"
+                  list="projects-list"
+                  placeholder="RoundWait, Timeslot, ..."
+                  className="input input-bordered bg-base-200"
+                  value={form.project}
+                  onChange={field('project')}
+                />
+                <datalist id="projects-list">
+                  {PROJECTS.map(p => <option key={p} value={p} />)}
+                </datalist>
               </div>
 
-              <div className="form-control">
-                <label className="label"><span className="label-text font-bold">제목 *</span></label>
-                <input type="text" placeholder="로딩 속도 단축" className="input input-bordered bg-base-200" value={form.title} onChange={field('title')} />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-bold">수치 *</span>
+                    <span className="label-text-alt opacity-40">99.94%, 5×, 즉시</span>
+                  </label>
+                  <input type="text" placeholder="99.94%" className="input input-bordered bg-base-200 font-mono font-bold text-xl" value={form.metric} onChange={field('metric')} />
+                </div>
+                <div className="form-control">
+                  <label className="label"><span className="label-text font-bold">제목 *</span></label>
+                  <input type="text" placeholder="예약 성공률" className="input input-bordered bg-base-200" value={form.title} onChange={field('title')} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-bold">Before</span>
+                    <span className="label-text-alt opacity-40">변경 전</span>
+                  </label>
+                  <input type="text" placeholder="수동 전달 5~10분" className="input input-bordered input-sm bg-base-200" value={form.before} onChange={field('before')} />
+                </div>
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-bold">After</span>
+                    <span className="label-text-alt opacity-40">변경 후</span>
+                  </label>
+                  <input type="text" placeholder="자동 발송, 지연 0" className="input input-bordered input-sm bg-base-200 text-success" value={form.after} onChange={field('after')} />
+                </div>
               </div>
 
               <div className="form-control">
                 <label className="label">
                   <span className="label-text font-bold">컨텍스트</span>
-                  <span className="label-text-alt opacity-40">프로젝트명 · 상세 수치</span>
+                  <span className="label-text-alt opacity-40">상세 배경</span>
                 </label>
-                <input type="text" placeholder="SK-hynix MAPS 23만건 5s→1s" className="input input-bordered bg-base-200 font-mono text-sm" value={form.context} onChange={field('context')} />
+                <input type="text" placeholder="k6 Cloud Run 부하 테스트" className="input input-bordered bg-base-200 font-mono text-sm" value={form.context} onChange={field('context')} />
               </div>
 
-              <div className="bg-base-300 rounded-2xl p-4 space-y-1">
-                <p className="text-xs text-base-content/40 mb-2">미리보기</p>
+              <div className="bg-base-300 rounded-2xl p-4 space-y-1.5">
+                <p className="text-xs text-base-content/40 mb-1">미리보기</p>
+                {form.project && <span className="badge badge-xs badge-outline">{form.project}</span>}
                 <p className="text-3xl font-black font-mono text-warning">{form.metric || '–'}</p>
                 <p className="font-bold text-sm">{form.title || '제목'}</p>
+                {(form.before || form.after) && (
+                  <div className="flex items-center gap-1 text-xs font-mono">
+                    {form.before && <span className="opacity-40 line-through">{form.before}</span>}
+                    {form.before && form.after && <span className="opacity-30">→</span>}
+                    {form.after && <span className="text-success font-bold">{form.after}</span>}
+                  </div>
+                )}
                 {form.context && <p className="text-xs text-base-content/40 font-mono">{form.context}</p>}
               </div>
             </div>

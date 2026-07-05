@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import {
   Plus, Pencil, Trash2, ExternalLink, GitFork, FileText,
-  Loader2, X, GripVertical, Globe, Package, Upload, ImageIcon
+  Loader2, X, GripVertical, Globe, Package, Upload, ImageIcon, Check
 } from 'lucide-react';
+import { AdminToast, useAdminToast } from '@/components/admin/AdminToast';
 
 interface Project {
   id: string;
@@ -40,8 +41,10 @@ const TYPE_BADGE: Record<Project['type'], string> = {
 export default function AdminPortfolio() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading]   = useState(true);
-  const [saving, setSaving]     = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [deletingConfirm, setDeletingConfirm] = useState<string | null>(null);
+  const { toast, showToast } = useAdminToast();
 
   // Modal state
   const [open, setOpen]         = useState(false);
@@ -86,7 +89,7 @@ export default function AdminPortfolio() {
     const path = `${Date.now()}.${ext}`;
 
     const { error } = await supabase.storage.from('portfolio').upload(path, file, { upsert: true });
-    if (error) { alert('업로드 실패: ' + error.message); setUploading(false); return; }
+    if (error) { showToast('업로드 실패: ' + error.message, 'error'); setUploading(false); return; }
 
     const { data: { publicUrl } } = supabase.storage.from('portfolio').getPublicUrl(path);
     field('image_url', publicUrl);
@@ -95,8 +98,8 @@ export default function AdminPortfolio() {
   };
 
   const handleSave = async () => {
-    if (!form.title.trim()) { alert('제목을 입력하세요.'); return; }
-    setSaving(true);
+    if (!form.title.trim()) { showToast('제목을 입력하세요.', 'error'); return; }
+    setSaveStatus('saving');
 
     const payload = {
       ...form,
@@ -107,22 +110,24 @@ export default function AdminPortfolio() {
 
     if (editId) {
       const { error } = await supabase.from('projects').update(payload).eq('id', editId);
-      if (error) { alert(error.message); setSaving(false); return; }
+      if (error) { showToast(error.message, 'error'); setSaveStatus('idle'); return; }
     } else {
       const { error } = await supabase.from('projects').insert(payload);
-      if (error) { alert(error.message); setSaving(false); return; }
+      if (error) { showToast(error.message, 'error'); setSaveStatus('idle'); return; }
     }
 
-    setSaving(false);
-    setOpen(false);
-    fetchProjects();
+    setSaveStatus('saved');
+    showToast('저장됨', 'success');
+    setTimeout(() => { setSaveStatus('idle'); setOpen(false); fetchProjects(); }, 800);
   };
 
-  const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`"${title}" 프로젝트를 삭제하시겠습니까?`)) return;
+  const handleDelete = async (id: string) => {
     setDeleting(id);
-    await supabase.from('projects').delete().eq('id', id);
+    const { error } = await supabase.from('projects').delete().eq('id', id);
     setDeleting(null);
+    setDeletingConfirm(null);
+    if (error) { showToast('삭제 실패', 'error'); return; }
+    showToast('삭제됨', 'success');
     fetchProjects();
   };
 
@@ -139,6 +144,7 @@ export default function AdminPortfolio() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-20">
+      <AdminToast toast={toast} />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -230,16 +236,30 @@ export default function AdminPortfolio() {
                   <button onClick={() => openEdit(p)} className="btn btn-ghost btn-xs" title="편집">
                     <Pencil className="w-3 h-3" />
                   </button>
-                  <button
-                    onClick={() => handleDelete(p.id, p.title)}
-                    disabled={deleting === p.id}
-                    className="btn btn-ghost btn-xs text-error"
-                    title="삭제"
-                  >
-                    {deleting === p.id
-                      ? <Loader2 className="w-3 h-3 animate-spin" />
-                      : <Trash2 className="w-3 h-3" />}
-                  </button>
+                  {deletingConfirm === p.id ? (
+                    <div className="flex items-center gap-1 animate-in fade-in slide-in-from-right-2 duration-200">
+                      <button
+                        onClick={() => handleDelete(p.id)}
+                        disabled={deleting === p.id}
+                        className="btn btn-error btn-xs rounded-lg gap-1"
+                      >
+                        {deleting === p.id
+                          ? <span className="loading loading-dots loading-xs" />
+                          : <Trash2 className="w-3 h-3" />}
+                        삭제
+                      </button>
+                      <button onClick={() => setDeletingConfirm(null)} className="btn btn-ghost btn-xs rounded-lg">취소</button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setDeletingConfirm(p.id)}
+                      disabled={!!deleting}
+                      className="btn btn-ghost btn-xs text-error"
+                      title="삭제"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -430,11 +450,17 @@ export default function AdminPortfolio() {
               <button onClick={() => setOpen(false)} className="btn btn-ghost rounded-2xl">취소</button>
               <button
                 onClick={handleSave}
-                disabled={saving}
-                className="btn btn-primary rounded-2xl px-8 shadow-lg shadow-primary/20"
+                disabled={saveStatus !== 'idle'}
+                className={`btn rounded-2xl px-8 shadow-lg transition-all ${
+                  saveStatus === 'saved'
+                    ? 'btn-success shadow-success/20'
+                    : 'btn-primary shadow-primary/20'
+                }`}
               >
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                저장
+                {saveStatus === 'saving' && <span className="loading loading-dots loading-sm" />}
+                {saveStatus === 'saved' && <Check className="w-4 h-4" />}
+                {saveStatus === 'idle' && <Save className="w-4 h-4" />}
+                {saveStatus === 'saving' ? '저장 중' : saveStatus === 'saved' ? '저장됨' : '저장'}
               </button>
             </div>
           </div>
