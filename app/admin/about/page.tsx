@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Plus, Trash2, Save, Loader2, ChevronUp, ChevronDown } from 'lucide-react';
+import { AdminToast, useAdminToast } from '@/components/admin/AdminToast';
 
 interface Bio {
   title_ko: string; title_en: string;
@@ -35,7 +36,7 @@ export default function AdminAboutPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving,  setSaving]  = useState(false);
-  const [toast,   setToast]   = useState('');
+  const { toast, showToast } = useAdminToast();
 
   const [bio,    setBio]    = useState<Bio>({ title_ko: '', title_en: '', desc_ko: '', desc_en: '' });
   const [career, setCareer] = useState<Career[]>([]);
@@ -62,8 +63,6 @@ export default function AdminAboutPage() {
     init();
   }, []); // eslint-disable-line
 
-  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
-
   const save = async () => {
     setSaving(true);
     const ops = [
@@ -73,7 +72,7 @@ export default function AdminAboutPage() {
     ];
     const results = await Promise.all(ops);
     setSaving(false);
-    if (results.some(r => r.error)) { showToast('저장 실패'); return; }
+    if (results.some(r => r.error)) { showToast('저장 실패', 'error'); return; }
     showToast('저장됨');
   };
 
@@ -111,11 +110,7 @@ export default function AdminAboutPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-20">
-      {toast && (
-        <div className="toast toast-top toast-center z-50">
-          <div className="alert alert-success font-bold shadow-lg">{toast}</div>
-        </div>
-      )}
+      <AdminToast toast={toast} />
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

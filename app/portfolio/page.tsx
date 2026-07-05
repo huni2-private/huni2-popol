@@ -4,10 +4,17 @@ import PortfolioClient from '@/components/portfolio/PortfolioClient';
 export default async function PortfolioPage() {
   const supabase = await createClient();
   
-  const [{ data: projects }, { data: impactData }] = await Promise.all([
+  const [{ data: projects }, { data: impactData }, { data: logRows }] = await Promise.all([
     supabase.from('projects').select('*').order('created_at', { ascending: false }),
     supabase.from('site_settings').select('value').eq('key', 'impact_stats').single(),
+    supabase.from('logs').select('project').eq('published', true),
   ]);
+
+  // 프로젝트명별 로그 카운트
+  const logCounts: Record<string, number> = {};
+  for (const row of (logRows ?? [])) {
+    if (row.project) logCounts[row.project] = (logCounts[row.project] ?? 0) + 1;
+  }
 
   return (
     <div className="space-y-12 animate-in fade-in duration-1000">
@@ -19,6 +26,7 @@ export default async function PortfolioPage() {
       <PortfolioClient
         initialProjects={projects ?? []}
         impactStats={Array.isArray(impactData?.value) ? impactData.value : []}
+        logCounts={logCounts}
       />
     </div>
   );

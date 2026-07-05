@@ -7,6 +7,7 @@ import {
   Calendar, FileText, Search
 } from 'lucide-react';
 import Link from 'next/link';
+import { AdminToast, useAdminToast } from '@/components/admin/AdminToast';
 
 interface Log {
   id: string;
@@ -14,6 +15,7 @@ interface Log {
   slug: string;
   excerpt: string;
   tags: string[];
+  project: string | null;
   category: string;
   published: boolean;
   created_at: string;
@@ -32,12 +34,14 @@ export default function AdminLogs() {
   const [search, setSearch]     = useState('');
   const [toggling, setToggling] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [deletingConfirm, setDeletingConfirm] = useState<string | null>(null);
+  const { toast, showToast } = useAdminToast();
   const supabase = createClient();
 
   const fetchLogs = async () => {
     const { data } = await supabase
       .from('logs')
-      .select('id, title, slug, excerpt, tags, category, published, created_at, updated_at')
+      .select('id, title, slug, excerpt, tags, project, category, published, created_at, updated_at')
       .order('created_at', { ascending: false });
     setLogs(data ?? []);
     setLoading(false);
@@ -47,20 +51,24 @@ export default function AdminLogs() {
 
   const togglePublish = async (log: Log) => {
     setToggling(log.id);
-    await supabase
+    const { error } = await supabase
       .from('logs')
       .update({ published: !log.published })
       .eq('id', log.id);
-    setLogs(prev => prev.map(l => l.id === log.id ? { ...l, published: !l.published } : l));
     setToggling(null);
+    if (error) { showToast('전환 실패', 'error'); return; }
+    setLogs(prev => prev.map(l => l.id === log.id ? { ...l, published: !l.published } : l));
+    showToast(log.published ? '비공개로 전환됨' : '공개됨', 'success');
   };
 
-  const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`"${title}" 포스트를 삭제하시겠습니까?`)) return;
+  const handleDelete = async (id: string) => {
     setDeleting(id);
-    await supabase.from('logs').delete().eq('id', id);
-    setLogs(prev => prev.filter(l => l.id !== id));
+    const { error } = await supabase.from('logs').delete().eq('id', id);
     setDeleting(null);
+    setDeletingConfirm(null);
+    if (error) { showToast('삭제 실패', 'error'); return; }
+    setLogs(prev => prev.filter(l => l.id !== id));
+    showToast('삭제됨', 'success');
   };
 
   const filtered = logs.filter(l =>
@@ -81,6 +89,7 @@ export default function AdminLogs() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-20">
+      <AdminToast toast={toast} />
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
@@ -142,6 +151,9 @@ export default function AdminLogs() {
                     <span className={`badge badge-xs font-bold ${CATEGORY_BADGE[log.category] ?? 'badge-ghost'}`}>
                       {log.category}
                     </span>
+                    {log.project && (
+                      <span className="badge badge-xs badge-outline font-bold">{log.project}</span>
+                    )}
                     {!log.published && (
                       <span className="badge badge-xs badge-ghost opacity-50">초안</span>
                     )}
@@ -187,16 +199,35 @@ export default function AdminLogs() {
                   </Link>
 
                   {/* Delete */}
-                  <button
-                    onClick={() => handleDelete(log.id, log.title)}
-                    disabled={deleting === log.id}
-                    className="btn btn-ghost btn-sm btn-square rounded-xl text-error"
-                    title="삭제"
-                  >
-                    {deleting === log.id
-                      ? <Loader2 className="w-4 h-4 animate-spin" />
-                      : <Trash2 className="w-4 h-4" />}
-                  </button>
+                  {deletingConfirm === log.id ? (
+                    <div className="flex items-center gap-1 animate-in fade-in slide-in-from-right-2 duration-200">
+                      <button
+                        onClick={() => handleDelete(log.id)}
+                        disabled={deleting === log.id}
+                        className="btn btn-error btn-xs rounded-xl gap-1"
+                      >
+                        {deleting === log.id
+                          ? <span className="loading loading-dots loading-xs" />
+                          : <Trash2 className="w-3 h-3" />}
+                        삭제
+                      </button>
+                      <button
+                        onClick={() => setDeletingConfirm(null)}
+                        className="btn btn-ghost btn-xs rounded-xl"
+                      >
+                        취소
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setDeletingConfirm(log.id)}
+                      disabled={!!deleting}
+                      className="btn btn-ghost btn-sm btn-square rounded-xl text-error"
+                      title="삭제"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
