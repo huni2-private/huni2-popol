@@ -1,14 +1,22 @@
 'use client';
 
 // 이력서 인쇄 전용 클라이언트 — window.print() 트리거 + @media print 레이아웃
-import { Printer, ExternalLink } from 'lucide-react';
+import { Printer } from 'lucide-react';
 
-interface Bio      { title_ko?: string; title_en?: string; desc_ko?: string; desc_en?: string; }
+interface Bio      { title_ko?: string; desc_ko?: string; }
 interface Career   { year: string; company: string; title_ko: string; desc_ko: string; }
 interface Stack    { name_ko: string; items: string[]; }
-interface Impact   { id: string; metric: string; title: string; context: string; }
+interface Impact   { id: string; project?: string; metric: string; title: string; before?: string; after?: string; context: string; }
 interface Project  { id: string; title: string; description?: string; tags?: string[]; type?: string; status?: string; }
 interface Contact  { email?: string; github?: string; linkedin?: string; }
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-700 border-b border-slate-200 pb-1.5 mb-3">
+      {children}
+    </h2>
+  );
+}
 
 export default function ResumePrintClient({
   bio, career, stack, impactStats, projects, contact,
@@ -20,66 +28,34 @@ export default function ResumePrintClient({
   projects: Project[];
   contact: Contact;
 }) {
-  const name    = '허창훈';
-  const title   = '프론트엔드 개발자';
-  const desc    = bio.desc_ko || 'SK-hynix MAPS에서 23만 건 데이터 로딩을 5s → 1s로 단축했습니다. React · Next.js로 실서비스를 만들고, 채팅 위젯까지 직접 구현한 실행력 있는 프론트엔드 개발자입니다.';
+  const name = '허창훈';
+  const role = bio.title_ko || '프론트엔드 개발자';
+  const desc = bio.desc_ko || 'React · Next.js로 실서비스를 운영하며 성능 개선과 안정성 확보에 집중해온 개발자입니다.';
+  const featuredImpact = impactStats.slice(0, 6);
 
   return (
     <>
       <style>{`
         @media print {
           .no-print { display: none !important; }
-
-          /* DaisyUI CSS 변수를 인쇄용 흰색 테마로 덮어씀 */
           *, *::before, *::after {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          :root, html, [data-theme] {
-            --color-base-100: #ffffff !important;
-            --color-base-200: #f8fafc !important;
-            --color-base-300: #f1f5f9 !important;
-            --color-base-content: #0f172a !important;
-            --color-primary: #2563eb !important;
-            --b1: #ffffff !important;
-            --b2: #f8fafc !important;
-            --b3: #f1f5f9 !important;
-            --bc: #0f172a !important;
-            --p: #2563eb !important;
-          }
-          body, html {
-            background: #ffffff !important;
-            color: #0f172a !important;
-          }
-          .resume-page {
-            padding: 0 !important;
-            max-width: none !important;
-            margin: 0 !important;
-          }
-          .resume-card {
-            border: 1px solid #e2e8f0 !important;
-            background: #f8fafc !important;
-            break-inside: avoid;
-            page-break-inside: avoid;
-          }
-          .resume-section {
-            break-inside: avoid;
-            page-break-inside: avoid;
-          }
-          @page {
-            size: A4;
-            margin: 12mm 20mm;
-          }
+          body, html { background: #fff !important; }
+          .resume-root { padding: 0 !important; max-width: none !important; margin: 0 !important; }
+          .avoid-break { break-inside: avoid; page-break-inside: avoid; }
+          @page { size: A4; margin: 14mm 20mm; }
         }
       `}</style>
 
-      {/* 인쇄 버튼 */}
-      <div className="no-print sticky top-0 z-50 bg-base-100/90 backdrop-blur border-b border-base-content/5 px-6 py-3 flex items-center justify-between gap-4">
-        <p className="text-sm text-base-content/50 font-mono hidden sm:block">이력서 미리보기</p>
+      {/* ── 툴바 ── */}
+      <div className="no-print sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-200 px-6 py-3 flex items-center justify-between gap-4">
+        <span className="text-sm text-slate-400 font-mono hidden sm:block">이력서 미리보기</span>
         <div className="flex items-center gap-3 ml-auto">
-          <p className="text-xs text-base-content/40 font-mono text-right leading-tight">
-            PDF 저장 전 인쇄 설정에서<br />
-            <span className="text-warning font-bold">머리글 및 바닥글 해제</span> 권장
+          <p className="text-xs text-slate-400 font-mono text-right leading-snug">
+            PDF 저장 시 인쇄 설정에서<br />
+            <span className="text-amber-500 font-bold">머리글 및 바닥글 해제</span> 권장
           </p>
           <button
             onClick={() => window.print()}
@@ -90,47 +66,47 @@ export default function ResumePrintClient({
         </div>
       </div>
 
-      <div className="resume-page max-w-[800px] mx-auto px-8 py-10 space-y-8">
+      {/* ── 이력서 본문 ── */}
+      <div className="resume-root max-w-[780px] mx-auto px-10 py-10 space-y-7 text-slate-800">
 
         {/* ── 헤더 ── */}
-        <header className="resume-section border-b border-base-content/10 pb-6">
-          <h1 className="text-4xl font-black tracking-tight">{name}</h1>
-          <p className="text-lg font-semibold text-primary mt-1">{title} · 1년차</p>
-          <div className="flex flex-wrap gap-4 mt-3 text-sm text-base-content/60 font-mono">
-            {contact.email  && <span>{contact.email}</span>}
-            {contact.github && (
-              <a href={contact.github} className="flex items-center gap-1 hover:text-primary transition-colors">
-                GitHub <ExternalLink className="w-3 h-3 no-print" />
-              </a>
-            )}
-            {contact.linkedin && (
-              <a href={contact.linkedin} className="flex items-center gap-1 hover:text-primary transition-colors">
-                LinkedIn <ExternalLink className="w-3 h-3 no-print" />
-              </a>
-            )}
-            <a href="https://huni2-popol.vercel.app" className="flex items-center gap-1 hover:text-primary transition-colors">
-              Portfolio <ExternalLink className="w-3 h-3 no-print" />
-            </a>
+        <header className="avoid-break flex items-start justify-between gap-6 pb-5 border-b-2 border-slate-900">
+          <div>
+            <h1 className="text-[38px] font-black tracking-tight leading-none text-slate-900">{name}</h1>
+            <p className="text-[15px] font-semibold text-blue-700 mt-2">{role}</p>
+          </div>
+          <div className="text-right text-[12px] text-slate-500 font-mono space-y-1 shrink-0 pt-1">
+            {contact.email    && <p>{contact.email}</p>}
+            {contact.github   && <a href={contact.github}   className="block hover:text-blue-700 transition-colors">{contact.github.replace('https://', '')}</a>}
+            {contact.linkedin && <a href={contact.linkedin} className="block hover:text-blue-700 transition-colors">{contact.linkedin.replace('https://', '')}</a>}
+            <a href="https://huni2-popol.vercel.app" className="block hover:text-blue-700 transition-colors">huni2-popol.vercel.app</a>
           </div>
         </header>
 
         {/* ── 소개 ── */}
-        <section className="resume-section space-y-2">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-primary/70">About</h2>
-          <p className="text-sm leading-relaxed text-base-content/80">{desc}</p>
+        <section className="avoid-break">
+          <SectionTitle>About</SectionTitle>
+          <p className="text-[13px] leading-relaxed text-slate-600">{desc}</p>
         </section>
 
         {/* ── Impact ── */}
-        {impactStats.length > 0 && (
-          <section className="resume-section space-y-3">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-primary/70">Impact</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {impactStats.map(stat => (
-                <div key={stat.id} className="resume-card rounded-xl border border-base-content/10 bg-base-200 p-4">
-                  <p className="text-2xl font-black font-mono text-primary leading-none">{stat.metric}</p>
-                  <p className="text-xs font-bold mt-1">{stat.title}</p>
-                  {stat.context && (
-                    <p className="text-[10px] text-base-content/50 font-mono mt-0.5">{stat.context}</p>
+        {featuredImpact.length > 0 && (
+          <section className="avoid-break">
+            <SectionTitle>Impact</SectionTitle>
+            <div className="grid grid-cols-3 gap-2.5">
+              {featuredImpact.map(s => (
+                <div key={s.id} className="avoid-break border border-slate-200 rounded-lg p-3 bg-slate-50">
+                  <span className="text-[22px] font-black font-mono text-blue-700 leading-none block">{s.metric}</span>
+                  <span className="text-[11px] font-bold text-slate-700 block mt-1 leading-tight">{s.title}</span>
+                  {(s.before || s.after) && (
+                    <span className="text-[10px] font-mono text-slate-400 block mt-0.5">
+                      {s.before && <span className="line-through">{s.before}</span>}
+                      {s.before && s.after && ' → '}
+                      {s.after && <span className="text-emerald-600 font-semibold">{s.after}</span>}
+                    </span>
+                  )}
+                  {s.context && !s.before && (
+                    <span className="text-[10px] font-mono text-slate-400 block mt-0.5 leading-tight">{s.context}</span>
                   )}
                 </div>
               ))}
@@ -138,21 +114,19 @@ export default function ResumePrintClient({
           </section>
         )}
 
-        {/* ── 커리어 ── */}
+        {/* ── 경력 ── */}
         {career.length > 0 && (
-          <section className="resume-section space-y-3">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-primary/70">Experience</h2>
+          <section className="avoid-break">
+            <SectionTitle>Experience</SectionTitle>
             <div className="space-y-4">
               {career.map((c, i) => (
-                <div key={i} className="flex gap-4">
-                  <div className="w-28 shrink-0">
-                    <p className="text-xs font-mono text-base-content/50 mt-0.5">{c.year}</p>
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-bold text-sm">{c.title_ko}</p>
-                    <p className="text-xs text-primary font-semibold">{c.company}</p>
+                <div key={i} className="avoid-break grid gap-x-4" style={{ gridTemplateColumns: '110px 1fr' }}>
+                  <p className="text-[11px] font-mono text-slate-400 mt-0.5 leading-snug">{c.year}</p>
+                  <div>
+                    <p className="text-[13px] font-bold text-slate-900">{c.title_ko}</p>
+                    <p className="text-[11px] font-semibold text-blue-700">{c.company}</p>
                     {c.desc_ko && (
-                      <p className="text-xs text-base-content/60 mt-1 leading-relaxed">{c.desc_ko}</p>
+                      <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">{c.desc_ko}</p>
                     )}
                   </div>
                 </div>
@@ -163,33 +137,25 @@ export default function ResumePrintClient({
 
         {/* ── 프로젝트 ── */}
         {projects.length > 0 && (
-          <section className="resume-section space-y-3">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-primary/70">Projects</h2>
-            <div className="space-y-4">
+          <section className="avoid-break">
+            <SectionTitle>Projects</SectionTitle>
+            <div className="space-y-3">
               {projects.map(p => (
-                <div key={p.id} className="resume-card rounded-xl border border-base-content/10 bg-base-200 p-4">
+                <div key={p.id} className="avoid-break">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-bold text-sm">{p.title}</p>
-                    {p.status && (
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-success/10 text-success border border-success/20">
-                        {p.status}
-                      </span>
+                    <span className="text-[13px] font-bold text-slate-900">{p.title}</span>
+                    {p.status === 'live' && (
+                      <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded uppercase tracking-wide">live</span>
                     )}
                     {p.type && (
-                      <span className="text-[10px] font-mono text-base-content/40">{p.type}</span>
+                      <span className="text-[9px] font-mono text-slate-400 uppercase tracking-wide">{p.type}</span>
                     )}
+                    {p.tags?.slice(0, 5).map(tag => (
+                      <span key={tag} className="text-[10px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">{tag}</span>
+                    ))}
                   </div>
                   {p.description && (
-                    <p className="text-xs text-base-content/60 mt-1 leading-relaxed">{p.description}</p>
-                  )}
-                  {p.tags && p.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {p.tags.map(tag => (
-                        <span key={tag} className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-base-content/5 border border-base-content/10">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+                    <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{p.description}</p>
                   )}
                 </div>
               ))}
@@ -199,15 +165,15 @@ export default function ResumePrintClient({
 
         {/* ── 기술 스택 ── */}
         {stack.length > 0 && (
-          <section className="resume-section space-y-3">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-primary/70">Skills</h2>
+          <section className="avoid-break">
+            <SectionTitle>Skills</SectionTitle>
             <div className="space-y-2">
               {stack.map((s, i) => (
-                <div key={i} className="flex gap-3 text-sm">
-                  <span className="w-24 shrink-0 text-xs font-bold text-base-content/50 pt-0.5">{s.name_ko}</span>
+                <div key={i} className="grid items-start gap-x-4" style={{ gridTemplateColumns: '110px 1fr' }}>
+                  <span className="text-[11px] font-bold text-slate-500 pt-0.5">{s.name_ko}</span>
                   <div className="flex flex-wrap gap-1.5">
                     {s.items.map(item => (
-                      <span key={item} className="text-xs font-mono px-2 py-0.5 rounded bg-base-content/5 border border-base-content/10">
+                      <span key={item} className="text-[11px] font-mono text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
                         {item}
                       </span>
                     ))}
