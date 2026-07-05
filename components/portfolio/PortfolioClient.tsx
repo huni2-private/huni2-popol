@@ -8,6 +8,54 @@ import { ExternalLink, FileText, Tag, ArrowRight, Zap, BookOpen } from 'lucide-r
 import { Github } from '@/components/icons/SocialIcons';
 import { useState, useMemo } from 'react';
 
+// 프로젝트 제목에서 일관된 색상 인덱스를 뽑아 카드마다 개성 있는 썸네일을 생성
+const THUMB_PALETTES = [
+  { from: 'from-sky-500/25',     to: 'to-indigo-500/10',   blob1: 'bg-sky-400',     blob2: 'bg-indigo-400'   },
+  { from: 'from-violet-500/25',  to: 'to-fuchsia-500/10',  blob1: 'bg-violet-400',  blob2: 'bg-fuchsia-400'  },
+  { from: 'from-emerald-500/25', to: 'to-teal-500/10',     blob1: 'bg-emerald-400', blob2: 'bg-teal-400'     },
+  { from: 'from-amber-500/25',   to: 'to-orange-500/10',   blob1: 'bg-amber-400',   blob2: 'bg-orange-400'   },
+  { from: 'from-rose-500/25',    to: 'to-pink-500/10',     blob1: 'bg-rose-400',    blob2: 'bg-pink-400'     },
+  { from: 'from-cyan-500/25',    to: 'to-blue-500/10',     blob1: 'bg-cyan-400',    blob2: 'bg-blue-400'     },
+  { from: 'from-lime-500/25',    to: 'to-green-500/10',    blob1: 'bg-lime-400',    blob2: 'bg-green-400'    },
+  { from: 'from-red-500/25',     to: 'to-rose-500/10',     blob1: 'bg-red-400',     blob2: 'bg-rose-400'     },
+] as const;
+
+function hashTitle(s: string) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h % THUMB_PALETTES.length;
+}
+
+function ProjectThumbnail({ title, type }: { title: string; type: 'personal' | 'company' }) {
+  const p = THUMB_PALETTES[hashTitle(title)];
+  const initials = title.replace(/[^A-Za-z가-힣]/g, '').slice(0, 2).toUpperCase() || title.slice(0, 2).toUpperCase();
+  return (
+    <div className={`relative w-full h-full flex items-end justify-between overflow-hidden bg-gradient-to-br ${p.from} via-base-300 ${p.to}`}>
+      {/* 도트 그리드 */}
+      <div
+        className="absolute inset-0 opacity-[0.07]"
+        style={{ backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)', backgroundSize: '18px 18px' }}
+      />
+      {/* 블러 서클 */}
+      <div className={`absolute -top-10 -right-10 w-36 h-36 rounded-full blur-3xl opacity-40 ${p.blob1}`} />
+      <div className={`absolute -bottom-10 -left-10 w-28 h-28 rounded-full blur-3xl opacity-30 ${p.blob2}`} />
+      {/* 이니셜 — 배경 텍스처 역할 */}
+      <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[96px] font-black font-mono leading-none select-none opacity-[0.07] pointer-events-none">
+        {initials}
+      </span>
+      {/* 하단 레이블 */}
+      <div className="relative z-10 p-4 space-y-0.5">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-40 font-mono">{type}</p>
+        <p className="text-lg font-black leading-tight opacity-70">{title}</p>
+      </div>
+      {/* 우측 하단 이니셜 배지 */}
+      <div className={`relative z-10 m-4 w-9 h-9 rounded-xl flex items-center justify-center text-xs font-black font-mono opacity-60 ${p.blob1} text-base-100`}>
+        {initials}
+      </div>
+    </div>
+  );
+}
+
 interface Project {
   id: number;
   title: string;
@@ -114,15 +162,7 @@ export default function PortfolioClient({
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                   ) : (
-                    <div className={`w-full h-full flex items-center justify-center ${
-                      project.type === 'company'
-                        ? 'bg-gradient-to-br from-secondary/20 to-secondary/5'
-                        : 'bg-gradient-to-br from-primary/20 to-primary/5'
-                    }`}>
-                      <span className="text-5xl font-black font-mono opacity-30 select-none">
-                        {project.title.slice(0, 2).toUpperCase()}
-                      </span>
-                    </div>
+                    <ProjectThumbnail title={project.title} type={project.type} />
                   )}
                 </figure>
 
