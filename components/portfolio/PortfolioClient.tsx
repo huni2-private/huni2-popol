@@ -10,14 +10,14 @@ import { useState, useMemo } from 'react';
 
 // 프로젝트 제목에서 일관된 색상 인덱스를 뽑아 카드마다 개성 있는 썸네일을 생성
 const THUMB_PALETTES = [
-  { from: 'from-sky-500/25',     to: 'to-indigo-500/10',   blob1: 'bg-sky-400',     blob2: 'bg-indigo-400'   },
-  { from: 'from-violet-500/25',  to: 'to-fuchsia-500/10',  blob1: 'bg-violet-400',  blob2: 'bg-fuchsia-400'  },
-  { from: 'from-emerald-500/25', to: 'to-teal-500/10',     blob1: 'bg-emerald-400', blob2: 'bg-teal-400'     },
-  { from: 'from-amber-500/25',   to: 'to-orange-500/10',   blob1: 'bg-amber-400',   blob2: 'bg-orange-400'   },
-  { from: 'from-rose-500/25',    to: 'to-pink-500/10',     blob1: 'bg-rose-400',    blob2: 'bg-pink-400'     },
-  { from: 'from-cyan-500/25',    to: 'to-blue-500/10',     blob1: 'bg-cyan-400',    blob2: 'bg-blue-400'     },
-  { from: 'from-lime-500/25',    to: 'to-green-500/10',    blob1: 'bg-lime-400',    blob2: 'bg-green-400'    },
-  { from: 'from-red-500/25',     to: 'to-rose-500/10',     blob1: 'bg-red-400',     blob2: 'bg-rose-400'     },
+  { grad: 'from-sky-500/55 to-indigo-600/30',    blob1: 'bg-sky-400',     blob2: 'bg-indigo-500',   bar: 'bg-sky-400'     },
+  { grad: 'from-violet-500/55 to-fuchsia-600/30', blob1: 'bg-violet-400',  blob2: 'bg-fuchsia-500',  bar: 'bg-violet-400'  },
+  { grad: 'from-emerald-500/55 to-teal-600/30',   blob1: 'bg-emerald-400', blob2: 'bg-teal-500',     bar: 'bg-emerald-400' },
+  { grad: 'from-amber-500/55 to-orange-600/30',   blob1: 'bg-amber-400',   blob2: 'bg-orange-500',   bar: 'bg-amber-400'   },
+  { grad: 'from-rose-500/55 to-pink-600/30',      blob1: 'bg-rose-400',    blob2: 'bg-pink-500',     bar: 'bg-rose-400'    },
+  { grad: 'from-cyan-500/55 to-blue-600/30',      blob1: 'bg-cyan-400',    blob2: 'bg-blue-500',     bar: 'bg-cyan-400'    },
+  { grad: 'from-lime-500/55 to-green-600/30',     blob1: 'bg-lime-400',    blob2: 'bg-green-500',    bar: 'bg-lime-400'    },
+  { grad: 'from-red-500/55 to-rose-600/30',       blob1: 'bg-red-400',     blob2: 'bg-rose-500',     bar: 'bg-red-400'     },
 ] as const;
 
 function hashTitle(s: string) {
@@ -30,27 +30,33 @@ function ProjectThumbnail({ title, type }: { title: string; type: 'personal' | '
   const p = THUMB_PALETTES[hashTitle(title)];
   const initials = title.replace(/[^A-Za-z가-힣]/g, '').slice(0, 2).toUpperCase() || title.slice(0, 2).toUpperCase();
   return (
-    <div className={`relative w-full h-full flex items-end justify-between overflow-hidden bg-gradient-to-br ${p.from} via-base-300 ${p.to}`}>
+    <div className="relative w-full h-full overflow-hidden bg-base-300">
+      {/* 컬러 그라디언트 오버레이 */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${p.grad}`} />
       {/* 도트 그리드 */}
       <div
-        className="absolute inset-0 opacity-[0.07]"
-        style={{ backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)', backgroundSize: '18px 18px' }}
+        className="absolute inset-0 opacity-[0.09]"
+        style={{ backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)', backgroundSize: '16px 16px' }}
       />
       {/* 블러 서클 */}
-      <div className={`absolute -top-10 -right-10 w-36 h-36 rounded-full blur-3xl opacity-40 ${p.blob1}`} />
-      <div className={`absolute -bottom-10 -left-10 w-28 h-28 rounded-full blur-3xl opacity-30 ${p.blob2}`} />
-      {/* 이니셜 — 배경 텍스처 역할 */}
-      <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[96px] font-black font-mono leading-none select-none opacity-[0.07] pointer-events-none">
+      <div className={`absolute -top-8 -right-8 w-44 h-44 rounded-full blur-3xl opacity-50 ${p.blob1}`} />
+      <div className={`absolute -bottom-8 -left-8 w-32 h-32 rounded-full blur-3xl opacity-35 ${p.blob2}`} />
+      {/* 상단 컬러 라인 */}
+      <div className={`absolute top-0 left-0 right-0 h-[3px] opacity-70 ${p.bar}`} />
+      {/* 배경 이니셜 워터마크 */}
+      <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[55%] text-[110px] font-black font-mono leading-none select-none opacity-[0.12] pointer-events-none">
         {initials}
       </span>
       {/* 하단 레이블 */}
-      <div className="relative z-10 p-4 space-y-0.5">
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-40 font-mono">{type}</p>
-        <p className="text-lg font-black leading-tight opacity-70">{title}</p>
-      </div>
-      {/* 우측 하단 이니셜 배지 */}
-      <div className={`relative z-10 m-4 w-9 h-9 rounded-xl flex items-center justify-center text-xs font-black font-mono opacity-60 ${p.blob1} text-base-100`}>
-        {initials}
+      <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between p-4">
+        <div className="space-y-0.5 min-w-0 pr-2">
+          <p className="text-[9px] font-bold uppercase tracking-[0.25em] opacity-50 font-mono">{type}</p>
+          <p className="text-base font-black leading-tight truncate">{title}</p>
+        </div>
+        {/* 이니셜 배지 */}
+        <div className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-black font-mono text-white/90 ${p.blob1}`}>
+          {initials}
+        </div>
       </div>
     </div>
   );
