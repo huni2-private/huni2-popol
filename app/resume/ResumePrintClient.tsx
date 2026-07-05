@@ -29,23 +29,65 @@ export default function ResumePrintClient({
       <style>{`
         @media print {
           .no-print { display: none !important; }
-          body { background: white !important; color: black !important; }
-          .resume-page { padding: 0 !important; max-width: 100% !important; }
-          .resume-card { border: 1px solid #e5e7eb !important; background: white !important; break-inside: avoid; }
-          .resume-section { break-inside: avoid; }
-          @page { size: A4; margin: 15mm 20mm; }
+
+          /* DaisyUI CSS 변수를 인쇄용 흰색 테마로 덮어씀 */
+          *, *::before, *::after {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          :root, html, [data-theme] {
+            --color-base-100: #ffffff !important;
+            --color-base-200: #f8fafc !important;
+            --color-base-300: #f1f5f9 !important;
+            --color-base-content: #0f172a !important;
+            --color-primary: #2563eb !important;
+            --b1: #ffffff !important;
+            --b2: #f8fafc !important;
+            --b3: #f1f5f9 !important;
+            --bc: #0f172a !important;
+            --p: #2563eb !important;
+          }
+          body, html {
+            background: #ffffff !important;
+            color: #0f172a !important;
+          }
+          .resume-page {
+            padding: 0 !important;
+            max-width: none !important;
+            margin: 0 !important;
+          }
+          .resume-card {
+            border: 1px solid #e2e8f0 !important;
+            background: #f8fafc !important;
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+          .resume-section {
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+          @page {
+            size: A4;
+            margin: 12mm 20mm;
+          }
         }
       `}</style>
 
       {/* 인쇄 버튼 */}
-      <div className="no-print sticky top-0 z-50 bg-base-100/80 backdrop-blur border-b border-base-content/5 px-6 py-3 flex items-center justify-between">
-        <p className="text-sm text-base-content/50 font-mono">이력서 미리보기 — 브라우저 인쇄 후 PDF로 저장</p>
-        <button
-          onClick={() => window.print()}
-          className="btn btn-primary btn-sm rounded-full gap-2"
-        >
-          <Printer className="w-4 h-4" /> PDF로 저장
-        </button>
+      <div className="no-print sticky top-0 z-50 bg-base-100/90 backdrop-blur border-b border-base-content/5 px-6 py-3 flex items-center justify-between gap-4">
+        <p className="text-sm text-base-content/50 font-mono hidden sm:block">이력서 미리보기</p>
+        <div className="flex items-center gap-3 ml-auto">
+          <p className="text-xs text-base-content/40 font-mono text-right leading-tight">
+            PDF 저장 전 인쇄 설정에서<br />
+            <span className="text-warning font-bold">머리글 및 바닥글 해제</span> 권장
+          </p>
+          <button
+            onClick={() => window.print()}
+            className="btn btn-primary btn-sm rounded-full gap-2 shrink-0"
+          >
+            <Printer className="w-4 h-4" /> PDF로 저장
+          </button>
+        </div>
       </div>
 
       <div className="resume-page max-w-[800px] mx-auto px-8 py-10 space-y-8">
