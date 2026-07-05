@@ -89,6 +89,13 @@ body {
   }
 }
 
+/* 인쇄 시 레이아웃 크롬 숨김 */
+@media print {
+  header, footer, nav { display: none !important; }
+  main { padding: 0 !important; }
+  body { background: white !important; background-image: none !important; }
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
