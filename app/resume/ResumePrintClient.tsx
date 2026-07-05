@@ -7,7 +7,7 @@ interface Bio      { title_ko?: string; desc_ko?: string; }
 interface Career   { year: string; company: string; title_ko: string; desc_ko: string; }
 interface Stack    { name_ko: string; items: string[]; }
 interface Impact   { id: string; project?: string; metric: string; title: string; before?: string; after?: string; context: string; }
-interface Project  { id: string; title: string; description?: string; tags?: string[]; type?: string; status?: string; }
+interface Project  { id: string; title: string; description?: string; tags?: string[]; type?: string; status?: string; project_url?: string; github_url?: string; }
 interface Contact  { email?: string; github?: string; linkedin?: string; }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -173,7 +173,17 @@ export default function ResumePrintClient({
                     {p.type && (
                       <span className="text-[9px] font-mono text-slate-400 uppercase tracking-wide">{p.type}</span>
                     )}
-                    {p.tags?.slice(0, 5).map(tag => (
+                    {p.project_url && (
+                      <a href={p.project_url} className="text-[10px] font-mono text-blue-600 hover:underline">
+                        {p.project_url.replace(/^https?:\/\//, '')}
+                      </a>
+                    )}
+                    {p.github_url && (
+                      <a href={p.github_url} className="text-[10px] font-mono text-slate-400 hover:underline">
+                        {p.github_url.replace('https://github.com/', 'github/')}
+                      </a>
+                    )}
+                    {p.tags?.slice(0, 4).map(tag => (
                       <span key={tag} className="text-[10px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">{tag}</span>
                     ))}
                   </div>
