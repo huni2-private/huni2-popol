@@ -30,8 +30,13 @@ export default function ResumePrintClient({
 }) {
   const name = '허창훈';
   const role = bio.title_ko || '프론트엔드 개발자';
-  const desc = bio.desc_ko || 'React · Next.js로 실서비스를 운영하며 성능 개선과 안정성 확보에 집중해온 개발자입니다.';
+  const desc = bio.desc_ko || 'React · Next.js로 실서비스를 운영하며 성능 개선과 안정성 확보에 집중해온 개발자입니다. Go 백엔드와 Firebase 실시간 처리까지 직접 구현하며 제품 전반을 책임지는 개발자로 성장하고 있습니다.';
   const featuredImpact = impactStats.slice(0, 6);
+  const skillList: Stack[] = stack.length > 0 ? stack : [
+    { name_ko: '프론트엔드', items: ['React', 'Next.js', 'TypeScript', 'Tailwind CSS', 'Framer Motion'] },
+    { name_ko: '백엔드',     items: ['Go', 'Node.js', 'Supabase', 'PostgreSQL', 'Redis'] },
+    { name_ko: '인프라·기타', items: ['Firebase', 'Vercel', 'Docker', 'Git', 'k6'] },
+  ];
 
   return (
     <>
@@ -43,27 +48,26 @@ export default function ResumePrintClient({
             print-color-adjust: exact !important;
           }
           body, html { background: #fff !important; }
-          .resume-root { padding: 0 !important; max-width: none !important; margin: 0 !important; }
+          /* margin: 0 → 브라우저 기본 머리글/바닥글(시간·URL) 출력 영역 제거 */
+          @page { size: A4; margin: 0; }
+          .resume-root {
+            padding: 14mm 20mm !important;
+            max-width: none !important;
+            margin: 0 !important;
+          }
           .avoid-break { break-inside: avoid; page-break-inside: avoid; }
-          @page { size: A4; margin: 14mm 20mm; }
         }
       `}</style>
 
       {/* ── 툴바 ── */}
       <div className="no-print sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-200 px-6 py-3 flex items-center justify-between gap-4">
         <span className="text-sm text-slate-400 font-mono hidden sm:block">이력서 미리보기</span>
-        <div className="flex items-center gap-3 ml-auto">
-          <p className="text-xs text-slate-400 font-mono text-right leading-snug">
-            PDF 저장 시 인쇄 설정에서<br />
-            <span className="text-amber-500 font-bold">머리글 및 바닥글 해제</span> 권장
-          </p>
-          <button
-            onClick={() => window.print()}
-            className="btn btn-primary btn-sm rounded-full gap-2 shrink-0"
-          >
-            <Printer className="w-4 h-4" /> PDF로 저장
-          </button>
-        </div>
+        <button
+          onClick={() => window.print()}
+          className="btn btn-primary btn-sm rounded-full gap-2 ml-auto shrink-0"
+        >
+          <Printer className="w-4 h-4" /> PDF로 저장
+        </button>
       </div>
 
       {/* ── 이력서 본문 ── */}
@@ -135,6 +139,25 @@ export default function ResumePrintClient({
           </section>
         )}
 
+        {/* ── 기술 스택 ── */}
+        <section className="avoid-break">
+          <SectionTitle>Skills</SectionTitle>
+          <div className="space-y-2">
+            {skillList.map((s, i) => (
+              <div key={i} className="grid items-start gap-x-4" style={{ gridTemplateColumns: '110px 1fr' }}>
+                <span className="text-[11px] font-bold text-slate-500 pt-0.5">{s.name_ko}</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {s.items.map(item => (
+                    <span key={item} className="text-[11px] font-mono text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* ── 프로젝트 ── */}
         {projects.length > 0 && (
           <section className="avoid-break">
@@ -157,27 +180,6 @@ export default function ResumePrintClient({
                   {p.description && (
                     <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{p.description}</p>
                   )}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* ── 기술 스택 ── */}
-        {stack.length > 0 && (
-          <section className="avoid-break">
-            <SectionTitle>Skills</SectionTitle>
-            <div className="space-y-2">
-              {stack.map((s, i) => (
-                <div key={i} className="grid items-start gap-x-4" style={{ gridTemplateColumns: '110px 1fr' }}>
-                  <span className="text-[11px] font-bold text-slate-500 pt-0.5">{s.name_ko}</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {s.items.map(item => (
-                      <span key={item} className="text-[11px] font-mono text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
-                        {item}
-                      </span>
-                    ))}
-                  </div>
                 </div>
               ))}
             </div>
