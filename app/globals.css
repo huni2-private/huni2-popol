@@ -33,6 +33,19 @@
   --foreground: #171717;
 }
 
+/* data-theme 미설정 시 OS 다크모드 기본값 (인앱 브라우저 localStorage 불가 대비) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+[data-theme='light'] {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
 [data-theme='dark'] {
   --background: #0a0a0a;
   --foreground: #ededed;
