@@ -11,19 +11,19 @@ const supabase = createClient(
 const bio = {
   title_ko: 'SK-하이닉스 MAPS, 23만 건 로딩을 5s→1s로. 실무 4개 서비스를 설계·배포한 프론트엔드 개발자.',
   title_en: '5s→1s on 230K rows at SK-hynix MAPS. Sole frontend engineer across 4 live services at CongKong.',
-  desc_ko: '실무에서 측정된 성과(로딩 80% 단축, 업로드 5× 향상). CongKong에서 프론트엔드 단독으로 Timeslot·SalesPulse·RoundWait·챗봇 4개 상용 서비스를 설계·배포. 기능 구현을 넘어 성능과 사용성까지 책임지는 프론트엔드 개발자입니다.',
-  desc_en: 'Measured outcomes at work: 80% faster load, 5× upload speed. At CongKong, served as the sole frontend engineer designing and shipping 4 live services. A frontend developer who owns the outcome, not just the code.',
+  desc_ko: '실무에서 측정된 성과(로딩 80% 단축, 업로드 5× 향상). CongKong에서 Timeslot·SalesPulse·RoundWait·챗봇 4개 상용 서비스 설계·배포. 기능 구현을 넘어 성능과 사용성까지 책임지는 프론트엔드 개발자입니다.',
+  desc_en: 'Measured outcomes at work: 80% faster load, 5× upload speed. Designed and shipped 4 live services at CongKong. A frontend developer who owns the outcome, not just the code.',
 };
 
 // ── Career Timeline ───────────────────────────────────────────────────────
 const career = [
   {
     year: '2026.03 – 2026.07',
-    title_ko: '프론트엔드 개발자 (단독)',
-    title_en: 'Frontend Developer (Sole FE)',
+    title_ko: '프론트엔드 개발자',
+    title_en: 'Frontend Developer',
     company: 'CongKong Friends Inc.',
-    desc_ko: '팀 내 유일한 프론트엔드 개발자로 Next.js 15 + Go 마이크로서비스 이커머스 플랫폼 전반 담당. Timeslot·SalesPulse·RoundWait·AI챗봇 4개 서비스 아키텍처 설계부터 프로덕션 배포까지 주도.',
-    desc_en: 'Sole frontend engineer on Next.js 15 + Go microservices platform. Led 4 services — Timeslot, SalesPulse, RoundWait, AI Chatbot — from architecture to production.',
+    desc_ko: 'Next.js 15 + Go 마이크로서비스 기반 이커머스 플랫폼 프론트엔드 개발. 행사 예약(Timeslot)·VIP 영업 대시보드(SalesPulse)·대기열 시스템(RoundWait)·AI챗봇 4개 서비스 설계 및 프로덕션 배포.',
+    desc_en: 'Frontend development on Next.js 15 + Go microservices e-commerce platform. Designed and shipped 4 services: Timeslot, SalesPulse, RoundWait, and AI Chatbot.',
   },
   {
     year: '2025.07 – 2026.01',
