@@ -10,9 +10,9 @@ const supabase = createClient(
 // ── About Bio ────────────────────────────────────────────────────────────
 const bio = {
   title_ko: 'SK-하이닉스 MAPS, 23만 건 로딩을 5s→1s로. 실무 4개 서비스를 설계·배포한 프론트엔드 개발자.',
-  title_en: '5s→1s on 230K rows at SK-hynix MAPS. Sole frontend engineer across 4 live services at CongKong.',
-  desc_ko: '실무에서 측정된 성과(로딩 80% 단축, 업로드 5× 향상). CongKong에서 Timeslot·SalesPulse·RoundWait·챗봇 4개 상용 서비스 설계·배포. 기능 구현을 넘어 성능과 사용성까지 책임지는 프론트엔드 개발자입니다.',
-  desc_en: 'Measured outcomes at work: 80% faster load, 5× upload speed. Designed and shipped 4 live services at CongKong. A frontend developer who owns the outcome, not just the code.',
+  title_en: '5s→1s on 230K rows at SK-hynix MAPS. Shipped 4 live services at CongKong with AI-augmented workflows.',
+  desc_ko: 'AI 기반 개발 워크플로우로 Next.js·Go·Firebase를 아우르는 4개 서비스를 설계·배포. 실무 성과: 로딩 80% 단축, 업로드 5× 향상. 기능 구현을 넘어 성능과 개발 생산성까지 책임지는 프론트엔드 개발자입니다.',
+  desc_en: 'AI-augmented workflows let me design and ship 4 live services across Next.js, Go, and Firebase. Measured outcomes: 80% faster load, 5× upload speed. A developer who owns performance and productivity, not just features.',
 };
 
 // ── Career Timeline ───────────────────────────────────────────────────────
@@ -62,6 +62,12 @@ const stack = [
     name_en: 'Backend (Supporting)',
     icon: 'Server',
     items: ['Go', 'Node.js', 'Supabase', 'Firebase', 'PostgreSQL', 'Redis'],
+  },
+  {
+    name_ko: 'AI 도구',
+    name_en: 'AI Tools',
+    icon: 'Bot',
+    items: ['Claude Code', 'Claude API', 'Prompt Engineering'],
   },
   {
     name_ko: '도구·인프라',
