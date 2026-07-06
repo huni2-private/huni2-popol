@@ -29,12 +29,16 @@ CREATE TABLE IF NOT EXISTS logs (
   excerpt     TEXT        DEFAULT '',
   content     TEXT        NOT NULL DEFAULT '',
   tags        TEXT[]      DEFAULT '{}',
+  project     TEXT,
   category    TEXT        NOT NULL DEFAULT 'log'
               CHECK (category IN ('log', 'project', 'note')),
   published   BOOLEAN     DEFAULT FALSE,
   created_at  TIMESTAMPTZ DEFAULT NOW(),
   updated_at  TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- 기존 테이블에 컬럼 추가 (이미 생성된 DB에 적용)
+ALTER TABLE logs ADD COLUMN IF NOT EXISTS project TEXT;
 
 -- ── Auto-update updated_at ───────────────────────────────────
 CREATE OR REPLACE FUNCTION update_updated_at()
