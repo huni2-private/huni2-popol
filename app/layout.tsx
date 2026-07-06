@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
-import BottomTabNav from "@/components/layout/BottomTabNav";
 import { LanguageProvider } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 
@@ -54,13 +53,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           }}
         />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-base-100 pb-20 md:pb-0 font-sans`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-base-100 font-sans`}>
         <LanguageProvider>
           <Header />
           <main className="container mx-auto px-4 py-8">
             {children}
           </main>
-          <BottomTabNav />
         </LanguageProvider>
       </body>
     </html>
