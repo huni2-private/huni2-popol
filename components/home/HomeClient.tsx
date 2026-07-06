@@ -194,9 +194,9 @@ export default function HomeClient({
                     <p className="text-xs text-base-content/40 mt-0.5 font-mono">{impactStats[0].context}</p>
                   )}
                 </div>
-                {impactStats.slice(1).length > 0 && (
+                {impactStats.slice(1, 3).length > 0 && (
                   <div className="space-y-2 border-t border-base-content/5 pt-2">
-                    {impactStats.slice(1).map(stat => (
+                    {impactStats.slice(1, 3).map(stat => (
                       <div key={stat.id} className="flex items-start gap-2 text-xs text-base-content/40">
                         <span className="w-1 h-1 rounded-full bg-base-content/20 shrink-0 mt-1.5" />
                         <div className="min-w-0">
