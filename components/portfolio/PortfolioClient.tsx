@@ -282,7 +282,7 @@ export default function PortfolioClient({
       {view === 'impact' && (
         <div className="space-y-10">
           <p className="text-center text-base-content/50 text-sm font-mono">
-            숫자로 남긴 것들. 실제로 측정하거나 직접 확인한 수치만 적었다.
+            완벽보다는 완성, 완성 후에는 개선을.
           </p>
           {impactStats.length === 0 ? (
             <p className="text-base-content/40 italic py-8 text-center">등록된 수치가 없습니다.</p>
