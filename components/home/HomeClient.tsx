@@ -160,6 +160,9 @@ export default function HomeClient({
             <Link href="/about" className="btn btn-primary rounded-full gap-2">
               {lang === 'ko' ? '소개 보기' : 'About Me'} <ArrowRight className="w-4 h-4" />
             </Link>
+            <Link href="/resume" className="btn btn-outline rounded-full gap-2">
+              {lang === 'ko' ? '이력서 보기' : 'Resume'}
+            </Link>
             {isAdmin && (
               <a
                 href="/files/resume.pdf"
