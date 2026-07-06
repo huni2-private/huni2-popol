@@ -2,19 +2,26 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sun, Moon, Menu, X } from 'lucide-react';
+import { Sun, Moon, Menu, X, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
+import { createClient } from '@/lib/supabase/client';
 
 export default function Header() {
   const pathname = usePathname();
   const [theme, setTheme] = useState('light');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { lang, setLang, t } = useI18n();
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'light';
     setTheme(savedTheme);
+  }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => setIsAdmin(!!user));
   }, []);
 
   // 페이지 이동 시 모바일 메뉴 닫기
@@ -86,6 +93,17 @@ export default function Header() {
               {item.name}
             </Link>
           ))}
+          {isAdmin && (
+            <>
+              <div className="w-px h-4 bg-base-content/10 mx-1" />
+              <Link
+                href="/admin"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold text-base-content/40 hover:text-primary hover:bg-base-content/5 transition-all"
+              >
+                <Settings className="w-3 h-3" /> Admin
+              </Link>
+            </>
+          )}
           <div className="w-px h-4 bg-base-content/10 mx-2" />
           {langToggle}
           {themeToggle}
@@ -122,6 +140,14 @@ export default function Header() {
                 {item.name}
               </Link>
             ))}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium text-base-content/40 hover:text-primary hover:bg-base-content/5 transition-all border-t border-base-content/5 mt-1 pt-3"
+              >
+                <Settings className="w-4 h-4" /> Admin
+              </Link>
+            )}
           </nav>
         </div>
       )}
