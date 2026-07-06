@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Calendar, Package, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
+import { Github } from '@/components/icons/Github';
 
 interface Bio {
   title_ko?: string;
@@ -164,6 +165,16 @@ export default function HomeClient({
               className="btn btn-outline rounded-full gap-2"
             >
               {lang === 'ko' ? '이력서 PDF' : 'Resume PDF'}
+            </a>
+            <a
+              href="https://github.com/huni2-private/huni2-popol"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-ghost rounded-full gap-2"
+              aria-label="GitHub 소스 코드"
+            >
+              <Github className="w-4 h-4" />
+              {lang === 'ko' ? '소스 코드' : 'Source'}
             </a>
           </div>
         </MagicCard>
