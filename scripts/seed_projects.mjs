@@ -15,6 +15,17 @@ const supabase = createClient(url, key);
 
 const projects = [
   {
+    title: 'AI Dev Team — Claude Code 기반 개발 워크플로우 자동화',
+    description: '혼자 Next.js·Go·Firebase를 아우르는 복수 서비스를 빠르게 개발하기 위해 Claude Code + CLAUDE.md 기반 AI-augmented 워크플로우를 설계했다. .aidev.json으로 SDLC 단계(분석→설계→구현→검증)를 정의하고, 웹 대시보드에서 진행 상황을 추적한다. 이 시스템으로 1인이 4개 프로덕션 서비스를 병렬로 개발·유지보수하는 것이 가능해졌다.',
+    type: 'personal',
+    status: 'live',
+    tags: ['Claude Code', 'Claude API', 'Next.js 15', 'TypeScript', 'AI Workflow'],
+    project_url: null,
+    github_url: null,
+    pdf_url: null,
+    display_order: 5,
+  },
+  {
     title: 'RoundWait — 대규모 행사 대기열 관리',
     description: '기존 Go+MySQL 스택으로는 마비노기 Fantasy Party 2026(1만 명+)의 순간 트래픽을 감당할 수 없다고 판단해 Firebase 서버리스로 재구축했다. 자동 스케일링이 되는 Firestore로 예약 데이터를 이전하고, Cloud Run Job으로 GCP 내부에서 k6 부하 테스트를 돌려 네트워크 비용 없이 현실적인 부하를 재현했다. Dual Write 전략으로 기존 서비스 중단 없이 전환을 완료했고, 1만 명 동시 부하 테스트에서 예약 성공률 99.94%, 평균 처리 0.26초를 달성했다.',
     type: 'company',
