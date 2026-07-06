@@ -14,6 +14,7 @@ interface Log {
   created_at: string;
   readingMinutes: number;
   tags?: string[];
+  project?: string | null;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -22,15 +23,25 @@ const INITIAL_TAGS_COUNT = 12;
 export default function LogListClient({
   initialLogs,
   activeTag: initialActiveTag,
+  activeProject: initialActiveProject,
 }: {
   initialLogs: Log[];
   activeTag?: string;
+  activeProject?: string;
 }) {
   const [search, setSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(initialActiveTag || null);
+  const [selectedProject, setSelectedProject] = useState<string | null>(initialActiveProject || null);
   const [displayLimit, setDisplayLimit] = useState(ITEMS_PER_PAGE);
   const [showAllTags, setShowAllTags] = useState(false);
   const observerTarget = useRef<HTMLDivElement>(null);
+
+  // 프로젝트 목록 추출
+  const allProjects = useMemo(() => {
+    const seen = new Set<string>();
+    initialLogs.forEach(log => { if (log.project) seen.add(log.project); });
+    return [...seen].sort();
+  }, [initialLogs]);
 
   // 모든 태그 추출 및 빈도수 계산
   const allTags = useMemo(() => {
@@ -45,21 +56,19 @@ export default function LogListClient({
 
   const displayedTags = showAllTags ? allTags : allTags.slice(0, INITIAL_TAGS_COUNT);
 
-  // 검색 및 태그 필터링 로직
+  // 검색 및 태그/프로젝트 필터링 로직
   const filteredLogs = useMemo(() => {
-    const logs = initialLogs.filter(log => {
+    return initialLogs.filter(log => {
       const searchLower = search.toLowerCase();
-      const matchesSearch = 
+      const matchesSearch =
         log.title.toLowerCase().includes(searchLower) ||
         (log.excerpt ?? '').toLowerCase().includes(searchLower) ||
         log.tags?.some(tag => tag.toLowerCase().includes(searchLower));
-      
       const matchesTag = !selectedTag || log.tags?.includes(selectedTag);
-      
-      return matchesSearch && matchesTag;
+      const matchesProject = !selectedProject || log.project === selectedProject;
+      return matchesSearch && matchesTag && matchesProject;
     });
-    return logs;
-  }, [initialLogs, search, selectedTag]);
+  }, [initialLogs, search, selectedTag, selectedProject]);
 
   // 무한 스크롤 관찰자 설정
   useEffect(() => {
@@ -82,7 +91,7 @@ export default function LogListClient({
   // 필터 변경 시 리미트 초기화
   useEffect(() => {
     setDisplayLimit(ITEMS_PER_PAGE);
-  }, [search, selectedTag]);
+  }, [search, selectedTag, selectedProject]);
 
   const visibleLogs = filteredLogs.slice(0, displayLimit);
 
@@ -124,7 +133,28 @@ export default function LogListClient({
         )}
       </div>
 
-      {/* 태그 클라우드 최적화 */}
+      {/* 프로젝트 필터 */}
+      {allProjects.length > 0 && (
+        <div className="flex flex-wrap gap-2 pb-4 border-b border-base-content/5">
+          <button
+            onClick={() => setSelectedProject(null)}
+            className={`btn btn-xs rounded-lg px-3 normal-case font-bold ${selectedProject === null ? 'btn-primary' : 'btn-ghost bg-base-200'}`}
+          >
+            All
+          </button>
+          {allProjects.map(p => (
+            <button
+              key={p}
+              onClick={() => setSelectedProject(p === selectedProject ? null : p)}
+              className={`btn btn-xs rounded-lg px-3 normal-case font-bold ${p === selectedProject ? 'btn-primary' : 'btn-ghost bg-base-200'}`}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* 태그 클라우드 */}
       <div className="space-y-4 pb-6 border-b border-base-content/5">
         <div className="flex flex-wrap gap-2">
           <button
@@ -200,6 +230,19 @@ export default function LogListClient({
 
                       <div className="flex items-center justify-between mt-auto">
                         <div className="flex flex-wrap gap-2" onClick={e => e.stopPropagation()}>
+                          {log.project && (
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setSelectedProject(log.project === selectedProject ? null : log.project!);
+                              }}
+                              className={`badge badge-sm py-3 px-3 font-bold transition-all ${
+                                log.project === selectedProject ? 'badge-primary' : 'badge-outline hover:badge-primary'
+                              }`}
+                            >
+                              {log.project}
+                            </button>
+                          )}
                           {log.tags?.map(tag => (
                             <button
                               key={tag}

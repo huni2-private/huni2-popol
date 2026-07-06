@@ -15,7 +15,7 @@ export default async function LogDetail({ params }: { params: { slug: string } }
     supabase.from('logs').select('*').eq('slug', slug).single(),
     supabase
       .from('logs')
-      .select('id, slug, title, created_at, tags, content')
+      .select('id, slug, title, created_at, tags, project, content')
       .eq('published', true)
       .neq('slug', slug)
       .order('created_at', { ascending: false })
@@ -43,6 +43,9 @@ export default async function LogDetail({ params }: { params: { slug: string } }
 
           <div className="space-y-4 border-b border-base-content/10 pb-8">
             <div className="flex flex-wrap gap-2">
+              {log.project && (
+                <span className="badge badge-outline text-xs font-bold">{log.project}</span>
+              )}
               {log.tags?.map((tag: string) => (
                 <span key={tag} className="badge badge-ghost text-xs font-bold">
                   <Tag className="w-3 h-3 mr-1" />{tag}
