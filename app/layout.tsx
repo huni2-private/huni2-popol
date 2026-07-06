@@ -4,7 +4,6 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import BottomTabNav from "@/components/layout/BottomTabNav";
 import { LanguageProvider } from "@/lib/i18n";
-import Script from "next/script";
 import { createClient } from "@/lib/supabase/server";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -63,10 +62,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           </main>
           <BottomTabNav />
         </LanguageProvider>
-        <Script
-  src="https://chatbot.congkong.net/widget.js"
-  data-site-id="acme"
-></Script>
       </body>
     </html>
   );
