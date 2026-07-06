@@ -23,7 +23,7 @@ export default function ImpactClient({ stats }: { stats: ImpactStat[] }) {
           Impact
         </h1>
         <p className="text-base-content/60 leading-relaxed">
-          숫자로 남긴 것들. 실제로 측정하거나 직접 확인한 수치만 적었다.
+          완벽보다는 완성, 완성 후에는 개선을.
         </p>
       </motion.div>
 
