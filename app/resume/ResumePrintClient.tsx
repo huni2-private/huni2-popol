@@ -31,7 +31,8 @@ export default function ResumePrintClient({
   const name = '허창훈';
   const role = bio.title_ko || '프론트엔드 개발자';
   const desc = bio.desc_ko || 'React · Next.js로 실서비스를 운영하며 성능 개선과 안정성 확보에 집중해온 개발자입니다. Go 백엔드와 Firebase 실시간 처리까지 직접 구현하며 제품 전반을 책임지는 개발자로 성장하고 있습니다.';
-  const featuredImpact = impactStats.slice(0, 6);
+  // 숫자·기호가 포함된 metric만 표시 (즉석 패치, Analytics 같은 텍스트 전용 카드 제외)
+  const featuredImpact = impactStats.filter(s => /[0-9%×↑→~]/.test(s.metric)).slice(0, 6);
   const skillList: Stack[] = stack.length > 0 ? stack : [
     { name_ko: '프론트엔드', items: ['React', 'Next.js', 'TypeScript', 'Tailwind CSS', 'Framer Motion'] },
     { name_ko: '백엔드',     items: ['Go', 'Node.js', 'Supabase', 'PostgreSQL', 'Redis'] },
@@ -103,14 +104,14 @@ export default function ResumePrintClient({
                   <span className="text-[22px] font-black font-mono text-blue-700 leading-none block">{s.metric}</span>
                   <span className="text-[11px] font-bold text-slate-700 block mt-1 leading-tight">{s.title}</span>
                   {(s.before || s.after) && (
-                    <span className="text-[10px] font-mono text-slate-400 block mt-0.5">
+                    <span className="text-[11px] font-mono text-slate-400 block mt-1 leading-snug">
                       {s.before && <span className="line-through">{s.before}</span>}
                       {s.before && s.after && ' → '}
                       {s.after && <span className="text-emerald-600 font-semibold">{s.after}</span>}
                     </span>
                   )}
                   {s.context && !s.before && (
-                    <span className="text-[10px] font-mono text-slate-400 block mt-0.5 leading-tight">{s.context}</span>
+                    <span className="text-[11px] font-mono text-slate-400 block mt-1 leading-snug">{s.context}</span>
                   )}
                 </div>
               ))}
@@ -188,7 +189,7 @@ export default function ResumePrintClient({
                     ))}
                   </div>
                   {p.description && (
-                    <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{p.description}</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed line-clamp-2">{p.description}</p>
                   )}
                 </div>
               ))}
