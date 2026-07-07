@@ -17,7 +17,7 @@ export default async function ResumePage() {
     supabase.from('site_settings').select('value').eq('key', 'career_timeline').single(),
     supabase.from('site_settings').select('value').eq('key', 'tech_stack').single(),
     supabase.from('site_settings').select('value').eq('key', 'impact_stats').single(),
-    supabase.from('projects').select('id, title, description, tags, type, status, project_url, github_url').gt('display_order', 0).order('display_order', { ascending: true }).limit(6),
+    supabase.from('projects').select('id, title, description, tags, type, status, project_url, github_url').eq('show_in_resume', true).order('display_order', { ascending: true }),
     supabase.from('site_settings').select('value').eq('key', 'contact_info').single(),
   ]);
 

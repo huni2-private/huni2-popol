@@ -5,6 +5,7 @@ import Header from "@/components/layout/Header";
 import NextTopLoader from "nextjs-toploader";
 import { LanguageProvider } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
+import Script from "next/script";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -62,6 +63,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             {children}
           </main>
         </LanguageProvider>
+        <Script src="https://chatbot-b51c3.web.app/chatbot-widget.iife.js" data-site-id="acme" strategy="afterInteractive" />
       </body>
     </html>
   );

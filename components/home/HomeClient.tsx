@@ -104,13 +104,11 @@ export default function HomeClient({
   projects,
   recentLogs,
   impactStats,
-  isAdmin,
 }: {
   bio: Bio;
   projects: Project[];
   recentLogs: Log[];
   impactStats: ImpactStat[];
-  isAdmin: boolean;
 }) {
   const { lang } = useI18n();
 
@@ -178,16 +176,6 @@ export default function HomeClient({
             <Link href="/resume" className="btn btn-outline rounded-full gap-2">
               {lang === 'ko' ? '이력서 보기' : 'Resume'}
             </Link>
-            {isAdmin && (
-              <a
-                href="/files/resume.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-ghost rounded-full gap-2"
-              >
-                PDF
-              </a>
-            )}
             <a
               href="https://github.com/huni2-private/huni2-popol"
               target="_blank"

@@ -20,12 +20,14 @@ interface Project {
   github_url: string;
   pdf_url: string;
   display_order: number;
+  show_in_resume: boolean;
   created_at: string;
 }
 
 const EMPTY: Omit<Project, 'id' | 'created_at'> = {
   title: '', description: '', type: 'personal', status: 'live',
   tags: [], image_url: '', project_url: '', github_url: '', pdf_url: '', display_order: 0,
+  show_in_resume: true,
 };
 
 const STATUS_BADGE: Record<Project['status'], string> = {
@@ -131,7 +133,7 @@ export default function AdminPortfolio() {
     fetchProjects();
   };
 
-  const field = (key: keyof typeof form, value: string) =>
+  const field = (key: keyof typeof form, value: string | boolean | number) =>
     setForm(f => ({ ...f, [key]: value }));
 
   if (loading) {
@@ -199,6 +201,9 @@ export default function AdminPortfolio() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className={`badge badge-sm font-bold ${TYPE_BADGE[p.type]}`}>{p.type}</span>
                   <span className={`badge badge-sm ${STATUS_BADGE[p.status]}`}>{p.status}</span>
+                  {p.show_in_resume === false && (
+                    <span className="badge badge-ghost badge-sm text-[9px] opacity-50">이력서 제외</span>
+                  )}
                 </div>
 
                 <h2 className="font-bold text-lg leading-tight">{p.title}</h2>
@@ -443,6 +448,22 @@ export default function AdminPortfolio() {
                   value={form.display_order}
                   onChange={e => field('display_order', e.target.value)}
                 />
+              </div>
+
+              {/* 이력서 포함 */}
+              <div className="form-control">
+                <label className="label cursor-pointer justify-start gap-3 py-3 px-4 rounded-xl bg-base-300/50 hover:bg-base-300 transition-colors">
+                  <input
+                    type="checkbox"
+                    className="checkbox checkbox-primary checkbox-sm"
+                    checked={form.show_in_resume ?? true}
+                    onChange={e => field('show_in_resume', e.target.checked)}
+                  />
+                  <div>
+                    <p className="label-text font-bold">이력서(/resume)에 포함</p>
+                    <p className="text-xs opacity-40">체크 해제 시 PDF 이력서에서 숨겨집니다.</p>
+                  </div>
+                </label>
               </div>
             </div>
 
