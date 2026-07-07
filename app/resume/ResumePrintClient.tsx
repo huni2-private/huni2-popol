@@ -154,7 +154,7 @@ export default function ResumePrintClient({
                     <p className="text-[13px] font-bold text-slate-900">{c.title_ko}</p>
                     <p className="text-[11px] font-semibold text-blue-700">{c.company}</p>
                     {c.desc_ko && (
-                      <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">{c.desc_ko}</p>
+                      <p className="text-[11px] text-slate-500 mt-1 leading-relaxed whitespace-pre-line">{c.desc_ko}</p>
                     )}
                   </div>
                 </div>
