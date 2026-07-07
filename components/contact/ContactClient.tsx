@@ -1,10 +1,11 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Mail, Download, Send, CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import { Mail, Download, Send, CheckCircle, AlertCircle, Loader, FileText } from 'lucide-react';
 import { Github, Linkedin, Twitter } from '@/components/icons/SocialIcons';
 import { useI18n } from '@/lib/i18n';
 import { useState } from 'react';
+import Link from 'next/link';
 
 interface ContactInfo {
   email?: string;
@@ -101,7 +102,7 @@ export default function ContactClient({ info }: { info: ContactInfo }) {
           {socials.length > 0 && (
             <div className="space-y-4">
               <h2 className="text-xl font-bold">{t.contact.social_title}</h2>
-              <div className="flex gap-4">
+              <div className="flex flex-wrap gap-3">
                 {socials.map(s => (
                   <a
                     key={s.name}
@@ -114,6 +115,13 @@ export default function ContactClient({ info }: { info: ContactInfo }) {
                     <s.icon className="w-6 h-6 group-hover:scale-110 transition-transform" />
                   </a>
                 ))}
+                <Link
+                  href="/resume"
+                  className="flex items-center gap-2 px-5 py-3 rounded-xl border border-base-content/5 bg-base-200 hover:border-primary/50 hover:text-primary transition-all group text-sm font-semibold"
+                >
+                  <FileText className="w-5 h-5 group-hover:scale-110 transition-transform shrink-0" />
+                  {lang === 'ko' ? '이력서' : 'Resume'}
+                </Link>
               </div>
             </div>
           )}

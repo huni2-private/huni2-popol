@@ -15,6 +15,29 @@ const supabase = createClient(url, key);
 
 const projects = [
   {
+    title: 'HUNI² — 포트폴리오 & 개발일지 사이트',
+    description: `## 왜 만들었나
+
+포트폴리오를 Notion이나 외부 서비스에 맡기면 콘텐츠 소유권이 없고 디자인 커스터마이징에 한계가 있다. 직접 만들어서 Admin CMS로 언제든 수정할 수 있게 했고, Next.js 16 App Router와 Supabase를 실전에서 검증하는 부수 효과도 노렸다.
+
+## 핵심 기술 선택 이유
+
+- **Next.js 16 App Router** — 서버 컴포넌트 기본값으로 클라이언트 번들 최소화. 데이터 페칭은 \`page.tsx\`(서버)에서 \`async/await\`로, 인터랙션은 \`*Client.tsx\`(클라이언트)로 역할 분리
+- **Supabase** — PostgreSQL + Auth + Storage를 단일 BaaS로 해결. 직접 서버를 운영하지 않고 Admin CMS까지 구축
+- **Tailwind CSS v4 + DaisyUI v5** — \`@theme\` 블록 CSS 변수 기반 테마 설계. \`data-theme\` 속성 하나로 다크/라이트 전환, \`dark:\` prefix 없이 시맨틱 색상만 사용
+
+## 구조
+
+Admin 패널은 Supabase Auth 인증 후 접근 가능한 별도 레이아웃으로 격리했다. 포트폴리오 카드, 개발일지, 임팩트 수치, About 소개글을 모두 어드민에서 실시간으로 편집할 수 있어 CMS처럼 동작한다.`,
+    type: 'personal',
+    status: 'live',
+    tags: ['Next.js 16', 'TypeScript', 'Supabase', 'Tailwind CSS v4', 'DaisyUI v5', 'Framer Motion'],
+    project_url: 'https://huni2-popol.vercel.app',
+    github_url: 'https://github.com/huni2-private/huni2-popol',
+    pdf_url: null,
+    display_order: 1,
+  },
+  {
     title: 'AI Dev Team — Claude Code 기반 개발 워크플로우 자동화',
     description: '혼자 Next.js·Go·Firebase를 아우르는 복수 서비스를 빠르게 개발하기 위해 Claude Code + CLAUDE.md 기반 AI-augmented 워크플로우를 설계했다. .aidev.json으로 SDLC 단계(분석→설계→구현→검증)를 정의하고, 웹 대시보드에서 진행 상황을 추적한다. 이 시스템으로 1인이 4개 프로덕션 서비스를 병렬로 개발·유지보수하는 것이 가능해졌다.',
     type: 'personal',
