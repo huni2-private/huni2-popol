@@ -2,6 +2,21 @@
 
 // 홈 벤토 그리드 — 뷰포트 한 화면 레이아웃 + 마우스 빛 반사 + 인라인 섹션 확장
 import { useRef, useCallback } from 'react';
+
+const MINI_COLORS = [
+  'linear-gradient(135deg, #0ea5e9, #4f46e5)',
+  'linear-gradient(135deg, #8b5cf6, #c026d3)',
+  'linear-gradient(135deg, #10b981, #0d9488)',
+  'linear-gradient(135deg, #f59e0b, #ea580c)',
+  'linear-gradient(135deg, #f43f5e, #db2777)',
+  'linear-gradient(135deg, #06b6d4, #2563eb)',
+] as const;
+
+function miniHash(s: string) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h % MINI_COLORS.length;
+}
 import { motion } from 'framer-motion';
 import { ArrowRight, Calendar, Package, Zap } from 'lucide-react';
 import Link from 'next/link';
@@ -270,9 +285,10 @@ export default function HomeClient({
               <div className="space-y-1.5 border-t border-base-content/5 pt-2">
                 {projects.slice(0, 4).map(p => (
                   <div key={p.id} className="flex items-center gap-2 text-xs">
-                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                      p.type === 'company' ? 'bg-secondary' : 'bg-primary'
-                    }`} />
+                    <span
+                      className="w-5 h-5 rounded shrink-0"
+                      style={{ background: MINI_COLORS[miniHash(p.title)] }}
+                    />
                     <span className="truncate font-medium text-base-content/70">{p.title}</span>
                     {p.status === 'live' && (
                       <span className="shrink-0 text-[9px] font-bold text-success ml-auto">LIVE</span>
