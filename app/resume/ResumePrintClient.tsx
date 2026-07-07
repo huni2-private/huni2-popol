@@ -34,6 +34,7 @@ function stripMd(s: string): string {
 const RESUME_SECTIONS = [
   { pattern: /어떤/, label: '목적' },
   { pattern: /문제/, label: '과정' },
+  { pattern: /기술/, label: '기술' },
   { pattern: /결과/, label: '성과' },
 ];
 
