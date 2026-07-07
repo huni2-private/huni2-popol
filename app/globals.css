@@ -55,6 +55,7 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  overflow-wrap: break-word;
   background-image: radial-gradient(
     circle,
     oklch(var(--bc) / 0.07) 1px,
@@ -89,6 +90,10 @@ body {
 .magic-card > :not([aria-hidden]) {
   position: relative;
   z-index: 1;
+}
+
+h1, h2, h3, h4, h5 {
+  text-wrap: balance;
 }
 
 /* 섹션 레이블 유틸 */
