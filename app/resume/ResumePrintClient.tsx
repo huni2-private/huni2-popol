@@ -154,7 +154,14 @@ export default function ResumePrintClient({
                     <p className="text-[13px] font-bold text-slate-900">{c.title_ko}</p>
                     <p className="text-[11px] font-semibold text-blue-700">{c.company}</p>
                     {c.desc_ko && (
-                      <p className="text-[11px] text-slate-500 mt-1 leading-relaxed whitespace-pre-line">{c.desc_ko}</p>
+                      <ul className="mt-1 space-y-0.5">
+                        {c.desc_ko.split('\n').filter(Boolean).map((line, li) => (
+                          <li key={li} className="text-[11px] text-slate-500 leading-relaxed flex gap-1.5">
+                            <span className="text-blue-700/40 shrink-0 mt-0.5">·</span>
+                            <span>{line}</span>
+                          </li>
+                        ))}
+                      </ul>
                     )}
                   </div>
                 </div>
