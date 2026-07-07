@@ -275,7 +275,7 @@ export default function AdminPortfolio() {
       {/* ── Modal ─────────────────────────────────────────── */}
       {open && (
         <div className="modal modal-open">
-          <div className="modal-box max-w-2xl w-full rounded-3xl max-h-[90vh] overflow-y-auto">
+          <div className="modal-box max-w-3xl w-full rounded-3xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold">
                 {editId ? '프로젝트 편집' : '새 프로젝트'}
