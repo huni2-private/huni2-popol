@@ -168,9 +168,9 @@ export default function HomeClient({
                 href="/files/resume.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn-outline rounded-full gap-2"
+                className="btn btn-ghost rounded-full gap-2"
               >
-                {lang === 'ko' ? '이력서 PDF' : 'Resume PDF'}
+                PDF
               </a>
             )}
             <a

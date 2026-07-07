@@ -8,20 +8,19 @@ export const dynamic = 'force-dynamic';
 export default async function LogPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tag?: string }>;
+  searchParams: Promise<{ tag?: string; project?: string }>;
 }) {
-  const { tag } = await searchParams;
+  const { tag, project } = await searchParams;
   const supabase = await createClient();
 
   let query = supabase
     .from('logs')
-    .select('id, slug, title, excerpt, tags, category, published, created_at, content')
+    .select('id, slug, title, excerpt, tags, project, category, published, created_at, content')
     .eq('published', true)
     .order('created_at', { ascending: false });
 
-  if (tag) {
-    query = query.contains('tags', [tag]);
-  }
+  if (tag) query = query.contains('tags', [tag]);
+  if (project) query = query.eq('project', project);
 
   const { data: logs } = await query;
 
@@ -37,7 +36,7 @@ export default async function LogPage({
         <p className="text-base-content/70">Insights, tutorials, and troubleshooting notes.</p>
       </div>
 
-      <LogListClient initialLogs={logsWithMeta} activeTag={tag} />
+      <LogListClient initialLogs={logsWithMeta} activeTag={tag} activeProject={project} />
     </div>
   );
 }
