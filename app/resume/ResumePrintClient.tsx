@@ -47,13 +47,13 @@ function resumeExcerpt(s: string): string {
   const what    = section(/어떤/);
 
   if (problem && result) {
-    return truncate(problem, 160) + '  →  ' + truncate(result, 110);
+    return truncate(problem, 260) + '  →  ' + truncate(result, 180);
   }
   if (what && result) {
-    return truncate(what, 90) + '  →  ' + truncate(result, 140);
+    return truncate(what, 120) + '  →  ' + truncate(result, 200);
   }
-  if (result) return truncate(result, 220);
-  return truncate(stripMd(s), 260);
+  if (result) return truncate(result, 320);
+  return truncate(stripMd(s), 380);
 }
 
 export default function ResumePrintClient({
