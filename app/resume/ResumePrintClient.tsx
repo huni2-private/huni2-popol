@@ -12,24 +12,48 @@ interface Contact { email?: string; github?: string; linkedin?: string; }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-700 border-b border-slate-200 pb-1.5 mb-3">
+    <h2 className="text-[10px] font-black uppercase tracking-wider text-blue-700 border-b border-slate-200 pb-1.5 mb-3">
       {children}
     </h2>
   );
 }
 
-// README 마크다운 붙여넣기 대비 — 태그 제거 후 첫 문장만
-function plainText(s: string, maxLen = 120): string {
+function stripMd(s: string): string {
   return s
-    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^#{1,6}[^\n]*/gm, '')
     .replace(/\*\*(.+?)\*\*/g, '$1')
     .replace(/\*(.+?)\*/g, '$1')
     .replace(/`(.+?)`/g, '$1')
     .replace(/\[(.+?)\]\(.+?\)/g, '$1')
     .replace(/^[-*+]\s+/gm, '')
     .replace(/\n+/g, ' ')
-    .trim()
-    .slice(0, maxLen);
+    .trim();
+}
+
+function truncate(s: string, max: number): string {
+  if (s.length <= max) return s;
+  return s.slice(0, max).replace(/\s+\S*$/, '') + '…';
+}
+
+// 이력서용 — "문제/해결 과정 → 결과" 조합. 섹션 없으면 전체 plainText
+function resumeExcerpt(s: string): string {
+  const section = (heading: RegExp) => {
+    const m = s.match(new RegExp(`##\\s*${heading.source}[^\\n]*\\n([\\s\\S]+?)(?=\\n##|$)`, 'i'));
+    return m ? stripMd(m[1]) : '';
+  };
+
+  const problem = section(/문제/);
+  const result  = section(/결과/);
+  const what    = section(/어떤/);
+
+  if (problem && result) {
+    return truncate(problem, 160) + '  →  ' + truncate(result, 110);
+  }
+  if (what && result) {
+    return truncate(what, 90) + '  →  ' + truncate(result, 140);
+  }
+  if (result) return truncate(result, 220);
+  return truncate(stripMd(s), 260);
 }
 
 export default function ResumePrintClient({
@@ -169,22 +193,26 @@ export default function ResumePrintClient({
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-[13px] font-bold text-slate-900">{p.title}</span>
                       {p.status === 'live' && (
-                        <span className="text-[9px] font-bold text-emerald-600 border border-emerald-300 px-1.5 py-0.5 rounded uppercase tracking-wide">live</span>
+                        <span className="text-[9px] font-bold text-emerald-600 border border-emerald-300 px-1.5 py-0.5 rounded uppercase">live</span>
                       )}
                       {p.type && (
-                        <span className="text-[9px] font-mono text-slate-400 uppercase tracking-wide">{p.type}</span>
-                      )}
-                      {p.project_url && (
-                        <a href={p.project_url} className="text-[10px] font-mono text-blue-600 hover:underline">
-                          {p.project_url.replace(/^https?:\/\//, '')}
-                        </a>
-                      )}
-                      {p.github_url && (
-                        <a href={p.github_url} className="text-[10px] font-mono text-slate-400 hover:underline">
-                          {p.github_url.replace('https://github.com/', 'github/')}
-                        </a>
+                        <span className="text-[9px] font-mono text-slate-400 uppercase">{p.type}</span>
                       )}
                     </div>
+                    {(p.project_url || p.github_url) && (
+                      <div className="flex gap-3 mt-0.5">
+                        {p.project_url && (
+                          <a href={p.project_url} className="text-[9px] font-mono text-blue-500 hover:underline">
+                            ↗ {p.project_url.replace(/^https?:\/\//, '')}
+                          </a>
+                        )}
+                        {p.github_url && (
+                          <a href={p.github_url} className="text-[9px] font-mono text-slate-400 hover:underline">
+                            ↗ {p.github_url.replace('https://github.com/', 'github/')}
+                          </a>
+                        )}
+                      </div>
+                    )}
 
                     {/* 프로젝트별 임팩트 */}
                     {impacts.length > 0 && (
@@ -214,10 +242,10 @@ export default function ResumePrintClient({
                       </div>
                     )}
 
-                    {/* 설명 (마크다운 제거 후 1줄) */}
+                    {/* 설명 — 어떤 서비스인지 + 결과/성과 조합 */}
                     {p.description && (
                       <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
-                        {plainText(p.description)}
+                        {resumeExcerpt(p.description)}
                       </p>
                     )}
                   </div>
