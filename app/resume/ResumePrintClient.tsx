@@ -30,30 +30,33 @@ function stripMd(s: string): string {
     .trim();
 }
 
-function truncate(s: string, max: number): string {
-  if (s.length <= max) return s;
-  return s.slice(0, max).replace(/\s+\S*$/, '') + '…';
-}
 
-// 이력서용 — "문제/해결 과정 → 결과" 조합. 섹션 없으면 전체 plainText
-function resumeExcerpt(s: string): string {
-  const section = (heading: RegExp) => {
-    const m = s.match(new RegExp(`##\\s*${heading.source}[^\\n]*\\n([\\s\\S]+?)(?=\\n##|$)`, 'i'));
-    return m ? stripMd(m[1]) : '';
-  };
+const RESUME_SECTIONS = [
+  { pattern: /어떤/, label: '목적' },
+  { pattern: /문제/, label: '과정' },
+  { pattern: /결과/, label: '성과' },
+];
 
-  const problem = section(/문제/);
-  const result  = section(/결과/);
-  const what    = section(/어떤/);
+function ResumeDesc({ text }: { text: string }) {
+  const sections = RESUME_SECTIONS.map(({ pattern, label }) => {
+    const m = text.match(new RegExp(`##[^\\n]*${pattern.source}[^\\n]*\\n([\\s\\S]+?)(?=\\n##|$)`, 'i'));
+    return m ? { label, content: stripMd(m[1]) } : null;
+  }).filter(Boolean);
 
-  if (problem && result) {
-    return problem + '  →  ' + result;
+  if (sections.length === 0) {
+    return <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">{stripMd(text)}</p>;
   }
-  if (what && result) {
-    return what + '  →  ' + result;
-  }
-  if (result) return result;
-  return stripMd(s);
+
+  return (
+    <div className="mt-1.5 space-y-0.5">
+      {sections.map((s, i) => (
+        <p key={i} className="text-[11px] leading-relaxed">
+          <span className="font-bold text-blue-700/60 mr-1.5">{s!.label}</span>
+          <span className="text-slate-500">{s!.content}</span>
+        </p>
+      ))}
+    </div>
+  );
 }
 
 export default function ResumePrintClient({
@@ -243,11 +246,7 @@ export default function ResumePrintClient({
                     )}
 
                     {/* 설명 — 어떤 서비스인지 + 결과/성과 조합 */}
-                    {p.description && (
-                      <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
-                        {resumeExcerpt(p.description)}
-                      </p>
-                    )}
+                    {p.description && <ResumeDesc text={p.description} />}
                   </div>
                 );
               })}
