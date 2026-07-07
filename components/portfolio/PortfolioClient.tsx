@@ -1,12 +1,12 @@
 'use client';
 
-// 포트폴리오 프로젝트 목록 — 필터링, 카드 렌더링, 링크 노출 담당
+// 포트폴리오 — 컴팩트 카드 + 클릭 시 상세 모달
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { ExternalLink, FileText, Tag, ArrowRight, Zap, BookOpen } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ExternalLink, FileText, ArrowRight, Zap, BookOpen, X } from 'lucide-react';
 import { Github } from '@/components/icons/SocialIcons';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 interface Project {
   id: number;
@@ -32,46 +32,62 @@ interface ImpactStat {
   log_slug?: string | null;
 }
 
+interface Log {
+  title: string;
+  slug: string;
+  project?: string;
+  created_at: string;
+}
+
 export default function PortfolioClient({
   initialProjects,
   impactStats,
-  logCounts = {},
+  logs = [],
 }: {
   initialProjects: Project[];
   impactStats: ImpactStat[];
-  logCounts?: Record<string, number>;
+  logs?: Log[];
 }) {
   const [view, setView] = useState<'projects' | 'impact'>('projects');
   const [filter, setFilter] = useState<'all' | 'personal' | 'company'>('all');
+  const [selected, setSelected] = useState<Project | null>(null);
 
   const filteredProjects = initialProjects.filter(p => filter === 'all' || p.type === filter);
 
-  // Impact tab: 프로젝트별 그룹핑
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelected(null); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = selected ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [selected]);
+
   const impactByProject = useMemo(() => {
     const groups: Record<string, ImpactStat[]> = {};
     const ungrouped: ImpactStat[] = [];
     impactStats.forEach(s => {
-      if (s.project) {
-        groups[s.project] = [...(groups[s.project] ?? []), s];
-      } else {
-        ungrouped.push(s);
-      }
+      if (s.project) groups[s.project] = [...(groups[s.project] ?? []), s];
+      else ungrouped.push(s);
     });
     return { groups, ungrouped };
   }, [impactStats]);
 
+  const logCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    logs.forEach(l => { if (l.project) counts[l.project] = (counts[l.project] ?? 0) + 1; });
+    return counts;
+  }, [logs]);
+
   return (
     <div className="space-y-8">
-      {/* ── 최상위 탭: Projects | Impact ── */}
+      {/* 최상위 탭 */}
       <div className="flex justify-center gap-2">
         {(['projects', 'impact'] as const).map((v) => (
-          <button
-            key={v}
-            onClick={() => setView(v)}
-            className={`btn btn-sm rounded-full px-6 transition-all ${
-              view === v ? 'btn-primary' : 'btn-ghost bg-base-200'
-            }`}
-          >
+          <button key={v} onClick={() => setView(v)}
+            className={`btn btn-sm rounded-full px-6 transition-all ${view === v ? 'btn-primary' : 'btn-ghost bg-base-200'}`}>
             {v === 'projects' ? 'Projects' : 'Impact'}
           </button>
         ))}
@@ -82,152 +98,97 @@ export default function PortfolioClient({
         <div className="space-y-8">
           <div className="flex justify-center gap-2">
             {(['all', 'personal', 'company'] as const).map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`btn btn-sm rounded-full px-6 transition-all ${
-                  filter === f ? 'btn-primary' : 'btn-ghost bg-base-200'
-                }`}
-              >
+              <button key={f} onClick={() => setFilter(f)}
+                className={`btn btn-sm rounded-full px-6 transition-all ${filter === f ? 'btn-primary' : 'btn-ghost bg-base-200'}`}>
                 {f.charAt(0).toUpperCase() + f.slice(1)}
               </button>
             ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProjects.map((project, index) => (
-              <motion.div
-                key={project.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="card bg-base-200 border border-base-content/5 overflow-hidden group"
-              >
-                <figure className="relative h-48 overflow-hidden bg-base-300">
-                  {project.image_url ? (
-                    <Image
-                      src={project.image_url}
-                      alt={project.title}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
-                  ) : (
-                    <div className={`w-full h-full flex items-center justify-center ${
-                      project.type === 'company'
-                        ? 'bg-gradient-to-br from-secondary/20 to-secondary/5'
-                        : 'bg-gradient-to-br from-primary/20 to-primary/5'
-                    }`}>
-                      <span className="text-5xl font-black font-mono opacity-30 select-none">
-                        {project.title.slice(0, 2).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
-                </figure>
-
-                <div className="card-body p-6">
-                  <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md ${
-                      project.type === 'personal' ? 'bg-primary/10 text-primary' : 'bg-secondary/10 text-secondary'
-                    }`}>
-                      {project.type}
-                    </span>
-                    {project.status && project.status !== 'live' && (
-                      <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md ${
-                        project.status === 'wip' ? 'bg-warning/10 text-warning' : 'bg-base-content/10 text-base-content/40'
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProjects.map((project, index) => {
+              const stat = impactStats.find(s => s.project === project.title);
+              return (
+                <motion.div
+                  key={project.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.25, delay: index * 0.04 }}
+                  onClick={() => setSelected(project)}
+                  className="card bg-base-200 border border-base-content/5 hover:border-primary/30 overflow-hidden group cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5"
+                >
+                  {/* 이미지 */}
+                  <figure className="relative h-40 overflow-hidden bg-base-300">
+                    {project.image_url ? (
+                      <Image src={project.image_url} alt={project.title} fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+                    ) : (
+                      <div className={`w-full h-full flex items-center justify-center ${
+                        project.type === 'company' ? 'bg-gradient-to-br from-secondary/20 to-secondary/5' : 'bg-gradient-to-br from-primary/20 to-primary/5'
                       }`}>
-                        {project.status}
-                      </span>
-                    )}
-                  </div>
-
-                  <h2 className="card-title text-lg">{project.title}</h2>
-                  <p className="text-sm text-base-content/70">{project.description}</p>
-
-                  {/* 태그 — 클릭 시 해당 태그로 Log 필터링 */}
-                  <div className="flex flex-wrap gap-2 mt-4">
-                    {project.tags?.map(tag => (
-                      <Link
-                        key={tag}
-                        href={`/log?tag=${encodeURIComponent(tag)}`}
-                        className="badge badge-ghost text-[10px] py-3 gap-1 hover:badge-primary transition-colors"
-                      >
-                        <Tag className="w-2.5 h-2.5" />
-                        {tag}
-                      </Link>
-                    ))}
-                  </div>
-
-                  {/* Impact + 로그 카운트 */}
-                  {(() => {
-                    const stats = impactStats.filter(s => s.project === project.title).slice(0, 2);
-                    const logCount = logCounts[project.title] ?? 0;
-                    if (stats.length === 0 && logCount === 0) return null;
-                    return (
-                      <div className="mt-4 pt-4 border-t border-base-content/5 space-y-2">
-                        {stats.length > 0 && (
-                          <div className="space-y-1.5">
-                            {stats.map(s => (
-                              <div key={s.id} className="flex items-baseline gap-2 min-w-0">
-                                <span className="text-xs font-black font-mono text-primary shrink-0">{s.metric}</span>
-                                <span className="text-[11px] text-base-content/50 truncate">{s.title}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        {logCount > 0 && (
-                          <Link
-                            href={`/log?project=${encodeURIComponent(project.title)}`}
-                            className="inline-flex items-center gap-1 text-[11px] text-base-content/40 hover:text-primary transition-colors"
-                          >
-                            <BookOpen className="w-3 h-3" />
-                            개발 로그 {logCount}개
-                            <ArrowRight className="w-2.5 h-2.5" />
-                          </Link>
-                        )}
+                        <span className="text-4xl font-black font-mono opacity-20 select-none">
+                          {project.title.slice(0, 2).toUpperCase()}
+                        </span>
                       </div>
-                    );
-                  })()}
+                    )}
+                    {project.status === 'live' && (
+                      <span className="absolute top-2 right-2 text-[9px] font-bold text-success bg-success/10 border border-success/30 px-1.5 py-0.5 rounded-full">LIVE</span>
+                    )}
+                  </figure>
 
-                  {/* 링크 버튼 — 모바일 포함 항상 노출 */}
-                  {(project.project_url || project.github_url || project.pdf_url) && (
-                    <div className="flex gap-2 mt-4 pt-4 border-t border-base-content/5">
+                  <div className="card-body p-5 gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md ${
+                        project.type === 'personal' ? 'bg-primary/10 text-primary' : 'bg-secondary/10 text-secondary'
+                      }`}>{project.type}</span>
+                    </div>
+
+                    <h2 className="font-bold text-base leading-snug group-hover:text-primary transition-colors">{project.title}</h2>
+
+                    {/* 임팩트 수치 (있을 때만) */}
+                    {stat && (
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-lg font-black font-mono text-primary">{stat.metric}</span>
+                        <span className="text-xs text-base-content/50 truncate">{stat.title}</span>
+                      </div>
+                    )}
+
+                    {/* 태그 */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {project.tags?.slice(0, 4).map(tag => (
+                        <span key={tag} className="badge badge-ghost text-[10px] py-2.5">{tag}</span>
+                      ))}
+                      {(project.tags?.length ?? 0) > 4 && (
+                        <span className="badge badge-ghost text-[10px] py-2.5">+{project.tags.length - 4}</span>
+                      )}
+                    </div>
+
+                    {/* 링크 + 로그 카운트 */}
+                    <div className="flex items-center gap-1 pt-2 border-t border-base-content/5" onClick={e => e.stopPropagation()}>
                       {project.project_url && (
-                        <a
-                          href={project.project_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn btn-sm btn-primary rounded-full gap-1 flex-1"
-                        >
+                        <a href={project.project_url} target="_blank" rel="noopener noreferrer"
+                          className="btn btn-xs btn-ghost gap-1 rounded-full">
                           <ExternalLink className="w-3 h-3" /> Live
                         </a>
                       )}
-                      {project.type === 'personal' && project.github_url && (
-                        <a
-                          href={project.github_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn btn-sm btn-ghost rounded-full gap-1 flex-1"
-                        >
+                      {project.github_url && (
+                        <a href={project.github_url} target="_blank" rel="noopener noreferrer"
+                          className="btn btn-xs btn-ghost gap-1 rounded-full">
                           <Github className="w-3 h-3" /> GitHub
                         </a>
                       )}
-                      {project.pdf_url && (
-                        <a
-                          href={project.pdf_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn btn-sm btn-ghost rounded-full gap-1"
-                        >
-                          <FileText className="w-3 h-3" /> PDF
-                        </a>
+                      {logCounts[project.title] > 0 && (
+                        <span className="ml-auto flex items-center gap-1 text-[10px] text-base-content/30">
+                          <BookOpen className="w-3 h-3" /> {logCounts[project.title]}
+                        </span>
                       )}
                     </div>
-                  )}
-                </div>
-              </motion.div>
-            ))}
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -235,9 +196,7 @@ export default function PortfolioClient({
       {/* ── Impact 탭 ── */}
       {view === 'impact' && (
         <div className="space-y-10">
-          <p className="text-center text-base-content/50 text-sm font-mono">
-            완벽보다는 완성, 완성 후에는 개선을.
-          </p>
+          <p className="text-center text-base-content/50 text-sm font-mono">완벽보다는 완성, 완성 후에는 개선을.</p>
           {impactStats.length === 0 ? (
             <p className="text-base-content/40 italic py-8 text-center">등록된 수치가 없습니다.</p>
           ) : (
@@ -248,28 +207,19 @@ export default function PortfolioClient({
                     <span className="text-xs font-black uppercase tracking-widest text-base-content/30 font-mono">{proj}</span>
                     <div className="flex-1 h-px bg-base-content/10" />
                     {logCounts[proj] > 0 && (
-                      <Link
-                        href={`/log?project=${encodeURIComponent(proj)}`}
-                        className="inline-flex items-center gap-1 text-[11px] text-base-content/30 hover:text-primary transition-colors"
-                      >
-                        <BookOpen className="w-3 h-3" />
-                        {logCounts[proj]}개
+                      <Link href={`/log?project=${encodeURIComponent(proj)}`}
+                        className="inline-flex items-center gap-1 text-[11px] text-base-content/30 hover:text-primary transition-colors">
+                        <BookOpen className="w-3 h-3" /> {logCounts[proj]}개
                       </Link>
                     )}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {stats.map((stat, i) => (
-                      <motion.div
-                        key={stat.id}
-                        initial={{ opacity: 0, y: 16 }}
-                        animate={{ opacity: 1, y: 0 }}
+                      <motion.div key={stat.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: gi * 0.05 + i * 0.05 }}
-                        className="card bg-base-200 border border-base-content/5 hover:border-primary/20 transition-colors"
-                      >
+                        className="card bg-base-200 border border-base-content/5 hover:border-primary/20 transition-colors">
                         <div className="card-body p-6 gap-2">
-                          <p className="text-5xl font-black font-mono text-primary leading-none">
-                            {stat.metric}
-                          </p>
+                          <p className="text-5xl font-black font-mono text-primary leading-none">{stat.metric}</p>
                           <p className="font-bold text-sm">{stat.title}</p>
                           {(stat.before || stat.after) && (
                             <div className="flex items-center gap-1.5 text-xs font-mono">
@@ -278,16 +228,10 @@ export default function PortfolioClient({
                               {stat.after && <span className="text-success font-bold">{stat.after}</span>}
                             </div>
                           )}
-                          {stat.context && (
-                            <p className="text-xs text-base-content/40 font-mono leading-relaxed">
-                              {stat.context}
-                            </p>
-                          )}
+                          {stat.context && <p className="text-xs text-base-content/40 font-mono leading-relaxed">{stat.context}</p>}
                           {stat.log_slug && (
-                            <Link
-                              href={`/log/${stat.log_slug}`}
-                              className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline mt-1 w-fit"
-                            >
+                            <Link href={`/log/${stat.log_slug}`}
+                              className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline mt-1 w-fit">
                               <Zap className="w-3 h-3" /> 개발 로그 <ArrowRight className="w-3 h-3" />
                             </Link>
                           )}
@@ -300,13 +244,9 @@ export default function PortfolioClient({
               {impactByProject.ungrouped.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {impactByProject.ungrouped.map((stat, i) => (
-                    <motion.div
-                      key={stat.id}
-                      initial={{ opacity: 0, y: 16 }}
-                      animate={{ opacity: 1, y: 0 }}
+                    <motion.div key={stat.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.05 }}
-                      className="card bg-base-200 border border-base-content/5 hover:border-primary/20 transition-colors"
-                    >
+                      className="card bg-base-200 border border-base-content/5">
                       <div className="card-body p-6 gap-2">
                         <p className="text-5xl font-black font-mono text-primary leading-none">{stat.metric}</p>
                         <p className="font-bold text-sm">{stat.title}</p>
@@ -325,6 +265,142 @@ export default function PortfolioClient({
           )}
         </div>
       )}
+
+      {/* ── 프로젝트 상세 모달 ── */}
+      <AnimatePresence>
+        {selected && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            onClick={() => setSelected(null)}
+          >
+            <div className="absolute inset-0 bg-base-300/70 backdrop-blur-sm" />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={e => e.stopPropagation()}
+              className="relative bg-base-100 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-base-content/5"
+            >
+              {/* 모달 이미지 헤더 */}
+              {selected.image_url && (
+                <div className="relative h-48 overflow-hidden rounded-t-3xl">
+                  <Image src={selected.image_url} alt={selected.title} fill className="object-cover" sizes="672px" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-base-100 to-transparent" />
+                </div>
+              )}
+
+              <div className="p-8 space-y-6">
+                {/* 헤더 */}
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md ${
+                        selected.type === 'personal' ? 'bg-primary/10 text-primary' : 'bg-secondary/10 text-secondary'
+                      }`}>{selected.type}</span>
+                      <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md ${
+                        selected.status === 'live' ? 'bg-success/10 text-success' :
+                        selected.status === 'wip' ? 'bg-warning/10 text-warning' : 'bg-base-content/10 text-base-content/40'
+                      }`}>{selected.status}</span>
+                    </div>
+                    <h2 className="text-2xl font-black leading-tight">{selected.title}</h2>
+                  </div>
+                  <button onClick={() => setSelected(null)} className="btn btn-ghost btn-circle btn-sm shrink-0">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* 설명 */}
+                {selected.description && (
+                  <p className="text-sm text-base-content/70 leading-relaxed whitespace-pre-line">
+                    {selected.description}
+                  </p>
+                )}
+
+                {/* 임팩트 수치 */}
+                {impactStats.filter(s => s.project === selected.title).length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-bold uppercase tracking-widest text-base-content/30">Impact</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {impactStats.filter(s => s.project === selected.title).map(stat => (
+                        <div key={stat.id} className="bg-base-200 rounded-2xl p-4 space-y-1">
+                          <p className="text-3xl font-black font-mono text-primary leading-none">{stat.metric}</p>
+                          <p className="text-xs font-bold">{stat.title}</p>
+                          {stat.context && <p className="text-[11px] text-base-content/40 font-mono">{stat.context}</p>}
+                          {stat.log_slug && (
+                            <Link href={`/log/${stat.log_slug}`} onClick={() => setSelected(null)}
+                              className="inline-flex items-center gap-1 text-[11px] text-primary font-bold hover:underline">
+                              로그 보기 <ArrowRight className="w-3 h-3" />
+                            </Link>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 기술 스택 */}
+                {selected.tags?.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-bold uppercase tracking-widest text-base-content/30">Tech Stack</p>
+                    <div className="flex flex-wrap gap-2">
+                      {selected.tags.map(tag => (
+                        <span key={tag} className="badge badge-ghost py-3 text-xs">{tag}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 관련 Dev 로그 */}
+                {logs.filter(l => l.project === selected.title).length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-bold uppercase tracking-widest text-base-content/30">Dev Log</p>
+                    <div className="space-y-1">
+                      {logs.filter(l => l.project === selected.title).map(log => (
+                        <Link key={log.slug} href={`/log/${log.slug}`} onClick={() => setSelected(null)}
+                          className="flex items-center justify-between gap-2 p-3 rounded-xl bg-base-200 hover:bg-base-300 transition-colors group/log">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <BookOpen className="w-3.5 h-3.5 text-primary shrink-0" />
+                            <span className="text-sm font-medium truncate group-hover/log:text-primary transition-colors">{log.title}</span>
+                          </div>
+                          <ArrowRight className="w-3.5 h-3.5 text-base-content/30 shrink-0" />
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 링크 버튼 */}
+                {(selected.project_url || selected.github_url || selected.pdf_url) && (
+                  <div className="flex flex-wrap gap-2 pt-2 border-t border-base-content/5">
+                    {selected.project_url && (
+                      <a href={selected.project_url} target="_blank" rel="noopener noreferrer"
+                        className="btn btn-primary btn-sm rounded-full gap-2">
+                        <ExternalLink className="w-3.5 h-3.5" /> Live 보기
+                      </a>
+                    )}
+                    {selected.github_url && (
+                      <a href={selected.github_url} target="_blank" rel="noopener noreferrer"
+                        className="btn btn-outline btn-sm rounded-full gap-2">
+                        <Github className="w-3.5 h-3.5" /> GitHub
+                      </a>
+                    )}
+                    {selected.pdf_url && (
+                      <a href={selected.pdf_url} target="_blank" rel="noopener noreferrer"
+                        className="btn btn-ghost btn-sm rounded-full gap-2">
+                        <FileText className="w-3.5 h-3.5" /> PDF
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
