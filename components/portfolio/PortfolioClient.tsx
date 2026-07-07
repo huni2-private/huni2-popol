@@ -315,7 +315,7 @@ export default function PortfolioClient({
               exit={{ scale: 0.95, opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={e => e.stopPropagation()}
-              className="relative bg-base-100 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-base-content/5"
+              className="relative bg-base-100 rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl border border-base-content/5"
             >
               {/* 모달 이미지 헤더 */}
               {selected.image_url && (
