@@ -7,6 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ExternalLink, FileText, ArrowRight, Zap, BookOpen, X } from 'lucide-react';
 import { Github } from '@/components/icons/SocialIcons';
 import { useState, useMemo, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const THUMB_PALETTES = [
   { grad: 'from-sky-500/55 to-indigo-600/30',    blob1: 'bg-sky-400',     blob2: 'bg-indigo-500'  },
@@ -343,11 +345,19 @@ export default function PortfolioClient({
                   </button>
                 </div>
 
-                {/* 설명 */}
+                {/* 설명 — 마크다운 렌더링 */}
                 {selected.description && (
-                  <p className="text-sm text-base-content/70 leading-relaxed whitespace-pre-line">
-                    {selected.description}
-                  </p>
+                  <div className="prose prose-sm max-w-none text-base-content/70
+                    prose-headings:text-base-content prose-headings:font-bold
+                    prose-code:bg-base-200 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-primary prose-code:text-xs prose-code:before:content-none prose-code:after:content-none
+                    prose-pre:bg-base-200 prose-pre:rounded-xl
+                    prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+                    prose-strong:text-base-content
+                    prose-li:marker:text-primary">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {selected.description}
+                    </ReactMarkdown>
+                  </div>
                 )}
 
                 {/* 임팩트 수치 */}
