@@ -3,12 +3,12 @@
 // 이력서 인쇄 전용 클라이언트 — window.print() 트리거 + @media print 레이아웃
 import { Printer } from 'lucide-react';
 
-interface Bio      { title_ko?: string; desc_ko?: string; }
-interface Career   { year: string; company: string; title_ko: string; desc_ko: string; }
-interface Stack    { name_ko: string; items: string[]; }
-interface Impact   { id: string; project?: string; metric: string; title: string; before?: string; after?: string; context: string; }
-interface Project  { id: string; title: string; description?: string; tags?: string[]; type?: string; status?: string; project_url?: string; github_url?: string; }
-interface Contact  { email?: string; github?: string; linkedin?: string; }
+interface Bio     { title_ko?: string; desc_ko?: string; }
+interface Career  { year: string; company: string; title_ko: string; desc_ko: string; }
+interface Stack   { name_ko: string; items: string[]; }
+interface Impact  { id: string; project?: string; metric: string; title: string; before?: string; after?: string; context?: string; }
+interface Project { id: string; title: string; description?: string; tags?: string[]; type?: string; status?: string; project_url?: string; github_url?: string; }
+interface Contact { email?: string; github?: string; linkedin?: string; }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
@@ -16,6 +16,20 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
       {children}
     </h2>
   );
+}
+
+// README 마크다운 붙여넣기 대비 — 태그 제거 후 첫 문장만
+function plainText(s: string, maxLen = 120): string {
+  return s
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/`(.+?)`/g, '$1')
+    .replace(/\[(.+?)\]\(.+?\)/g, '$1')
+    .replace(/^[-*+]\s+/gm, '')
+    .replace(/\n+/g, ' ')
+    .trim()
+    .slice(0, maxLen);
 }
 
 export default function ResumePrintClient({
@@ -30,14 +44,19 @@ export default function ResumePrintClient({
 }) {
   const name = '허창훈';
   const role = bio.title_ko || '프론트엔드 개발자';
-  const desc = bio.desc_ko || 'React · Next.js로 실서비스를 운영하며 성능 개선과 안정성 확보에 집중해온 개발자입니다. Go 백엔드와 Firebase 실시간 처리까지 직접 구현하며 제품 전반을 책임지는 개발자로 성장하고 있습니다.';
-  // 숫자·기호가 포함된 metric만 표시 (즉석 패치, Analytics 같은 텍스트 전용 카드 제외)
-  const featuredImpact = impactStats.filter(s => /[0-9%×↑→~]/.test(s.metric)).slice(0, 6);
+  const desc = bio.desc_ko || 'React · Next.js로 실서비스를 운영하며 성능 개선과 안정성 확보에 집중해온 개발자입니다.';
+
   const skillList: Stack[] = stack.length > 0 ? stack : [
     { name_ko: '프론트엔드', items: ['React', 'Next.js', 'TypeScript', 'Tailwind CSS', 'Framer Motion'] },
     { name_ko: '백엔드',     items: ['Go', 'Node.js', 'Supabase', 'PostgreSQL', 'Redis'] },
     { name_ko: '인프라·기타', items: ['Firebase', 'Vercel', 'Docker', 'Git', 'k6'] },
   ];
+
+  // 프로젝트별 임팩트 매핑
+  const impactByProject = impactStats.reduce<Record<string, Impact[]>>((acc, s) => {
+    if (s.project) acc[s.project] = [...(acc[s.project] ?? []), s];
+    return acc;
+  }, {});
 
   return (
     <>
@@ -49,7 +68,6 @@ export default function ResumePrintClient({
             print-color-adjust: exact !important;
           }
           body, html { background: #fff !important; }
-          /* margin: 0 → 브라우저 기본 머리글/바닥글(시간·URL) 출력 영역 제거 */
           @page { size: A4; margin: 0; }
           .resume-root {
             padding: 14mm 20mm !important;
@@ -57,6 +75,8 @@ export default function ResumePrintClient({
             margin: 0 !important;
           }
           .avoid-break { break-inside: avoid; page-break-inside: avoid; }
+          /* 잉크 최소화 — 배경색 제거 */
+          .print-no-bg { background: transparent !important; border-color: #ddd !important; }
         }
       `}</style>
 
@@ -94,31 +114,6 @@ export default function ResumePrintClient({
           <p className="text-[13px] leading-relaxed text-slate-600">{desc}</p>
         </section>
 
-        {/* ── Impact ── */}
-        {featuredImpact.length > 0 && (
-          <section className="avoid-break">
-            <SectionTitle>Impact</SectionTitle>
-            <div className="grid grid-cols-3 gap-2.5">
-              {featuredImpact.map(s => (
-                <div key={s.id} className="avoid-break border border-slate-200 rounded-lg p-3 bg-slate-50">
-                  <span className="text-[22px] font-black font-mono text-blue-700 leading-none block">{s.metric}</span>
-                  <span className="text-[11px] font-bold text-slate-700 block mt-1 leading-tight">{s.title}</span>
-                  {(s.before || s.after) && (
-                    <span className="text-[11px] font-mono text-slate-400 block mt-1 leading-snug">
-                      {s.before && <span className="line-through">{s.before}</span>}
-                      {s.before && s.after && ' → '}
-                      {s.after && <span className="text-emerald-600 font-semibold">{s.after}</span>}
-                    </span>
-                  )}
-                  {s.context && !s.before && (
-                    <span className="text-[11px] font-mono text-slate-400 block mt-1 leading-snug">{s.context}</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
         {/* ── 경력 ── */}
         {career.length > 0 && (
           <section className="avoid-break">
@@ -149,7 +144,7 @@ export default function ResumePrintClient({
                 <span className="text-[11px] font-bold text-slate-500 pt-0.5">{s.name_ko}</span>
                 <div className="flex flex-wrap gap-1.5">
                   {s.items.map(item => (
-                    <span key={item} className="text-[11px] font-mono text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
+                    <span key={item} className="print-no-bg text-[11px] font-mono text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
                       {item}
                     </span>
                   ))}
@@ -161,38 +156,73 @@ export default function ResumePrintClient({
 
         {/* ── 프로젝트 ── */}
         {projects.length > 0 && (
-          <section className="avoid-break">
+          <section>
             <SectionTitle>Projects</SectionTitle>
-            <div className="space-y-3">
-              {projects.map(p => (
-                <div key={p.id} className="avoid-break">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[13px] font-bold text-slate-900">{p.title}</span>
-                    {p.status === 'live' && (
-                      <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded uppercase tracking-wide">live</span>
+            <div className="space-y-4">
+              {projects.map(p => {
+                const impacts = (impactByProject[p.title] ?? [])
+                  .filter(s => /[0-9%×↑→~]/.test(s.metric))
+                  .slice(0, 2);
+                return (
+                  <div key={p.id} className="avoid-break">
+                    {/* 프로젝트 헤더 */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[13px] font-bold text-slate-900">{p.title}</span>
+                      {p.status === 'live' && (
+                        <span className="text-[9px] font-bold text-emerald-600 border border-emerald-300 px-1.5 py-0.5 rounded uppercase tracking-wide">live</span>
+                      )}
+                      {p.type && (
+                        <span className="text-[9px] font-mono text-slate-400 uppercase tracking-wide">{p.type}</span>
+                      )}
+                      {p.project_url && (
+                        <a href={p.project_url} className="text-[10px] font-mono text-blue-600 hover:underline">
+                          {p.project_url.replace(/^https?:\/\//, '')}
+                        </a>
+                      )}
+                      {p.github_url && (
+                        <a href={p.github_url} className="text-[10px] font-mono text-slate-400 hover:underline">
+                          {p.github_url.replace('https://github.com/', 'github/')}
+                        </a>
+                      )}
+                    </div>
+
+                    {/* 프로젝트별 임팩트 */}
+                    {impacts.length > 0 && (
+                      <div className="flex flex-wrap gap-x-5 gap-y-1 mt-1.5">
+                        {impacts.map(s => (
+                          <div key={s.id} className="flex items-baseline gap-1.5">
+                            <span className="text-[14px] font-black font-mono text-blue-700 leading-none">{s.metric}</span>
+                            <span className="text-[11px] text-slate-600">{s.title}</span>
+                            {s.before && s.after && (
+                              <span className="text-[10px] font-mono text-slate-400">
+                                <span className="line-through">{s.before}</span>
+                                {' → '}
+                                <span className="text-emerald-600 font-semibold">{s.after}</span>
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     )}
-                    {p.type && (
-                      <span className="text-[9px] font-mono text-slate-400 uppercase tracking-wide">{p.type}</span>
+
+                    {/* 기술 태그 */}
+                    {p.tags && p.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {p.tags.slice(0, 5).map(tag => (
+                          <span key={tag} className="print-no-bg text-[10px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">{tag}</span>
+                        ))}
+                      </div>
                     )}
-                    {p.project_url && (
-                      <a href={p.project_url} className="text-[10px] font-mono text-blue-600 hover:underline">
-                        {p.project_url.replace(/^https?:\/\//, '')}
-                      </a>
+
+                    {/* 설명 (마크다운 제거 후 1줄) */}
+                    {p.description && (
+                      <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                        {plainText(p.description)}
+                      </p>
                     )}
-                    {p.github_url && (
-                      <a href={p.github_url} className="text-[10px] font-mono text-slate-400 hover:underline">
-                        {p.github_url.replace('https://github.com/', 'github/')}
-                      </a>
-                    )}
-                    {p.tags?.slice(0, 4).map(tag => (
-                      <span key={tag} className="text-[10px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">{tag}</span>
-                    ))}
                   </div>
-                  {p.description && (
-                    <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed line-clamp-2">{p.description}</p>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         )}
