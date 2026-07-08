@@ -7,9 +7,9 @@ export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 const METRICS = [
-  { metric: '80%', label: 'Faster Load' },
-  { metric: '5×',  label: 'Upload Speed' },
-  { metric: '6',   label: 'Live Services' },
+  { metric: '80%',    label: '로딩 단축' },
+  { metric: '3,000명', label: '대기열 처리' },
+  { metric: '40%',    label: '챗봇 전환율' },
 ];
 
 const TAGS = ['Next.js', 'TypeScript', 'Go', 'Vue 3', 'Firebase'];
@@ -87,25 +87,36 @@ export default function OGImage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <div
               style={{
-                fontSize: 50,
+                fontSize: 48,
                 fontWeight: 900,
                 color: '#ffffff',
-                letterSpacing: '-0.035em',
+                letterSpacing: '-0.03em',
                 lineHeight: 1.1,
               }}
             >
-              SK-Hynix MAPS 5s → 1s.
+              서비스 4개 설계·배포.
             </div>
             <div
               style={{
-                fontSize: 50,
+                fontSize: 38,
                 fontWeight: 900,
                 color: 'rgba(255,255,255,0.55)',
-                letterSpacing: '-0.035em',
-                lineHeight: 1.1,
+                letterSpacing: '-0.025em',
+                lineHeight: 1.2,
               }}
             >
-              6 live services built & shipped solo.
+              SK하이닉스 23만 건 로딩 5s→1s(80%) 단축.
+            </div>
+            <div
+              style={{
+                fontSize: 26,
+                fontWeight: 700,
+                color: '#9d8df8',
+                letterSpacing: '-0.01em',
+                marginTop: 8,
+              }}
+            >
+              코드보다 결과로 말하는 프론트엔드 개발자
             </div>
           </div>
 
