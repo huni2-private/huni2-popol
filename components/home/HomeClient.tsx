@@ -86,7 +86,8 @@ function MagicCard({
       ref={ref}
       onMouseMove={onMouseMove}
       whileHover={{ y: -3 }}
-      transition={{ duration: 0.2 }}
+      whileTap={{ scale: 0.97, opacity: 0.85 }}
+      transition={{ duration: 0.15 }}
       onClick={onClick}
       className={`magic-card bg-base-200 rounded-2xl transition-colors ${
         isActive
