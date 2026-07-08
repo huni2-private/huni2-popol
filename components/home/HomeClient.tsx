@@ -249,9 +249,9 @@ export default function HomeClient({
 
           <Link
             href="/portfolio"
-            className="flex items-center gap-1 text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+            className="flex items-center gap-1 text-xs font-bold text-primary sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
           >
-            {lang === 'ko' ? '전체 보기' : 'View All'} <ArrowRight className="w-3 h-3" />
+            {lang === 'ko' ? '포트폴리오 보기' : 'View Portfolio'} <ArrowRight className="w-3 h-3" />
           </Link>
         </MagicCard>
 
@@ -289,9 +289,9 @@ export default function HomeClient({
           </div>
           <Link
             href="/portfolio"
-            className="flex items-center gap-1 text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+            className="flex items-center gap-1 text-xs font-bold text-primary sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
           >
-            {lang === 'ko' ? '전체 보기' : 'View All'} <ArrowRight className="w-3 h-3" />
+            {lang === 'ko' ? '포트폴리오 보기' : 'View Portfolio'} <ArrowRight className="w-3 h-3" />
           </Link>
         </MagicCard>
 
@@ -332,7 +332,7 @@ export default function HomeClient({
                         key={log.slug}
                         href={`/log/${log.slug}`}
                         onClick={e => e.stopPropagation()}
-                        className="flex items-center gap-2 text-xs text-base-content/40 hover:text-primary transition-colors truncate group/more"
+                        className="flex items-center gap-2 text-xs text-base-content/60 hover:text-primary transition-colors truncate group/more"
                       >
                         <span className="w-1 h-1 rounded-full bg-base-content/20 shrink-0" />
                         <span className="truncate font-mono">{log.title}</span>
@@ -354,9 +354,9 @@ export default function HomeClient({
           <Link
             href="/log"
             onClick={e => e.stopPropagation()}
-            className="flex items-center gap-1 text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+            className="flex items-center gap-1 text-xs font-bold text-primary sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
           >
-            {lang === 'ko' ? '로그 전체 보기' : 'All Dev Logs'} <ArrowRight className="w-3 h-3" />
+            {lang === 'ko' ? '전체 로그 보기' : 'All Dev Logs'} <ArrowRight className="w-3 h-3" />
           </Link>
         </MagicCard>
 
