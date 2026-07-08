@@ -51,7 +51,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var d=false;try{d=!!window.matchMedia('(prefers-color-scheme: dark)').matches;}catch(e){}var t='light';try{t=localStorage.getItem('pref-theme')||(d?'dark':'light');}catch(e){t=d?'dark':'light';}document.documentElement.setAttribute('data-theme',t);var l='ko';try{l=localStorage.getItem('pref-lang')||'ko';}catch(e){}document.documentElement.setAttribute('lang',l);})()`,
+            __html: `(function(){var t='light';try{t=localStorage.getItem('pref-theme')||'light';}catch(e){}document.documentElement.setAttribute('data-theme',t);var l='ko';try{l=localStorage.getItem('pref-lang')||'ko';}catch(e){}document.documentElement.setAttribute('lang',l);})()`,
           }}
         />
       </head>

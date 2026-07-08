@@ -9,8 +9,7 @@ export function useTheme() {
 
   useEffect(() => {
     const saved = localStorage.getItem('pref-theme') as Theme | null;
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initial = (saved === 'light' || saved === 'dark') ? saved : (prefersDark ? 'dark' : 'light');
+    const initial = (saved === 'light' || saved === 'dark') ? saved : 'light';
     setTheme(initial);
     document.documentElement.setAttribute('data-theme', initial);
   }, []);
