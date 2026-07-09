@@ -26,7 +26,7 @@ interface Stats {
 
 export default function AdminPage() {
   const [loading, setLoading]           = useState(true);
-  const [user, setUser]                 = useState<any>(null);
+  const [user, setUser]                 = useState<{ id: string; email?: string } | null>(null);
   const [recentLogs, setRecentLogs]     = useState<RecentLog[]>([]);
   const [stats, setStats]               = useState<Stats>({ projects: 0, logs: 0, published: 0, drafts: 0 });
   const router  = useRouter();

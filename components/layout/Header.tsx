@@ -9,15 +9,13 @@ import { createClient } from '@/lib/supabase/client';
 
 export default function Header() {
   const pathname = usePathname();
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState<string>(() => {
+    if (typeof window === 'undefined') return 'light';
+    return document.documentElement.getAttribute('data-theme') || 'light';
+  });
   const [menuOpen, setMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const { lang, setLang, t } = useI18n();
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    setTheme(savedTheme);
-  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -26,6 +24,7 @@ export default function Header() {
 
   // 페이지 이동 시 모바일 메뉴 닫기
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMenuOpen(false);
   }, [pathname]);
 
@@ -33,7 +32,7 @@ export default function Header() {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
     document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
+    localStorage.setItem('pref-theme', newTheme);
   };
 
   const navItems = [

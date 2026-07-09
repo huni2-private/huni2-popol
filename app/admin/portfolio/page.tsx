@@ -88,6 +88,7 @@ export default function AdminPortfolio() {
 
     setUploading(true);
     const ext  = file.name.split('.').pop();
+    // eslint-disable-next-line react-hooks/purity
     const path = `${Date.now()}.${ext}`;
 
     const { error } = await supabase.storage.from('portfolio').upload(path, file, { upsert: true });

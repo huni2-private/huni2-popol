@@ -88,7 +88,7 @@ export default function AdminAboutPage() {
     setCareer(arr);
   };
 
-  const updateStack = (i: number, field: keyof Stack, val: any) =>
+  const updateStack = (i: number, field: keyof Stack, val: Stack[keyof Stack]) =>
     setStack(prev => prev.map((s, idx) => idx === i ? { ...s, [field]: val } : s));
 
   const removeStack = (i: number) => setStack(prev => prev.filter((_, idx) => idx !== i));

@@ -90,6 +90,7 @@ export default function LogListClient({
 
   // 필터 변경 시 리미트 초기화
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDisplayLimit(ITEMS_PER_PAGE);
   }, [search, selectedTag, selectedProject]);
 
@@ -197,7 +198,7 @@ export default function LogListClient({
       <div className="grid gap-6">
         <AnimatePresence mode="popLayout">
           {visibleLogs.length > 0 ? (
-            visibleLogs.map((log, index) => (
+            visibleLogs.map((log) => (
               <motion.article
                 key={log.id}
                 layout
