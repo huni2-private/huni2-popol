@@ -1,18 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 type Theme = 'light' | 'dark';
 
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>('light');
-
-  useEffect(() => {
-    const saved = localStorage.getItem('pref-theme') as Theme | null;
-    const initial = (saved === 'light' || saved === 'dark') ? saved : 'light';
-    setTheme(initial);
-    document.documentElement.setAttribute('data-theme', initial);
-  }, []);
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === 'undefined') return 'light';
+    return (document.documentElement.getAttribute('data-theme') as Theme) || 'light';
+  });
 
   const toggleTheme = useCallback(() => {
     setTheme(prev => {
