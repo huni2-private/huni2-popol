@@ -5,7 +5,8 @@ import Header from "@/components/layout/Header";
 import NextTopLoader from "nextjs-toploader";
 import { LanguageProvider } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
-import Script from "next/script";
+import ChatbotScript from "@/components/layout/ChatbotScript";
+import { Analytics } from "@vercel/analytics/react";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -45,7 +46,11 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const isAdmin = !!user;
+
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
@@ -63,7 +68,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             {children}
           </main>
         </LanguageProvider>
-        <Script src="https://chatbot.congkong.net/widget.js" data-site-id="acme" strategy="afterInteractive" />
+        <ChatbotScript />
+        {!isAdmin && <Analytics />}
       </body>
     </html>
   );
