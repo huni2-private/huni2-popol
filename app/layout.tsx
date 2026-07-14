@@ -6,6 +6,7 @@ import NextTopLoader from "nextjs-toploader";
 import { LanguageProvider } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 import ChatbotScript from "@/components/layout/ChatbotScript";
+import PageViewTracker from "@/components/layout/PageViewTracker";
 import { Analytics } from "@vercel/analytics/react";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -69,6 +70,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           </main>
         </LanguageProvider>
         <ChatbotScript />
+        {!isAdmin && <PageViewTracker />}
         {!isAdmin && <Analytics />}
       </body>
     </html>
