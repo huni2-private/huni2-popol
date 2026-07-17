@@ -45,11 +45,19 @@ function AdminWriteInner() {
   const [createdAt, setCreatedAt] = useState(() => new Date().toISOString().slice(0, 16));
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [initialLoad, setInitialLoad] = useState(false);
+  const [projectKeys, setProjectKeys] = useState<string[]>([]);
   const { toast, showToast } = useAdminToast();
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get('id');
   const supabase = createClient();
+
+  useEffect(() => {
+    supabase.from('projects').select('title, project_key').then(({ data }) => {
+      setProjectKeys((data ?? []).map(p => p.project_key || p.title).filter(Boolean));
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Load existing log when editing
   useEffect(() => {
@@ -201,11 +209,15 @@ function AdminWriteInner() {
                 <label className="label"><span className="label-text font-bold">프로젝트</span></label>
                 <input
                   type="text"
+                  list="project-keys"
                   placeholder="RoundWait, Timeslot, ..."
                   className="input input-bordered input-sm w-full bg-base-100"
                   value={project}
                   onChange={e => setProject(e.target.value)}
                 />
+                <datalist id="project-keys">
+                  {projectKeys.map(p => <option key={p} value={p} />)}
+                </datalist>
                 <label className="label"><span className="label-text-alt opacity-40">없으면 비워두기</span></label>
               </div>
 
