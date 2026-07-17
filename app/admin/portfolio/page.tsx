@@ -11,6 +11,7 @@ import { AdminToast, useAdminToast } from '@/components/admin/AdminToast';
 interface Project {
   id: string;
   title: string;
+  project_key: string;
   description: string;
   type: 'personal' | 'company';
   status: 'live' | 'wip' | 'archived';
@@ -25,7 +26,7 @@ interface Project {
 }
 
 const EMPTY: Omit<Project, 'id' | 'created_at'> = {
-  title: '', description: '', type: 'personal', status: 'live',
+  title: '', project_key: '', description: '', type: 'personal', status: 'live',
   tags: [], image_url: '', project_url: '', github_url: '', pdf_url: '', display_order: 0,
   show_in_resume: true,
 };
@@ -53,6 +54,7 @@ export default function AdminPortfolio() {
   const [editId, setEditId]     = useState<string | null>(null);
   const [form, setForm]         = useState({ ...EMPTY, tags: '' as unknown as string });
   const [uploading, setUploading] = useState(false);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
   const [preview, setPreview]   = useState<string>('');
 
   const supabase = createClient();
@@ -77,7 +79,16 @@ export default function AdminPortfolio() {
 
   const openEdit = (p: Project) => {
     setEditId(p.id);
-    setForm({ ...p, tags: (p.tags ?? []).join(', ') as unknown as string });
+    setForm({
+      ...p,
+      project_key: p.project_key ?? '',
+      description: p.description ?? '',
+      image_url: p.image_url ?? '',
+      project_url: p.project_url ?? '',
+      github_url: p.github_url ?? '',
+      pdf_url: p.pdf_url ?? '',
+      tags: (p.tags ?? []).join(', ') as unknown as string,
+    });
     setPreview(p.image_url || '');
     setOpen(true);
   };
@@ -100,14 +111,38 @@ export default function AdminPortfolio() {
     setUploading(false);
   };
 
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingPdf(true);
+    // eslint-disable-next-line react-hooks/purity
+    const path = `pdf/${Date.now()}.pdf`;
+
+    const { error } = await supabase.storage.from('portfolio').upload(path, file, { upsert: true });
+    if (error) { showToast('업로드 실패: ' + error.message, 'error'); setUploadingPdf(false); return; }
+
+    const { data: { publicUrl } } = supabase.storage.from('portfolio').getPublicUrl(path);
+    field('pdf_url', publicUrl);
+    setUploadingPdf(false);
+  };
+
   const handleSave = async () => {
     if (!form.title.trim()) { showToast('제목을 입력하세요.', 'error'); return; }
+
+    const projectKey = form.project_key.trim();
+    if (projectKey) {
+      const dup = projects.find(p => p.id !== editId && (p.project_key ?? '').toLowerCase() === projectKey.toLowerCase());
+      if (dup) { showToast(`이미 "${dup.title}"에서 사용 중인 프로젝트 키입니다.`, 'error'); return; }
+    }
+
     setSaveStatus('saving');
 
     const payload = {
       ...form,
+      project_key: projectKey || null,
       tags: typeof form.tags === 'string'
-        ? (form.tags as string).split(',').map((t: string) => t.trim()).filter(Boolean)
+        ? [...new Set((form.tags as string).split(',').map((t: string) => t.trim()).filter(Boolean))]
         : form.tags,
     };
 
@@ -298,6 +333,20 @@ export default function AdminPortfolio() {
                 />
               </div>
 
+              {/* Project Key */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-bold">프로젝트 키</span>
+                  <span className="label-text-alt opacity-40">글쓰기의 &apos;프로젝트&apos; 필드와 똑같이 입력</span>
+                </label>
+                <input
+                  type="text" placeholder="RoundWait, Timeslot, ..."
+                  className="input input-bordered bg-base-200"
+                  value={form.project_key}
+                  onChange={e => field('project_key', e.target.value)}
+                />
+              </div>
+
               {/* Description */}
               <div className="form-control">
                 <label className="label"><span className="label-text font-bold">설명</span></label>
@@ -425,9 +474,36 @@ export default function AdminPortfolio() {
                 <div className="form-control">
                   <label className="label">
                     <span className="label-text font-bold flex items-center gap-1">
-                      <FileText className="w-3 h-3" /> PDF URL
+                      <FileText className="w-3 h-3" /> PDF
                     </span>
                   </label>
+
+                  {form.pdf_url && (
+                    <div className="flex items-center gap-2 mb-2 p-2 rounded-lg bg-base-300/50 text-xs">
+                      <FileText className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <a href={form.pdf_url} target="_blank" rel="noopener noreferrer" className="link truncate flex-1">{form.pdf_url}</a>
+                      <button type="button" onClick={() => field('pdf_url', '')} className="btn btn-circle btn-xs">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+
+                  <label className={`flex items-center gap-3 p-4 rounded-xl border-2 border-dashed border-base-content/20 hover:border-primary/50 cursor-pointer transition-all ${uploadingPdf ? 'opacity-50 pointer-events-none' : ''}`}>
+                    {uploadingPdf
+                      ? <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                      : <Upload className="w-5 h-5 text-base-content/40" />}
+                    <span className="text-sm text-base-content/50">
+                      {uploadingPdf ? '업로드 중...' : '클릭해서 PDF 선택'}
+                    </span>
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      className="hidden"
+                      onChange={handlePdfUpload}
+                    />
+                  </label>
+
+                  <div className="divider text-xs opacity-30 my-2">또는 URL 직접 입력</div>
                   <input
                     type="url" placeholder="https://... 또는 /files/project.pdf"
                     className="input input-bordered input-sm bg-base-200"

@@ -19,7 +19,6 @@ interface ImpactStat {
   log_slug?: string;
 }
 
-const PROJECTS = ['RoundWait', 'SalesPulse', 'Timeslot', 'Chatbot', '글방', 'ImagineAX', 'BLE미들웨어', 'hunipopol'];
 const EMPTY: Omit<ImpactStat, 'id'> = { project: '', metric: '', title: '', before: '', after: '', context: '', log_slug: '' };
 
 export default function AdminImpactPage() {
@@ -29,6 +28,7 @@ export default function AdminImpactPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [stats, setStats] = useState<ImpactStat[]>([]);
+  const [projectKeys, setProjectKeys] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ ...EMPTY });
@@ -38,8 +38,12 @@ export default function AdminImpactPage() {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push('/admin/login'); return; }
-      const { data } = await supabase.from('site_settings').select('value').eq('key', 'impact_stats').single();
+      const [{ data }, { data: projects }] = await Promise.all([
+        supabase.from('site_settings').select('value').eq('key', 'impact_stats').single(),
+        supabase.from('projects').select('title, project_key'),
+      ]);
       setStats(Array.isArray(data?.value) ? data.value : []);
+      setProjectKeys((projects ?? []).map(p => p.project_key || p.title).filter(Boolean));
       setLoading(false);
     };
     init();
@@ -169,7 +173,7 @@ export default function AdminImpactPage() {
                   onChange={field('project')}
                 />
                 <datalist id="projects-list">
-                  {PROJECTS.map(p => <option key={p} value={p} />)}
+                  {projectKeys.map(p => <option key={p} value={p} />)}
                 </datalist>
               </div>
 
