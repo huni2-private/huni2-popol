@@ -120,7 +120,8 @@ export default function ResumePrintClient({
       </div>
 
       {/* ── 이력서 본문 ── */}
-      <div className="resume-root max-w-[780px] mx-auto px-10 py-10 space-y-7 text-slate-800">
+      <div className="overflow-x-auto">
+      <div className="resume-root w-[780px] mx-auto px-10 py-10 space-y-7 text-slate-800">
 
         {/* ── 헤더 ── */}
         <header className="avoid-break flex items-start justify-between gap-6 pb-5 border-b-2 border-slate-900">
@@ -262,6 +263,7 @@ export default function ResumePrintClient({
           </section>
         )}
 
+      </div>
       </div>
     </>
   );
