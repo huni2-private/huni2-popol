@@ -114,8 +114,8 @@ export default function HomeClient({
   const { lang } = useI18n();
 
   const title = lang === 'ko'
-    ? (bio.title_ko || 'SK-하이닉스 MAPS, 23만 건 로딩을 5s→1s로. Next.js로 실서비스 6개를 만들고 운영합니다.')
-    : (bio.title_en || '5s→1s on 230K rows at SK-hynix MAPS. Shipped 6 live services with Next.js.');
+    ? (bio.title_ko || '3,000명이 실제로 쓴 서비스를 만든 프론트엔드 개발자입니다.')
+    : (bio.title_en || 'Frontend developer who shipped services used by 3,000+ real users.');
 
   const desc = lang === 'ko'
     ? (bio.desc_ko || '실무에서 측정된 성과(로딩 80% 단축, 업로드 5× 향상)와 사이드에서 직접 기획·배포한 6개 실서비스. 기능 구현을 넘어 성능과 사용성까지 책임지는 프론트엔드 개발자입니다.')
@@ -146,7 +146,7 @@ export default function HomeClient({
           </div>
           <div className="space-y-3 relative z-10">
             <div className="flex flex-wrap gap-1.5">
-              {['Go', 'Next.js', 'TypeScript', 'Vue 3', 'Firebase', 'Tailwind CSS'].map(t => (
+              {['Next.js', 'TypeScript', 'Firebase', 'Go', 'Tailwind CSS'].map(t => (
                 <span key={t} className="badge badge-sm badge-ghost font-mono opacity-60">{t}</span>
               ))}
             </div>
