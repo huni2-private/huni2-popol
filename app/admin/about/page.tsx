@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Trash2, Save, Loader2, ChevronUp, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Save, Loader2, ChevronUp, ChevronDown, Upload } from 'lucide-react';
 import { AdminToast, useAdminToast } from '@/components/admin/AdminToast';
 
 interface Bio {
@@ -15,8 +15,10 @@ interface Bio {
 interface Career {
   year: string;
   title_ko: string; title_en: string;
-  company: string;
+  company: string; department: string; logo_url: string;
+  company_desc_ko: string; company_desc_en: string;
   desc_ko: string;  desc_en: string;
+  project_keys: string[];
 }
 
 interface Stack {
@@ -27,7 +29,13 @@ interface Stack {
 
 const ICON_OPTIONS = ['Layout', 'Server', 'Database', 'Code', 'Briefcase', 'Globe', 'Cpu', 'GitBranch'];
 
-const defaultCareer = (): Career => ({ year: '', title_ko: '', title_en: '', company: '', desc_ko: '', desc_en: '' });
+const defaultCareer = (): Career => ({
+  year: '', title_ko: '', title_en: '',
+  company: '', department: '', logo_url: '',
+  company_desc_ko: '', company_desc_en: '',
+  desc_ko: '', desc_en: '',
+  project_keys: [],
+});
 const defaultStack  = (): Stack  => ({ name_ko: '', name_en: '', icon: 'Code', items: [] });
 
 export default function AdminAboutPage() {
@@ -43,20 +51,26 @@ export default function AdminAboutPage() {
   const [stack,  setStack]  = useState<Stack[]>([]);
   const [newItem, setNewItem] = useState('');
   const [activeStack, setActiveStack] = useState<number | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState<number | null>(null);
+  const [projectKeys, setProjectKeys] = useState<string[]>([]);
+  const [newProjectKey, setNewProjectKey] = useState('');
+  const [activeCareerProject, setActiveCareerProject] = useState<number | null>(null);
 
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push('/admin/login'); return; }
 
-      const [{ data: bioData }, { data: careerData }, { data: stackData }] = await Promise.all([
+      const [{ data: bioData }, { data: careerData }, { data: stackData }, { data: projectsData }] = await Promise.all([
         supabase.from('site_settings').select('value').eq('key', 'about_bio').single(),
         supabase.from('site_settings').select('value').eq('key', 'career_timeline').single(),
         supabase.from('site_settings').select('value').eq('key', 'tech_stack').single(),
+        supabase.from('projects').select('title, project_key'),
       ]);
 
+      setProjectKeys((projectsData ?? []).map(p => p.project_key || p.title).filter(Boolean));
       if (bioData?.value)    setBio(bioData.value);
-      if (careerData?.value) setCareer(careerData.value);
+      if (careerData?.value) setCareer((careerData.value as Career[]).map(c => ({ ...defaultCareer(), ...c })));
       if (stackData?.value)  setStack(stackData.value);
       setLoading(false);
     };
@@ -78,6 +92,32 @@ export default function AdminAboutPage() {
 
   const updateCareer = (i: number, field: keyof Career, val: string) =>
     setCareer(prev => prev.map((c, idx) => idx === i ? { ...c, [field]: val } : c));
+
+  const handleLogoUpload = async (i: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingLogo(i);
+    const ext  = file.name.split('.').pop();
+    const path = `career/${Date.now()}.${ext}`;
+
+    const { error } = await supabase.storage.from('portfolio').upload(path, file, { upsert: true });
+    if (error) { showToast('업로드 실패: ' + error.message, 'error'); setUploadingLogo(null); return; }
+
+    const { data: { publicUrl } } = supabase.storage.from('portfolio').getPublicUrl(path);
+    updateCareer(i, 'logo_url', publicUrl);
+    setUploadingLogo(null);
+  };
+
+  const addCareerProject = (i: number) => {
+    const key = newProjectKey.trim();
+    if (!key || career[i].project_keys.includes(key)) return;
+    setCareer(prev => prev.map((c, idx) => idx === i ? { ...c, project_keys: [...c.project_keys, key] } : c));
+    setNewProjectKey('');
+  };
+
+  const removeCareerProject = (i: number, key: string) =>
+    setCareer(prev => prev.map((c, idx) => idx === i ? { ...c, project_keys: c.project_keys.filter(k => k !== key) } : c));
 
   const removeCareer = (i: number) => setCareer(prev => prev.filter((_, idx) => idx !== i));
   const moveCareer   = (i: number, dir: -1 | 1) => {
@@ -168,6 +208,16 @@ export default function AdminAboutPage() {
                   <button onClick={() => removeCareer(i)} className="btn btn-ghost btn-xs text-error"><Trash2 className="w-3 h-3" /></button>
                 </div>
               </div>
+              <div className="flex items-center gap-3">
+                {c.logo_url
+                  ? <img src={c.logo_url} alt="" className="w-12 h-12 rounded-lg object-contain bg-base-100 border border-base-content/10" />
+                  : <div className="w-12 h-12 rounded-lg bg-base-300 shrink-0" />}
+                <label className={`flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border-2 border-dashed border-base-content/20 hover:border-primary/50 cursor-pointer transition-all text-sm ${uploadingLogo === i ? 'opacity-50 pointer-events-none' : ''}`}>
+                  {uploadingLogo === i ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4 text-base-content/40" />}
+                  {uploadingLogo === i ? '업로드 중...' : '기업 로고 업로드'}
+                  <input type="file" accept="image/*" className="hidden" onChange={e => handleLogoUpload(i, e)} />
+                </label>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="form-control">
                   <label className="label"><span className="label-text">기간</span></label>
@@ -178,7 +228,11 @@ export default function AdminAboutPage() {
                   <input placeholder="Company Name" className="input input-bordered input-sm bg-base-100" value={c.company} onChange={e => updateCareer(i, 'company', e.target.value)} />
                 </div>
                 <div className="form-control">
-                  <label className="label"><span className="label-text">직책 (한국어)</span></label>
+                  <label className="label"><span className="label-text">부서명</span></label>
+                  <input placeholder="개발팀" className="input input-bordered input-sm bg-base-100" value={c.department} onChange={e => updateCareer(i, 'department', e.target.value)} />
+                </div>
+                <div className="form-control">
+                  <label className="label"><span className="label-text">직책</span></label>
                   <input className="input input-bordered input-sm bg-base-100" value={c.title_ko} onChange={e => updateCareer(i, 'title_ko', e.target.value)} />
                 </div>
                 <div className="form-control">
@@ -186,17 +240,54 @@ export default function AdminAboutPage() {
                   <input className="input input-bordered input-sm bg-base-100" value={c.title_en} onChange={e => updateCareer(i, 'title_en', e.target.value)} />
                 </div>
                 <div className="form-control">
-                  <label className="label"><span className="label-text">설명 (한국어)</span></label>
-                  <textarea className="textarea textarea-bordered textarea-sm h-16 bg-base-100" value={c.desc_ko} onChange={e => updateCareer(i, 'desc_ko', e.target.value)} />
+                  <label className="label"><span className="label-text">회사 소개 (한국어)</span></label>
+                  <textarea placeholder="어떤 회사인지 간단히" className="textarea textarea-bordered textarea-sm h-16 bg-base-100" value={c.company_desc_ko} onChange={e => updateCareer(i, 'company_desc_ko', e.target.value)} />
                 </div>
                 <div className="form-control">
-                  <label className="label"><span className="label-text">Description (English)</span></label>
-                  <textarea className="textarea textarea-bordered textarea-sm h-16 bg-base-100" value={c.desc_en} onChange={e => updateCareer(i, 'desc_en', e.target.value)} />
+                  <label className="label"><span className="label-text">Company Description (English)</span></label>
+                  <textarea className="textarea textarea-bordered textarea-sm h-16 bg-base-100" value={c.company_desc_en} onChange={e => updateCareer(i, 'company_desc_en', e.target.value)} />
+                </div>
+                <div className="form-control md:col-span-2">
+                  <label className="label"><span className="label-text">역할 및 기여 (한국어)</span></label>
+                  <textarea placeholder="맡은 프로젝트와 구체적으로 기여한 부분" className="textarea textarea-bordered textarea-sm h-24 bg-base-100" value={c.desc_ko} onChange={e => updateCareer(i, 'desc_ko', e.target.value)} />
+                </div>
+                <div className="form-control md:col-span-2">
+                  <label className="label"><span className="label-text">Role & Contribution (English)</span></label>
+                  <textarea className="textarea textarea-bordered textarea-sm h-24 bg-base-100" value={c.desc_en} onChange={e => updateCareer(i, 'desc_en', e.target.value)} />
+                </div>
+              </div>
+
+              <div>
+                <label className="label"><span className="label-text text-sm">연동 포트폴리오 프로젝트</span></label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {c.project_keys.map(key => (
+                    <span key={key} className="badge badge-ghost border-base-content/10 gap-1 py-3">
+                      {key}
+                      <button onClick={() => removeCareerProject(i, key)} className="opacity-50 hover:opacity-100 hover:text-error transition-colors">×</button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    list="career-project-keys"
+                    placeholder="포트폴리오에 등록된 프로젝트명"
+                    className="input input-bordered input-sm bg-base-100 flex-1"
+                    value={activeCareerProject === i ? newProjectKey : ''}
+                    onFocus={() => setActiveCareerProject(i)}
+                    onChange={e => setNewProjectKey(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCareerProject(i); } }}
+                  />
+                  <button onClick={() => addCareerProject(i)} className="btn btn-sm btn-outline rounded-xl gap-1">
+                    <Plus className="w-3 h-3" /> 연결
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         ))}
+        <datalist id="career-project-keys">
+          {projectKeys.map(p => <option key={p} value={p} />)}
+        </datalist>
 
         {career.length === 0 && (
           <div className="card bg-base-200 border-2 border-dashed border-base-content/10">

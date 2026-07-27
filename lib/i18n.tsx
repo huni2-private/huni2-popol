@@ -22,6 +22,7 @@ const translations = {
       page_title: '소개',
       career_title: '커리어',
       stack_title: '기술 스택',
+      role_contribution: '역할 및 기여',
     },
     contact: {
       page_title: "연결하기",
@@ -72,6 +73,7 @@ const translations = {
       page_title: 'About',
       career_title: 'Career Path',
       stack_title: 'Tech Stack',
+      role_contribution: 'Role & Contribution',
     },
     contact: {
       page_title: "Let's Connect",
