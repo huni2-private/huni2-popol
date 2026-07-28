@@ -113,16 +113,25 @@ export default function PortfolioClient({
                   className="card bg-base-200 border border-base-content/5 hover:border-primary/30 overflow-hidden group cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5"
                 >
                   {/* 이미지 */}
-                  <figure className="relative h-40 overflow-hidden bg-base-300">
+                  <figure className="relative h-44 overflow-hidden bg-base-300">
                     {project.image_url ? (
-                      <Image src={project.image_url} alt={project.title} fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+                      <>
+                        <div className="absolute inset-0 z-0" aria-hidden="true">
+                          <Image src={project.image_url} alt="" fill
+                            className="object-cover blur-xl scale-110 opacity-30 group-hover:opacity-50 transition-opacity duration-500"
+                            sizes="33vw" />
+                        </div>
+                        <div className="absolute inset-0 z-10">
+                          <Image src={project.image_url} alt={project.title} fill
+                            className="object-contain p-2"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+                        </div>
+                      </>
                     ) : (
                       <ProjectThumbnail title={project.title} type={project.type} />
                     )}
                     {project.status === 'live' && (
-                      <span className="absolute top-2 right-2 text-[9px] font-bold text-success bg-success/10 border border-success/30 px-1.5 py-0.5 rounded-full">LIVE</span>
+                      <span className="absolute top-2 right-2 z-20 text-[9px] font-bold text-success bg-success/10 border border-success/30 px-1.5 py-0.5 rounded-full">LIVE</span>
                     )}
                   </figure>
 
