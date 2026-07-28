@@ -38,6 +38,14 @@ const defaultCareer = (): Career => ({
 });
 const defaultStack  = (): Stack  => ({ name_ko: '', name_en: '', icon: 'Code', items: [] });
 
+interface Education {
+  year: string;
+  institution: string;
+  title: string;
+  desc?: string;
+}
+const defaultEducation = (): Education => ({ year: '', institution: '', title: '', desc: '' });
+
 export default function AdminAboutPage() {
   const router  = useRouter();
   const supabase = createClient();
@@ -49,6 +57,7 @@ export default function AdminAboutPage() {
   const [bio,    setBio]    = useState<Bio>({ title_ko: '', title_en: '', desc_ko: '', desc_en: '' });
   const [career, setCareer] = useState<Career[]>([]);
   const [stack,  setStack]  = useState<Stack[]>([]);
+  const [education, setEducation] = useState<Education[]>([]);
   const [newItem, setNewItem] = useState('');
   const [activeStack, setActiveStack] = useState<number | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState<number | null>(null);
@@ -61,17 +70,19 @@ export default function AdminAboutPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push('/admin/login'); return; }
 
-      const [{ data: bioData }, { data: careerData }, { data: stackData }, { data: projectsData }] = await Promise.all([
+      const [{ data: bioData }, { data: careerData }, { data: stackData }, { data: educationData }, { data: projectsData }] = await Promise.all([
         supabase.from('site_settings').select('value').eq('key', 'about_bio').single(),
         supabase.from('site_settings').select('value').eq('key', 'career_timeline').single(),
         supabase.from('site_settings').select('value').eq('key', 'tech_stack').single(),
+        supabase.from('site_settings').select('value').eq('key', 'education').single(),
         supabase.from('projects').select('title, project_key'),
       ]);
 
       setProjectKeys((projectsData ?? []).map(p => p.project_key || p.title).filter(Boolean));
-      if (bioData?.value)    setBio(bioData.value);
-      if (careerData?.value) setCareer((careerData.value as Career[]).map(c => ({ ...defaultCareer(), ...c })));
-      if (stackData?.value)  setStack(stackData.value);
+      if (bioData?.value)       setBio(bioData.value);
+      if (careerData?.value)    setCareer((careerData.value as Career[]).map(c => ({ ...defaultCareer(), ...c })));
+      if (stackData?.value)     setStack(stackData.value);
+      if (educationData?.value) setEducation(educationData.value);
       setLoading(false);
     };
     init();
@@ -83,6 +94,7 @@ export default function AdminAboutPage() {
       supabase.from('site_settings').upsert({ key: 'about_bio',       value: bio }),
       supabase.from('site_settings').upsert({ key: 'career_timeline', value: career }),
       supabase.from('site_settings').upsert({ key: 'tech_stack',      value: stack }),
+      supabase.from('site_settings').upsert({ key: 'education',       value: education }),
     ];
     const results = await Promise.all(ops);
     setSaving(false);
@@ -141,6 +153,18 @@ export default function AdminAboutPage() {
 
   const removeStackItem = (si: number, item: string) =>
     updateStack(si, 'items', stack[si].items.filter(x => x !== item));
+
+  const updateEducation = (i: number, field: keyof Education, val: string) =>
+    setEducation(prev => prev.map((e, idx) => idx === i ? { ...e, [field]: val } : e));
+
+  const removeEducation = (i: number) => setEducation(prev => prev.filter((_, idx) => idx !== i));
+  const moveEducation   = (i: number, dir: -1 | 1) => {
+    const arr = [...education];
+    const j = i + dir;
+    if (j < 0 || j >= arr.length) return;
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+    setEducation(arr);
+  };
 
   if (loading) return (
     <div className="min-h-[60vh] flex items-center justify-center">
@@ -293,6 +317,57 @@ export default function AdminAboutPage() {
           <div className="card bg-base-200 border-2 border-dashed border-base-content/10">
             <div className="card-body items-center py-10 text-center gap-2">
               <p className="text-sm opacity-40">커리어 항목이 없습니다.</p>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Education */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-xl font-bold">학력 / 교육</h2>
+          <button onClick={() => setEducation(p => [...p, defaultEducation()])} className="btn btn-sm btn-outline rounded-full gap-1">
+            <Plus className="w-4 h-4" /> 추가
+          </button>
+        </div>
+
+        {education.map((edu, i) => (
+          <div key={i} className="card bg-base-200 border border-base-content/5">
+            <div className="card-body gap-4 p-5">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-xs text-primary opacity-60">#{i + 1}</span>
+                <div className="flex gap-1">
+                  <button onClick={() => moveEducation(i, -1)} className="btn btn-ghost btn-xs"><ChevronUp className="w-3 h-3" /></button>
+                  <button onClick={() => moveEducation(i, 1)}  className="btn btn-ghost btn-xs"><ChevronDown className="w-3 h-3" /></button>
+                  <button onClick={() => removeEducation(i)} className="btn btn-ghost btn-xs text-error"><Trash2 className="w-3 h-3" /></button>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="form-control">
+                  <label className="label"><span className="label-text">기간</span></label>
+                  <input placeholder="2016 - 2020" className="input input-bordered input-sm bg-base-100" value={edu.year} onChange={e => updateEducation(i, 'year', e.target.value)} />
+                </div>
+                <div className="form-control">
+                  <label className="label"><span className="label-text">기관명</span></label>
+                  <input placeholder="한국대학교" className="input input-bordered input-sm bg-base-100" value={edu.institution} onChange={e => updateEducation(i, 'institution', e.target.value)} />
+                </div>
+                <div className="form-control">
+                  <label className="label"><span className="label-text">학위 / 과정</span></label>
+                  <input placeholder="컴퓨터공학과 학사" className="input input-bordered input-sm bg-base-100" value={edu.title} onChange={e => updateEducation(i, 'title', e.target.value)} />
+                </div>
+                <div className="form-control">
+                  <label className="label"><span className="label-text">비고 (선택)</span></label>
+                  <input placeholder="GPA, 수상 등" className="input input-bordered input-sm bg-base-100" value={edu.desc ?? ''} onChange={e => updateEducation(i, 'desc', e.target.value)} />
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {education.length === 0 && (
+          <div className="card bg-base-200 border-2 border-dashed border-base-content/10">
+            <div className="card-body items-center py-10 text-center gap-2">
+              <p className="text-sm opacity-40">학력/교육 항목이 없습니다.</p>
             </div>
           </div>
         )}

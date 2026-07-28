@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Briefcase, Building2, ChevronDown, Code, ExternalLink, Layout, Server, Database } from 'lucide-react';
+import { Briefcase, Building2, ChevronDown, Code, ExternalLink, GraduationCap, Layout, Server, Database } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -22,14 +22,16 @@ interface Career {
   project_keys?: string[];
 }
 interface Stack  { name_ko?: string; name_en?: string; icon?: string; items: string[] }
+interface Education { year: string; institution: string; title: string; desc?: string; }
 interface Project { title: string; project_key?: string }
 
 export default function AboutClient({
-  bio, career, stack, projects,
+  bio, career, stack, education, projects,
 }: {
   bio: Bio;
   career: Career[];
   stack: Stack[];
+  education: Education[];
   projects: Project[];
 }) {
   const { lang, t } = useI18n();
@@ -162,6 +164,34 @@ export default function AboutClient({
                 </motion.div>
               );
             })}
+          </div>
+        </section>
+      )}
+
+      {/* Education */}
+      {education.length > 0 && (
+        <section className="space-y-8">
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <GraduationCap className="w-6 h-6 text-accent" /> {lang === 'ko' ? '학력 / 교육' : 'Education'}
+          </h2>
+          <div className="space-y-4">
+            {education.map((edu, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                className="flex gap-6 items-start"
+              >
+                <time className="text-xs font-mono text-primary w-28 shrink-0 pt-1">{edu.year}</time>
+                <div className="flex-1 pb-4 border-b border-base-content/5 last:border-0">
+                  <p className="font-bold">{edu.institution}</p>
+                  <p className="text-sm text-base-content/70 mt-0.5">{edu.title}</p>
+                  {edu.desc && <p className="text-xs text-base-content/40 mt-0.5">{edu.desc}</p>}
+                </div>
+              </motion.div>
+            ))}
           </div>
         </section>
       )}

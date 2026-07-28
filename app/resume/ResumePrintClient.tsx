@@ -8,6 +8,7 @@ interface Career  { year: string; company: string; title_ko: string; desc_ko: st
 interface Stack   { name_ko: string; items: string[]; }
 interface Impact  { id: string; project?: string; metric: string; title: string; before?: string; after?: string; context?: string; }
 interface Project { id: string; title: string; description?: string; tags?: string[]; type?: string; status?: string; project_url?: string; github_url?: string; }
+interface Education { year: string; institution: string; title: string; desc?: string; }
 interface Contact { email?: string; github?: string; linkedin?: string; }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -61,11 +62,12 @@ function ResumeDesc({ text }: { text: string }) {
 }
 
 export default function ResumePrintClient({
-  bio, career, stack, impactStats, projects, contact,
+  bio, career, stack, education, impactStats, projects, contact,
 }: {
   bio: Bio;
   career: Career[];
   stack: Stack[];
+  education: Education[];
   impactStats: Impact[];
   projects: Project[];
   contact: Contact;
@@ -164,6 +166,25 @@ export default function ResumePrintClient({
                         ))}
                       </ul>
                     )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── 학력 ── */}
+        {education.length > 0 && (
+          <section className="avoid-break">
+            <SectionTitle>Education</SectionTitle>
+            <div className="space-y-3">
+              {education.map((edu, i) => (
+                <div key={i} className="grid gap-x-4" style={{ gridTemplateColumns: '110px 1fr' }}>
+                  <p className="text-[11px] font-mono text-slate-400 mt-0.5">{edu.year}</p>
+                  <div>
+                    <p className="text-[13px] font-bold text-slate-900">{edu.institution}</p>
+                    <p className="text-[11px] text-blue-700">{edu.title}</p>
+                    {edu.desc && <p className="text-[11px] text-slate-500 mt-0.5">{edu.desc}</p>}
                   </div>
                 </div>
               ))}
