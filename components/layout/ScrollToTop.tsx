@@ -20,7 +20,7 @@ export default function ScrollToTop() {
   return (
     <button
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      className="fixed bottom-24 right-6 z-50 btn btn-circle btn-primary shadow-lg"
+      className="fixed right-6 top-1/2 -translate-y-1/2 z-50 btn btn-circle btn-primary shadow-lg"
       aria-label="맨 위로"
     >
       <ArrowUp className="w-5 h-5" />
