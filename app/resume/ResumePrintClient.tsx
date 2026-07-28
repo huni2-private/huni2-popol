@@ -154,8 +154,8 @@ export default function ResumePrintClient({
                 <div key={i} className="avoid-break grid gap-x-4" style={{ gridTemplateColumns: '110px 1fr' }}>
                   <p className="text-[11px] font-mono text-slate-400 mt-0.5 leading-snug">{c.year}</p>
                   <div>
-                    <p className="text-[13px] font-bold text-slate-900">{c.title_ko}</p>
-                    <p className="text-[11px] font-semibold text-blue-700">{c.company}</p>
+                    <p className="text-[13px] font-bold text-slate-900">{c.company}</p>
+                    <p className="text-[11px] font-semibold text-blue-700">{c.title_ko}</p>
                     {c.desc_ko && (
                       <ul className="mt-1 space-y-0.5">
                         {c.desc_ko.split('\n').filter(Boolean).map((line, li) => (
