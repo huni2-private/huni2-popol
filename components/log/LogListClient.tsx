@@ -3,7 +3,7 @@
 // 로그 목록 클라이언트 — 검색 필터링, 무한 스크롤, 태그 클라우드 최적화
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, ChevronRight, Search, Tag, X, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { Calendar, Clock, ChevronRight, Search, Tag, X, ChevronDown, ChevronUp, Loader2, ArrowUp } from 'lucide-react';
 import Link from 'next/link';
 
 interface Log {
@@ -34,6 +34,7 @@ export default function LogListClient({
   const [selectedProject, setSelectedProject] = useState<string | null>(initialActiveProject || null);
   const [displayLimit, setDisplayLimit] = useState(ITEMS_PER_PAGE);
   const [showAllTags, setShowAllTags] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const observerTarget = useRef<HTMLDivElement>(null);
 
   // 프로젝트 목록 추출
@@ -93,6 +94,13 @@ export default function LogListClient({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDisplayLimit(ITEMS_PER_PAGE);
   }, [search, selectedTag, selectedProject]);
+
+  // 스크롤 위치 감지
+  useEffect(() => {
+    const onScroll = () => setShowScrollTop(window.scrollY > 400);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const visibleLogs = filteredLogs.slice(0, displayLimit);
 
@@ -304,6 +312,17 @@ export default function LogListClient({
             Loading more logs...
           </div>
         </div>
+      )}
+
+      {/* 상단으로 버튼 */}
+      {showScrollTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-6 right-6 z-50 btn btn-circle btn-primary shadow-lg"
+          aria-label="맨 위로"
+        >
+          <ArrowUp className="w-5 h-5" />
+        </button>
       )}
     </div>
   );
