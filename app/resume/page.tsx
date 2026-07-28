@@ -9,6 +9,7 @@ export default async function ResumePage() {
     { data: bioData },
     { data: careerData },
     { data: stackData },
+    { data: educationData },
     { data: impactData },
     { data: projects },
     { data: contactData },
@@ -16,6 +17,7 @@ export default async function ResumePage() {
     supabase.from('site_settings').select('value').eq('key', 'about_bio').single(),
     supabase.from('site_settings').select('value').eq('key', 'career_timeline').single(),
     supabase.from('site_settings').select('value').eq('key', 'tech_stack').single(),
+    supabase.from('site_settings').select('value').eq('key', 'education').single(),
     supabase.from('site_settings').select('value').eq('key', 'impact_stats').single(),
     supabase.from('projects').select('id, title, description, tags, type, status, project_url, github_url').eq('show_in_resume', true).order('display_order', { ascending: true }),
     supabase.from('site_settings').select('value').eq('key', 'contact_info').single(),
@@ -26,6 +28,7 @@ export default async function ResumePage() {
       bio={bioData?.value ?? {}}
       career={Array.isArray(careerData?.value) ? careerData.value : []}
       stack={Array.isArray(stackData?.value) ? stackData.value : []}
+      education={Array.isArray(educationData?.value) ? educationData.value : []}
       impactStats={Array.isArray(impactData?.value) ? impactData.value : []}
       projects={projects ?? []}
       contact={contactData?.value ?? {}}
