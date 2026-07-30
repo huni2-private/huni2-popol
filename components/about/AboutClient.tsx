@@ -19,6 +19,7 @@ interface Career {
   company: string; department?: string; logo_url?: string;
   company_desc_ko?: string; company_desc_en?: string;
   desc_ko?: string; desc_en?: string;
+  status_ko?: string; status_en?: string;
   project_keys?: string[];
 }
 interface Stack  { name_ko?: string; name_en?: string; icon?: string; items: string[] }
@@ -35,7 +36,7 @@ export default function AboutClient({
   projects: Project[];
 }) {
   const { lang, t } = useI18n();
-  const [expanded, setExpanded] = useState<Set<number>>(new Set());
+  const [expanded, setExpanded] = useState<Set<number>>(() => new Set(career.map((_, i) => i)));
 
   const toggleCareer = (i: number) => setExpanded(prev => {
     const next = new Set(prev);
@@ -87,6 +88,8 @@ export default function AboutClient({
               const isOpen = expanded.has(i);
               const role = lang === 'ko' ? item.desc_ko : item.desc_en;
               const companyDesc = lang === 'ko' ? item.company_desc_ko : item.company_desc_en;
+              const status = lang === 'ko' ? item.status_ko : item.status_en;
+              const roleLines = (role ?? '').split('\n').map(line => line.replace(/^[▎\-•\s]+/, '').trim()).filter(Boolean);
               const linkedProjects = (item.project_keys ?? [])
                 .map(key => projects.find(p => (p.project_key || p.title) === key))
                 .filter((p): p is Project => !!p);
@@ -115,7 +118,10 @@ export default function AboutClient({
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <time className="text-xs font-mono text-primary">{item.year}</time>
+                          <div className="flex items-center gap-2">
+                            <time className="text-xs font-mono text-primary">{item.year}</time>
+                            {status && <span className="badge badge-xs badge-primary badge-outline">{status}</span>}
+                          </div>
                           <h3 className="font-bold mt-0.5 truncate">{item.company}</h3>
                           <span className="text-sm opacity-60">
                             {[item.department, lang === 'ko' ? item.title_ko : item.title_en].filter(Boolean).join(' · ')}
@@ -128,7 +134,7 @@ export default function AboutClient({
                       )}
                     </button>
                     <AnimatePresence initial={false}>
-                      {isOpen && (role || linkedProjects.length > 0) && (
+                      {isOpen && (roleLines.length > 0 || linkedProjects.length > 0) && (
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
@@ -137,10 +143,16 @@ export default function AboutClient({
                           className="overflow-hidden"
                         >
                           <div className="px-4 pb-4">
-                            {role && (
+                            {roleLines.length > 0 && (
                               <>
-                                <p className="text-xs font-semibold text-primary/70 mb-1">{t.about.role_contribution}</p>
-                                <p className="text-sm text-base-content/70 whitespace-pre-line">{role}</p>
+                                <p className="text-xs font-semibold text-primary/70 mb-2">{t.about.role_contribution}</p>
+                                <div className="space-y-1.5">
+                                  {roleLines.map((line, li) => (
+                                    <p key={li} className="text-sm text-base-content/80 bg-primary/5 border border-primary/10 rounded-lg px-3 py-2 leading-relaxed">
+                                      {line}
+                                    </p>
+                                  ))}
+                                </div>
                               </>
                             )}
                             {linkedProjects.length > 0 && (

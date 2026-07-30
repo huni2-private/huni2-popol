@@ -18,6 +18,7 @@ interface Career {
   company: string; department: string; logo_url: string;
   company_desc_ko: string; company_desc_en: string;
   desc_ko: string;  desc_en: string;
+  status_ko: string; status_en: string;
   project_keys: string[];
 }
 
@@ -34,6 +35,7 @@ const defaultCareer = (): Career => ({
   company: '', department: '', logo_url: '',
   company_desc_ko: '', company_desc_en: '',
   desc_ko: '', desc_en: '',
+  status_ko: '', status_en: '',
   project_keys: [],
 });
 const defaultStack  = (): Stack  => ({ name_ko: '', name_en: '', icon: 'Code', items: [] });
@@ -262,6 +264,14 @@ export default function AdminAboutPage() {
                 <div className="form-control">
                   <label className="label"><span className="label-text">Title (English)</span></label>
                   <input className="input input-bordered input-sm bg-base-100" value={c.title_en} onChange={e => updateCareer(i, 'title_en', e.target.value)} />
+                </div>
+                <div className="form-control">
+                  <label className="label"><span className="label-text">상태 배지 (한국어, 선택)</span></label>
+                  <input placeholder="재직중, 팀 개발 등" className="input input-bordered input-sm bg-base-100" value={c.status_ko} onChange={e => updateCareer(i, 'status_ko', e.target.value)} />
+                </div>
+                <div className="form-control">
+                  <label className="label"><span className="label-text">Status Badge (English, optional)</span></label>
+                  <input className="input input-bordered input-sm bg-base-100" value={c.status_en} onChange={e => updateCareer(i, 'status_en', e.target.value)} />
                 </div>
                 <div className="form-control">
                   <label className="label"><span className="label-text">회사 소개 (한국어)</span></label>
