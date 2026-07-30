@@ -147,7 +147,7 @@ export default function HomeClient({
           <div className="space-y-3 relative z-10">
             <div className="flex flex-wrap gap-1.5">
               {['Next.js', 'TypeScript', 'Firebase', 'Go', 'Tailwind CSS'].map(t => (
-                <span key={t} className="badge badge-sm badge-ghost font-mono opacity-60">{t}</span>
+                <span key={t} className="badge badge-sm badge-outline border-primary/30 text-primary/80 font-mono">{t}</span>
               ))}
             </div>
           </div>
@@ -171,17 +171,17 @@ export default function HomeClient({
             <div className="inline-flex items-center px-2.5 py-1 border border-success/50 text-success text-xs font-mono font-bold tracking-wider rounded">
               {lang === 'ko' ? '구직 중' : 'Available for Work'}
             </div>
-            <Link href="/about" className="btn btn-primary rounded-full gap-2">
+            <Link href="/about" className="btn btn-primary btn-lg rounded-full gap-2">
               {lang === 'ko' ? '소개 보기' : 'About Me'} <ArrowRight className="w-4 h-4" />
             </Link>
-            <Link href="/resume" className="btn btn-outline rounded-full gap-2">
+            <Link href="/resume" className="btn btn-outline btn-primary rounded-full gap-2">
               {lang === 'ko' ? '이력서 보기' : 'Resume'}
             </Link>
             <a
               href="https://github.com/huni2-private/huni2-popol"
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn-ghost rounded-full gap-2"
+              className="btn btn-ghost btn-sm rounded-full gap-2 opacity-60 hover:opacity-100"
               aria-label="GitHub 소스 코드"
             >
               <Github className="w-4 h-4" />
