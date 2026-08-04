@@ -3,7 +3,7 @@
 // 이력서 인쇄 전용 클라이언트 — window.print() 트리거 + @media print 레이아웃
 import { Printer } from 'lucide-react';
 
-interface Bio     { title_ko?: string; desc_ko?: string; }
+interface Bio     { title_ko?: string; desc_ko?: string; photo_url?: string; }
 interface Career  { year: string; company: string; title_ko: string; desc_ko: string; }
 interface Stack   { name_ko: string; items: string[]; }
 interface Impact  { id: string; project?: string; metric: string; title: string; before?: string; after?: string; context?: string; }
@@ -127,9 +127,18 @@ export default function ResumePrintClient({
 
         {/* ── 헤더 ── */}
         <header className="avoid-break flex items-start justify-between gap-6 pb-5 border-b-2 border-slate-900">
-          <div>
-            <h1 className="text-[38px] font-black tracking-tight leading-none text-slate-900">{name}</h1>
-            <p className="text-[15px] font-semibold text-blue-700 mt-2">{role}</p>
+          <div className="flex items-center gap-5">
+            {bio.photo_url && (
+              <img
+                src={bio.photo_url}
+                alt=""
+                className="w-28 h-28 rounded-lg object-cover object-top border border-slate-300 shrink-0"
+              />
+            )}
+            <div>
+              <h1 className="text-[38px] font-black tracking-tight leading-none text-slate-900">{name}</h1>
+              <p className="text-[15px] font-semibold text-blue-700 mt-2">{role}</p>
+            </div>
           </div>
           <div className="text-right text-[12px] text-slate-500 font-mono space-y-1 shrink-0 pt-1">
             {contact.email    && <p>{contact.email}</p>}
