@@ -11,7 +11,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 interface Bio {
-  title_ko?: string; title_en?: string; desc_ko?: string; desc_en?: string;
+  title_ko?: string; title_en?: string; desc_ko?: string; desc_en?: string; photo_url?: string;
 }
 interface Career {
   year: string;
@@ -47,34 +47,45 @@ export default function AboutClient({
   const desc = lang === 'ko' ? bio.desc_ko : bio.desc_en;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-20">
+    <div className="max-w-4xl mx-auto space-y-20 pt-8">
       {/* Bio */}
-      <section className="space-y-6">
-        <motion.h1
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="text-4xl font-bold"
-        >
-          {lang === 'ko' ? (
-            <>
-              {bio.title_ko ?? 'AI로 실서비스를 만드는'}{' '}
-              <span className="text-primary italic">개발자</span>
-            </>
-          ) : (
-            <>
-              {bio.title_en ?? 'AI-augmented developer shipping real products on the'}{' '}
-              <span className="text-primary italic">Web</span>
-            </>
-          )}
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
-          className="text-lg text-base-content/70 leading-relaxed"
-        >
-          {desc}
-        </motion.p>
+      <section className="flex flex-col sm:flex-row items-center gap-8">
+        {bio.photo_url && (
+          <motion.img
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            src={bio.photo_url}
+            alt=""
+            className="w-44 h-44 sm:w-56 sm:h-56 rounded-2xl object-cover object-top border border-base-content/10 shrink-0"
+          />
+        )}
+        <div className="space-y-6">
+          <motion.h1
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="text-4xl font-bold"
+          >
+            {lang === 'ko' ? (
+              <>
+                {bio.title_ko ?? 'AI로 실서비스를 만드는'}{' '}
+                <span className="text-primary italic">개발자</span>
+              </>
+            ) : (
+              <>
+                {bio.title_en ?? 'AI-augmented developer shipping real products on the'}{' '}
+                <span className="text-primary italic">Web</span>
+              </>
+            )}
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-lg text-base-content/70 leading-relaxed"
+          >
+            {desc}
+          </motion.p>
+        </div>
       </section>
 
       {/* Career Timeline */}

@@ -10,6 +10,7 @@ import { AdminToast, useAdminToast } from '@/components/admin/AdminToast';
 interface Bio {
   title_ko: string; title_en: string;
   desc_ko: string;  desc_en: string;
+  photo_url: string;
 }
 
 interface Career {
@@ -56,13 +57,14 @@ export default function AdminAboutPage() {
   const [saving,  setSaving]  = useState(false);
   const { toast, showToast } = useAdminToast();
 
-  const [bio,    setBio]    = useState<Bio>({ title_ko: '', title_en: '', desc_ko: '', desc_en: '' });
+  const [bio,    setBio]    = useState<Bio>({ title_ko: '', title_en: '', desc_ko: '', desc_en: '', photo_url: '' });
   const [career, setCareer] = useState<Career[]>([]);
   const [stack,  setStack]  = useState<Stack[]>([]);
   const [education, setEducation] = useState<Education[]>([]);
   const [newItem, setNewItem] = useState('');
   const [activeStack, setActiveStack] = useState<number | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState<number | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [projectKeys, setProjectKeys] = useState<string[]>([]);
   const [newProjectKey, setNewProjectKey] = useState('');
   const [activeCareerProject, setActiveCareerProject] = useState<number | null>(null);
@@ -81,7 +83,7 @@ export default function AdminAboutPage() {
       ]);
 
       setProjectKeys((projectsData ?? []).map(p => p.project_key || p.title).filter(Boolean));
-      if (bioData?.value)       setBio(bioData.value);
+      if (bioData?.value)       setBio(p => ({ ...p, ...bioData.value }));
       if (careerData?.value)    setCareer((careerData.value as Career[]).map(c => ({ ...defaultCareer(), ...c })));
       if (stackData?.value)     setStack(stackData.value);
       if (educationData?.value) setEducation(educationData.value);
@@ -121,6 +123,22 @@ export default function AdminAboutPage() {
     const { data: { publicUrl } } = supabase.storage.from('portfolio').getPublicUrl(path);
     updateCareer(i, 'logo_url', publicUrl);
     setUploadingLogo(null);
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingPhoto(true);
+    const ext  = file.name.split('.').pop();
+    const path = `profile/${Date.now()}.${ext}`;
+
+    const { error } = await supabase.storage.from('portfolio').upload(path, file, { upsert: true });
+    if (error) { showToast('업로드 실패: ' + error.message, 'error'); setUploadingPhoto(false); return; }
+
+    const { data: { publicUrl } } = supabase.storage.from('portfolio').getPublicUrl(path);
+    setBio(p => ({ ...p, photo_url: publicUrl }));
+    setUploadingPhoto(false);
   };
 
   const addCareerProject = (i: number) => {
@@ -193,6 +211,16 @@ export default function AdminAboutPage() {
       <section className="card bg-base-200 border border-base-content/5">
         <div className="card-body gap-4">
           <h2 className="card-title text-lg">소개 문구</h2>
+          <div className="flex items-center gap-3">
+            {bio.photo_url
+              ? <img src={bio.photo_url} alt="" className="w-16 h-16 rounded-xl object-cover border border-base-content/10" />
+              : <div className="w-16 h-16 rounded-xl bg-base-300 shrink-0" />}
+            <label className={`flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border-2 border-dashed border-base-content/20 hover:border-primary/50 cursor-pointer transition-all text-sm ${uploadingPhoto ? 'opacity-50 pointer-events-none' : ''}`}>
+              {uploadingPhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4 text-base-content/40" />}
+              {uploadingPhoto ? '업로드 중...' : '프로필 사진 업로드'}
+              <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+            </label>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="form-control">
               <label className="label"><span className="label-text">타이틀 (한국어)</span></label>
