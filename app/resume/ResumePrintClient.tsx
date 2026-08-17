@@ -3,13 +3,15 @@
 // 이력서 인쇄 전용 클라이언트 — window.print() 트리거 + @media print 레이아웃
 import { Printer } from 'lucide-react';
 
-interface Bio     { title_ko?: string; desc_ko?: string; photo_url?: string; }
-interface Career  { year: string; company: string; title_ko: string; desc_ko: string; }
-interface Stack   { name_ko: string; items: string[]; }
-interface Impact  { id: string; project?: string; metric: string; title: string; before?: string; after?: string; context?: string; }
-interface Project { id: string; title: string; description?: string; tags?: string[]; type?: string; status?: string; project_url?: string; github_url?: string; project_key?: string; }
-interface Education { year: string; institution: string; title: string; desc?: string; }
-interface Contact { email?: string; github?: string; linkedin?: string; }
+interface Bio          { title_ko?: string; desc_ko?: string; photo_url?: string; }
+interface Career       { year: string; company: string; title_ko: string; desc_ko: string; }
+interface Stack        { name_ko: string; items: string[]; }
+interface Impact       { id: string; project?: string; metric: string; title: string; before?: string; after?: string; context?: string; }
+interface Project      { id: string; title: string; description?: string; tags?: string[]; type?: string; status?: string; project_url?: string; github_url?: string; project_key?: string; }
+interface Education    { year: string; institution: string; title: string; desc?: string; }
+interface Contact      { email?: string; github?: string; linkedin?: string; }
+interface CoverSection { id: string; title: string; content: string; }
+interface CoverLetter  { company: string; position: string; sections: CoverSection[]; }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
@@ -88,7 +90,7 @@ function ProjectDesc({ text, impacts }: { text: string; impacts: Impact[] }) {
 }
 
 export default function ResumePrintClient({
-  bio, career, stack, education, impactStats, projects, contact,
+  bio, career, stack, education, impactStats, projects, contact, coverLetter,
 }: {
   bio: Bio;
   career: Career[];
@@ -97,6 +99,7 @@ export default function ResumePrintClient({
   impactStats: Impact[];
   projects: Project[];
   contact: Contact;
+  coverLetter: CoverLetter;
 }) {
   const name = '허창훈';
   const role = bio.title_ko || '프론트엔드 개발자';
@@ -301,6 +304,34 @@ export default function ResumePrintClient({
               })}
             </div>
           </section>
+        )}
+
+        {/* ── 자기소개서 (섹션이 있을 때만 — 인쇄 시 새 페이지) ── */}
+        {coverLetter.sections.length > 0 && (
+          <div style={{ pageBreakBefore: 'always' }} className="pt-2 space-y-7">
+            <header className="avoid-break flex items-end justify-between pb-5 border-b-2 border-slate-900">
+              <div>
+                <h1 className="text-[28px] font-black tracking-tight leading-none text-slate-900">자기소개서</h1>
+                {(coverLetter.company || coverLetter.position) && (
+                  <p className="text-[13px] font-semibold text-blue-700 mt-1.5">
+                    {[coverLetter.company, coverLetter.position].filter(Boolean).join(' · ')}
+                  </p>
+                )}
+              </div>
+              <p className="text-[11px] font-mono text-slate-400 shrink-0">
+                {new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            </header>
+            {coverLetter.sections.map((s, i) => (
+              <div key={s.id} className="avoid-break">
+                <h2 className="text-[10px] font-black uppercase tracking-wider text-blue-700 border-b border-slate-200 pb-1.5 mb-3 flex items-center gap-2">
+                  <span className="font-mono text-slate-300">{String(i + 1).padStart(2, '0')}</span>
+                  {s.title}
+                </h2>
+                <p className="text-[13px] leading-[1.95] text-slate-600 whitespace-pre-wrap">{s.content}</p>
+              </div>
+            ))}
+          </div>
         )}
 
       </div>
