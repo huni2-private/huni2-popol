@@ -93,15 +93,17 @@ export default function ResumePrintClient({
       <style>{`
         @media print {
           .no-print { display: none !important; }
+          header, #ck-chatbot-root { display: none !important; }
           *, *::before, *::after {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+            font-family: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", sans-serif !important;
           }
           body, html { background: #fff !important; }
-          @page { size: A4; margin: 0; }
+          @page { size: A4; margin: 14mm 20mm; }
           .resume-root {
             width: 100% !important;
-            padding: 14mm 20mm !important;
+            padding: 0 !important;
             max-width: none !important;
             margin: 0 !important;
             box-sizing: border-box !important;
