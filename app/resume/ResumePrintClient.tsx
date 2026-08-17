@@ -30,7 +30,7 @@ function ProjectDesc({ text, impacts }: { text: string; impacts: Impact[] }) {
     .replace(/\[(.+?)\]\(.+?\)/g, '$1');
 
   const firstSentence = (s: string) => {
-    const m = s.trim().match(/^.+?[.。!?]/);
+    const m = s.trim().match(/^[\s\S]+?[.。!?]/);
     return m ? m[0].trim() : s.trim().slice(0, 120);
   };
 
@@ -91,7 +91,7 @@ function ProjectDesc({ text, impacts }: { text: string; impacts: Impact[] }) {
 }
 
 export default function ResumePrintClient({
-  bio, career, stack, education, impactStats, projects, contact, coverLetter,
+  bio, career, stack, education, impactStats, projects, contact, isAdmin, coverLetter,
 }: {
   bio: Bio;
   career: Career[];
@@ -100,7 +100,8 @@ export default function ResumePrintClient({
   impactStats: Impact[];
   projects: Project[];
   contact: Contact;
-  coverLetter: CoverLetter;
+  isAdmin: boolean;
+  coverLetter: CoverLetter | null;
 }) {
   const [scale, setScale] = useState(1);
 
@@ -161,7 +162,7 @@ export default function ResumePrintClient({
       <div className="no-print sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-200 px-6 py-3 flex items-center justify-between gap-4">
         <span className="text-sm text-slate-400 font-mono hidden sm:block">이력서 미리보기</span>
         <div className="flex items-center gap-2 ml-auto">
-          <a href="/resume/cover" className="btn btn-ghost btn-sm rounded-full text-slate-400">자기소개서</a>
+          {isAdmin && <a href="/admin/cover" className="btn btn-ghost btn-sm rounded-full text-slate-400">자기소개서 관리</a>}
           <button
             onClick={() => window.print()}
             className="btn btn-primary btn-sm rounded-full gap-2 shrink-0"
@@ -319,8 +320,8 @@ export default function ResumePrintClient({
           </section>
         )}
 
-        {/* ── 자기소개서 (섹션이 있을 때만 — 인쇄 시 새 페이지) ── */}
-        {coverLetter.sections.length > 0 && (
+        {/* ── 자기소개서 (어드민 + enabled + 섹션 있을 때만 — 인쇄 시 새 페이지) ── */}
+        {isAdmin && coverLetter && coverLetter.sections.length > 0 && (
           <div style={{ pageBreakBefore: 'always' }} className="pt-2 space-y-7">
             <header className="avoid-break flex items-end justify-between pb-5 border-b-2 border-slate-900">
               <div>

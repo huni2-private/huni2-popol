@@ -2,10 +2,15 @@
 import { createClient } from '@/lib/supabase/server';
 import ResumePrintClient from './ResumePrintClient';
 
+interface CoverSection { id: string; title: string; content: string; }
+interface CoverLetter  { id: string; company: string; position: string; sections: CoverSection[]; }
+interface CoverMeta    { active_id: string | null; enabled: boolean; }
+
 export default async function ResumePage() {
   const supabase = await createClient();
 
   const [
+    { data: { user } },
     { data: bioData },
     { data: careerData },
     { data: stackData },
@@ -13,8 +18,10 @@ export default async function ResumePage() {
     { data: impactData },
     { data: projects },
     { data: contactData },
-    { data: coverLetterData },
+    { data: coverLettersData },
+    { data: coverMetaData },
   ] = await Promise.all([
+    supabase.auth.getUser(),
     supabase.from('site_settings').select('value').eq('key', 'about_bio').single(),
     supabase.from('site_settings').select('value').eq('key', 'career_timeline').single(),
     supabase.from('site_settings').select('value').eq('key', 'tech_stack').single(),
@@ -22,8 +29,21 @@ export default async function ResumePage() {
     supabase.from('site_settings').select('value').eq('key', 'impact_stats').single(),
     supabase.from('projects').select('id, title, description, tags, type, status, project_url, github_url, project_key').eq('show_in_resume', true).order('display_order', { ascending: true }),
     supabase.from('site_settings').select('value').eq('key', 'contact_info').single(),
-    supabase.from('site_settings').select('value').eq('key', 'cover_letter').single(),
+    supabase.from('site_settings').select('value').eq('key', 'cover_letters').single(),
+    supabase.from('site_settings').select('value').eq('key', 'cover_letter_meta').single(),
   ]);
+
+  const isAdmin = !!user;
+
+  // 어드민 + enabled + active_id가 있을 때만 자기소개서 표시
+  let activeCoverLetter: CoverLetter | null = null;
+  if (isAdmin) {
+    const meta = (coverMetaData?.value ?? {}) as CoverMeta;
+    if (meta.enabled && meta.active_id) {
+      const letters = Array.isArray(coverLettersData?.value) ? (coverLettersData.value as CoverLetter[]) : [];
+      activeCoverLetter = letters.find(l => l.id === meta.active_id) ?? null;
+    }
+  }
 
   return (
     <ResumePrintClient
@@ -34,7 +54,8 @@ export default async function ResumePage() {
       impactStats={Array.isArray(impactData?.value) ? impactData.value : []}
       projects={projects ?? []}
       contact={contactData?.value ?? {}}
-      coverLetter={coverLetterData?.value ?? { company: '', position: '', sections: [] }}
+      isAdmin={isAdmin}
+      coverLetter={activeCoverLetter}
     />
   );
 }
