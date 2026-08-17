@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import NextTopLoader from "nextjs-toploader";
@@ -10,7 +11,12 @@ import PageViewTracker from "@/components/layout/PageViewTracker";
 import ScrollToTop from "@/components/layout/ScrollToTop";
 import { Analytics } from "@vercel/analytics/react";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
+const pretendard = localFont({
+  src: "../node_modules/pretendard/dist/web/variable/woff2/PretendardVariable.woff2",
+  variable: "--font-pretendard",
+  weight: "45 920",
+  display: "swap",
+});
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -54,7 +60,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const isAdmin = !!user;
 
   return (
-    <html lang="ko" suppressHydrationWarning>
+    <html lang="ko" suppressHydrationWarning className={`${pretendard.variable} ${geistMono.variable}`}>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -62,7 +68,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           }}
         />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-base-100 font-sans`}>
+      <body className="antialiased min-h-screen bg-base-100 font-sans">
         <LanguageProvider>
           <NextTopLoader color="#7c6af8" showSpinner={false} />
           <Header />

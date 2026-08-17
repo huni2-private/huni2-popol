@@ -20,40 +20,70 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 }
 
 function ProjectDesc({ text, impacts }: { text: string; impacts: Impact[] }) {
-  const lines = text
-    .replace(/^#{1,6}[^\n]*/gm, '')
+  const clean = text
     .replace(/\*\*(.+?)\*\*/g, '$1')
     .replace(/\*(.+?)\*/g, '$1')
     .replace(/`(.+?)`/g, '$1')
-    .replace(/\[(.+?)\]\(.+?\)/g, '$1')
-    .replace(/^[-*+]\s+/gm, '')
-    .split('\n')
-    .map(l => l.trim())
-    .filter(l => l.length > 5);
+    .replace(/\[(.+?)\]\(.+?\)/g, '$1');
 
-  if (impacts.length === 0 && lines.length === 0) return null;
+  const firstSentence = (s: string) => {
+    const m = s.trim().match(/^.+?[.。!?]/);
+    return m ? m[0].trim() : s.trim().slice(0, 120);
+  };
+
+  let desc = '';
+  let bullets: string[] = [];
+
+  if (/^##/m.test(clean)) {
+    // ## 섹션 구조 — 첫 섹션은 서비스 설명, 나머지는 불릿
+    const parts = clean.split(/^##[^\n]*/m).map(s => s.trim()).filter(Boolean);
+    desc = firstSentence(parts[0] ?? '');
+    bullets = parts.slice(1, 5).map(s => {
+      const bulletLine = s.match(/^[-*+]\s+(.+)/m);
+      return bulletLine ? bulletLine[1].trim() : firstSentence(s);
+    }).filter(l => l.length > 5);
+  } else {
+    // 헤더 없음 — 명시적 불릿 또는 첫 줄
+    bullets = clean
+      .split('\n')
+      .filter(l => /^[-*+]\s+/.test(l.trim()))
+      .map(l => l.replace(/^[-*+]\s+/, '').trim())
+      .filter(l => l.length > 5)
+      .slice(0, 4);
+    if (bullets.length === 0)
+      desc = clean.split('\n').find(l => l.trim().length > 5)?.trim() ?? '';
+  }
+
+  if (!desc && impacts.length === 0 && bullets.length === 0) return null;
 
   return (
-    <ul className="mt-1 space-y-0.5">
-      {impacts.map(s => (
-        <li key={s.id} className="text-[11px] leading-relaxed flex gap-1.5">
-          <span className="text-blue-700/40 shrink-0 mt-0.5">·</span>
-          <span>
-            <span className="font-bold font-mono text-blue-700">{s.metric}</span>
-            {s.title && <span className="text-slate-700"> {s.title}</span>}
-            {s.before && s.after && (
-              <span className="text-slate-400 font-mono text-[10px]"> ({s.before} → {s.after})</span>
-            )}
-          </span>
-        </li>
-      ))}
-      {lines.map((line, i) => (
-        <li key={i} className="text-[11px] text-slate-500 leading-relaxed flex gap-1.5">
-          <span className="text-blue-700/40 shrink-0 mt-0.5">·</span>
-          <span>{line}</span>
-        </li>
-      ))}
-    </ul>
+    <div className="mt-1">
+      {desc && (
+        <p className="text-[11px] text-slate-500 leading-relaxed mb-0.5">{desc}</p>
+      )}
+      {(impacts.length > 0 || bullets.length > 0) && (
+        <ul className="space-y-0.5">
+          {impacts.map(s => (
+            <li key={s.id} className="text-[11px] leading-relaxed flex gap-1.5">
+              <span className="text-blue-700/40 shrink-0 mt-0.5">·</span>
+              <span>
+                <span className="font-bold font-mono text-blue-700">{s.metric}</span>
+                {s.title && <span className="text-slate-700"> {s.title}</span>}
+                {s.before && s.after && (
+                  <span className="text-slate-400 font-mono text-[10px]"> ({s.before} → {s.after})</span>
+                )}
+              </span>
+            </li>
+          ))}
+          {bullets.map((line, i) => (
+            <li key={i} className="text-[11px] text-slate-500 leading-relaxed flex gap-1.5">
+              <span className="text-blue-700/40 shrink-0 mt-0.5">·</span>
+              <span>{line}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
