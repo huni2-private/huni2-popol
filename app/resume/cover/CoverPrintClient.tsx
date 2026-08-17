@@ -2,6 +2,7 @@
 
 // 자기소개서 인쇄 전용 클라이언트 — window.print() 트리거 + @media print 레이아웃
 import { Printer } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface Section { id: string; title: string; content: string; }
 interface CoverLetter { company: string; position: string; sections: Section[]; }
@@ -9,6 +10,14 @@ interface CoverLetter { company: string; position: string; sections: Section[]; 
 export default function CoverPrintClient({ coverLetter }: { coverLetter: CoverLetter }) {
   const { company, position, sections } = coverLetter;
   const today = new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  const [scale, setScale] = useState(1);
+  useEffect(() => {
+    const update = () => setScale(Math.min(1, (window.innerWidth - 32) / 904));
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
   return (
     <>
@@ -25,6 +34,7 @@ export default function CoverPrintClient({ coverLetter }: { coverLetter: CoverLe
           @page { size: A4; margin: 20mm 22mm; }
           .cover-root { width: 100% !important; padding: 0 !important; max-width: none !important; margin: 0 !important; }
           .avoid-break { break-inside: avoid; page-break-inside: avoid; }
+          .cover-scale { zoom: 1 !important; transform: none !important; }
         }
       `}</style>
 
@@ -47,7 +57,7 @@ export default function CoverPrintClient({ coverLetter }: { coverLetter: CoverLe
       </div>
 
       {/* 본문 */}
-      <div className="overflow-x-auto">
+      <div className="cover-scale overflow-x-hidden" style={{ zoom: scale }}>
         <div className="cover-root w-[780px] mx-auto px-12 py-12 text-slate-800">
 
           {/* 헤더 */}

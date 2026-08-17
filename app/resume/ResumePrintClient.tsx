@@ -2,6 +2,7 @@
 
 // 이력서 인쇄 전용 클라이언트 — window.print() 트리거 + @media print 레이아웃
 import { Printer } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface Bio          { title_ko?: string; desc_ko?: string; photo_url?: string; }
 interface Career       { year: string; company: string; title_ko: string; desc_ko: string; }
@@ -101,6 +102,18 @@ export default function ResumePrintClient({
   contact: Contact;
   coverLetter: CoverLetter;
 }) {
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const update = () => {
+      // 780px 컨텐츠 + 양쪽 px-10(40px*2) = 860px 기준, 32px 여백
+      setScale(Math.min(1, (window.innerWidth - 32) / 860));
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
   const name = '허창훈';
   const role = bio.title_ko || '프론트엔드 개발자';
   const desc = bio.desc_ko || 'React · Next.js로 실서비스를 운영하며 성능 개선과 안정성 확보에 집중해온 개발자입니다.';
@@ -137,7 +150,7 @@ export default function ResumePrintClient({
             margin: 0 !important;
             box-sizing: border-box !important;
           }
-          .overflow-x-auto { overflow: visible !important; }
+          .resume-scale { zoom: 1 !important; transform: none !important; }
           .avoid-break { break-inside: avoid; page-break-inside: avoid; }
           /* 잉크 최소화 — 배경색 제거 */
           .print-no-bg { background: transparent !important; border-color: #ddd !important; }
@@ -159,7 +172,7 @@ export default function ResumePrintClient({
       </div>
 
       {/* ── 이력서 본문 ── */}
-      <div className="overflow-x-auto">
+      <div className="resume-scale overflow-x-hidden" style={{ zoom: scale }}>
       <div className="resume-root w-[780px] mx-auto px-10 py-10 space-y-7 text-slate-800">
 
         {/* ── 헤더 ── */}
