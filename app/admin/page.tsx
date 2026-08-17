@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   LogOut, Plus, Settings, FileText,
-  Sparkles, Loader2, Package, PenTool, Eye, Clock, User, Mail, ArrowRight, Search, Zap, BarChart2
+  Sparkles, Loader2, Package, PenTool, Eye, Clock, User, Mail, ArrowRight, Search, Zap, BarChart2, BookOpen
 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -202,6 +202,7 @@ export default function AdminPage() {
                 { href: '/admin/impact',    label: 'Impact 관리',    icon: Zap,      desc: '홈 임팩트 수치 CRUD',  color: 'group-hover:text-warning',   bg: 'group-hover:bg-warning/10' },
                 { href: '/admin/messages',  label: '메시지',          icon: Mail,      desc: 'Contact 폼 수신 메시지', color: 'group-hover:text-primary',   bg: 'group-hover:bg-primary/10' },
                 { href: '/admin/analytics', label: 'Analytics',       icon: BarChart2, desc: '방문자·페이지별 조회수',  color: 'group-hover:text-info',      bg: 'group-hover:bg-info/10' },
+                { href: '/admin/cover',     label: '자기소개서 관리',   icon: BookOpen,  desc: '섹션 추가·편집·출력',     color: 'group-hover:text-primary',   bg: 'group-hover:bg-primary/10' },
               ].map(item => (
                 <Link
                   key={item.href}
