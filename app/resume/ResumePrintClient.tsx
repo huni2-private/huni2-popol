@@ -261,7 +261,7 @@ export default function ResumePrintClient({
                       </div>
                     )}
 
-                    {/* 임팩트 + 설명 — 불릿 통합 */}
+                    {/* 임팩트 + 설명 — · 불릿 통합 */}
                     <ProjectDesc text={p.description ?? ''} impacts={impacts} />
                   </div>
                 );
