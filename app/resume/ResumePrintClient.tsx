@@ -7,7 +7,7 @@ interface Bio     { title_ko?: string; desc_ko?: string; photo_url?: string; }
 interface Career  { year: string; company: string; title_ko: string; desc_ko: string; }
 interface Stack   { name_ko: string; items: string[]; }
 interface Impact  { id: string; project?: string; metric: string; title: string; before?: string; after?: string; context?: string; }
-interface Project { id: string; title: string; description?: string; tags?: string[]; type?: string; status?: string; project_url?: string; github_url?: string; }
+interface Project { id: string; title: string; description?: string; tags?: string[]; type?: string; status?: string; project_url?: string; github_url?: string; project_key?: string; }
 interface Education { year: string; institution: string; title: string; desc?: string; }
 interface Contact { email?: string; github?: string; linkedin?: string; }
 
@@ -229,7 +229,7 @@ export default function ResumePrintClient({
             <SectionTitle>Projects</SectionTitle>
             <div className="space-y-4">
               {projects.map(p => {
-                const impacts = (impactByProject[p.title] ?? [])
+                const impacts = (impactByProject[p.project_key ?? p.title] ?? [])
                   .filter(s => /[0-9%×↑→~]/.test(s.metric))
                   .slice(0, 2);
                 return (
