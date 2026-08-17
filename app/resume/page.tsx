@@ -13,6 +13,7 @@ export default async function ResumePage() {
     { data: impactData },
     { data: projects },
     { data: contactData },
+    { data: coverLetterData },
   ] = await Promise.all([
     supabase.from('site_settings').select('value').eq('key', 'about_bio').single(),
     supabase.from('site_settings').select('value').eq('key', 'career_timeline').single(),
@@ -21,6 +22,7 @@ export default async function ResumePage() {
     supabase.from('site_settings').select('value').eq('key', 'impact_stats').single(),
     supabase.from('projects').select('id, title, description, tags, type, status, project_url, github_url, project_key').eq('show_in_resume', true).order('display_order', { ascending: true }),
     supabase.from('site_settings').select('value').eq('key', 'contact_info').single(),
+    supabase.from('site_settings').select('value').eq('key', 'cover_letter').single(),
   ]);
 
   return (
@@ -32,6 +34,7 @@ export default async function ResumePage() {
       impactStats={Array.isArray(impactData?.value) ? impactData.value : []}
       projects={projects ?? []}
       contact={contactData?.value ?? {}}
+      coverLetter={coverLetterData?.value ?? { company: '', position: '', sections: [] }}
     />
   );
 }
