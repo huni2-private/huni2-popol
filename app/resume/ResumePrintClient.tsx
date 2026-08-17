@@ -100,10 +100,13 @@ export default function ResumePrintClient({
           body, html { background: #fff !important; }
           @page { size: A4; margin: 0; }
           .resume-root {
+            width: 100% !important;
             padding: 14mm 20mm !important;
             max-width: none !important;
             margin: 0 !important;
+            box-sizing: border-box !important;
           }
+          .overflow-x-auto { overflow: visible !important; }
           .avoid-break { break-inside: avoid; page-break-inside: avoid; }
           /* 잉크 최소화 — 배경색 제거 */
           .print-no-bg { background: transparent !important; border-color: #ddd !important; }
