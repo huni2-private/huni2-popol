@@ -19,16 +19,28 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-function stripMd(s: string): string {
+function stripMd(s: string): string[] {
   return s
     .replace(/^#{1,6}[^\n]*/gm, '')
-    .replace(/\*\*(.+?)\*\*/g, '$1')
-    .replace(/\*(.+?)\*/g, '$1')
-    .replace(/`(.+?)`/g, '$1')
-    .replace(/\[(.+?)\]\(.+?\)/g, '$1')
-    .replace(/^[-*+]\s+/gm, '')
-    .replace(/\n+/g, ' ')
-    .trim();
+    .split('\n')
+    .map(line => line
+      .replace(/\*\*(.+?)\*\*/g, '$1')
+      .replace(/\*(.+?)\*/g, '$1')
+      .replace(/`(.+?)`/g, '$1')
+      .replace(/\[(.+?)\]\(.+?\)/g, '$1')
+      .replace(/^[-*+]\s+/, '')
+      .trim())
+    .filter(Boolean);
+}
+
+function MdLines({ lines }: { lines: string[] }) {
+  return (
+    <>
+      {lines.map((line, i) => (
+        <span key={i}>{line}{i < lines.length - 1 && <br />}</span>
+      ))}
+    </>
+  );
 }
 
 
@@ -42,11 +54,11 @@ const RESUME_SECTIONS = [
 function ResumeDesc({ text }: { text: string }) {
   const sections = RESUME_SECTIONS.map(({ pattern, label }) => {
     const m = text.match(new RegExp(`##[^\\n]*${pattern.source}[^\\n]*\\n([\\s\\S]+?)(?=\\n##|$)`, 'i'));
-    return m ? { label, content: stripMd(m[1]) } : null;
+    return m ? { label, lines: stripMd(m[1]) } : null;
   }).filter(Boolean);
 
   if (sections.length === 0) {
-    return <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">{stripMd(text)}</p>;
+    return <p className="text-[11px] text-slate-500 mt-1 leading-relaxed"><MdLines lines={stripMd(text)} /></p>;
   }
 
   return (
@@ -54,7 +66,7 @@ function ResumeDesc({ text }: { text: string }) {
       {sections.map((s, i) => (
         <p key={i} className="text-[11px] leading-relaxed">
           <span className="font-bold text-blue-700/60 mr-1.5">{s!.label}</span>
-          <span className="text-slate-500">{s!.content}</span>
+          <span className="text-slate-500"><MdLines lines={s!.lines} /></span>
         </p>
       ))}
     </div>
