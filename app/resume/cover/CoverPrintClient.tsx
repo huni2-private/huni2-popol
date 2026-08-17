@@ -1,14 +1,20 @@
 'use client';
 
-// 자기소개서 인쇄 전용 클라이언트 — window.print() 트리거 + @media print 레이아웃
-import { Printer } from 'lucide-react';
+// 자기소개서 인쇄 전용 클라이언트 — 어드민용, 회사 선택 + window.print()
+import { Printer, ChevronDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-interface Section { id: string; title: string; content: string; }
-interface CoverLetter { company: string; position: string; sections: Section[]; }
+interface Section     { id: string; title: string; content: string; }
+interface CoverLetter { id: string; company: string; position: string; sections: Section[]; }
 
-export default function CoverPrintClient({ coverLetter }: { coverLetter: CoverLetter }) {
-  const { company, position, sections } = coverLetter;
+interface Props {
+  letters: CoverLetter[];
+  initialActive: CoverLetter | null;
+}
+
+export default function CoverPrintClient({ letters, initialActive }: Props) {
+  const [active, setActive] = useState<CoverLetter | null>(initialActive);
+
   const today = new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
 
   const [scale, setScale] = useState(1);
@@ -42,8 +48,27 @@ export default function CoverPrintClient({ coverLetter }: { coverLetter: CoverLe
       <div className="no-print sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-200 px-6 py-3 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="text-sm text-slate-400 font-mono hidden sm:block">자기소개서 미리보기</span>
-          {company && (
-            <span className="text-sm font-bold text-slate-600">{company}{position ? ` · ${position}` : ''}</span>
+          {/* 회사 선택 드롭다운 */}
+          {letters.length > 1 && (
+            <div className="relative">
+              <select
+                className="appearance-none bg-white border border-slate-200 rounded-lg pl-3 pr-8 py-1.5 text-sm font-semibold text-slate-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={active?.id ?? ''}
+                onChange={e => setActive(letters.find(l => l.id === e.target.value) ?? null)}
+              >
+                {letters.map(l => (
+                  <option key={l.id} value={l.id}>
+                    {l.company}{l.position ? ` · ${l.position}` : ''}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            </div>
+          )}
+          {letters.length === 1 && active && (
+            <span className="text-sm font-bold text-slate-600">
+              {active.company}{active.position ? ` · ${active.position}` : ''}
+            </span>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -56,39 +81,42 @@ export default function CoverPrintClient({ coverLetter }: { coverLetter: CoverLe
         </div>
       </div>
 
-      {/* 본문 */}
-      <div className="cover-scale overflow-x-hidden" style={{ zoom: scale }}>
-        <div className="cover-root w-[780px] mx-auto px-12 py-12 text-slate-800">
+      {/* 빈 상태 */}
+      {!active || active.sections.length === 0 ? (
+        <div className="no-print flex flex-col items-center justify-center py-32 text-slate-300">
+          <p className="text-lg mb-2">
+            {letters.length === 0 ? '작성된 자기소개서가 없습니다.' : '선택한 자기소개서에 내용이 없습니다.'}
+          </p>
+          <a href="/admin/cover" className="text-blue-500 underline text-sm">
+            어드민에서 작성하기 →
+          </a>
+        </div>
+      ) : (
+        /* 본문 */
+        <div className="cover-scale overflow-x-hidden" style={{ zoom: scale }}>
+          <div className="cover-root w-[780px] mx-auto px-12 py-12 text-slate-800">
 
-          {/* 헤더 */}
-          <header className="avoid-break border-b-2 border-slate-900 pb-6 mb-10">
-            <div className="flex items-end justify-between">
-              <div>
-                <h1 className="text-[34px] font-black tracking-tight leading-none text-slate-900">자기소개서</h1>
-                {(company || position) && (
-                  <p className="text-[14px] text-blue-700 font-semibold mt-2">
-                    {[company, position].filter(Boolean).join(' · ')}
-                  </p>
-                )}
+            {/* 헤더 */}
+            <header className="avoid-break border-b-2 border-slate-900 pb-6 mb-10">
+              <div className="flex items-end justify-between">
+                <div>
+                  <h1 className="text-[34px] font-black tracking-tight leading-none text-slate-900">자기소개서</h1>
+                  {(active.company || active.position) && (
+                    <p className="text-[14px] text-blue-700 font-semibold mt-2">
+                      {[active.company, active.position].filter(Boolean).join(' · ')}
+                    </p>
+                  )}
+                </div>
+                <div className="text-right text-[12px] text-slate-400 font-mono space-y-0.5">
+                  <p className="font-bold text-slate-700">허창훈</p>
+                  <p>{today}</p>
+                </div>
               </div>
-              <div className="text-right text-[12px] text-slate-400 font-mono space-y-0.5">
-                <p className="font-bold text-slate-700">허창훈</p>
-                <p>{today}</p>
-              </div>
-            </div>
-          </header>
+            </header>
 
-          {/* 섹션들 */}
-          {sections.length === 0 ? (
-            <div className="no-print text-center py-20 text-slate-300">
-              <p className="text-lg">아직 작성된 내용이 없습니다.</p>
-              <a href="/admin/cover" className="text-blue-500 underline text-sm mt-2 block">
-                어드민에서 작성하기 →
-              </a>
-            </div>
-          ) : (
+            {/* 섹션들 */}
             <div className="space-y-9">
-              {sections.map((s, i) => (
+              {active.sections.map((s, i) => (
                 <div key={s.id} className="avoid-break">
                   <h2 className="text-[10px] font-black uppercase tracking-wider text-blue-700 border-b border-slate-200 pb-1.5 mb-3 flex items-center gap-2">
                     <span className="font-mono text-slate-300">{String(i + 1).padStart(2, '0')}</span>
@@ -98,10 +126,10 @@ export default function CoverPrintClient({ coverLetter }: { coverLetter: CoverLe
                 </div>
               ))}
             </div>
-          )}
 
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 }
