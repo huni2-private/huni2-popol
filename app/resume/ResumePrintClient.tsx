@@ -19,57 +19,41 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-function stripMd(s: string): string[] {
-  return s
+function ProjectDesc({ text, impacts }: { text: string; impacts: Impact[] }) {
+  const lines = text
     .replace(/^#{1,6}[^\n]*/gm, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/`(.+?)`/g, '$1')
+    .replace(/\[(.+?)\]\(.+?\)/g, '$1')
+    .replace(/^[-*+]\s+/gm, '')
     .split('\n')
-    .map(line => line
-      .replace(/\*\*(.+?)\*\*/g, '$1')
-      .replace(/\*(.+?)\*/g, '$1')
-      .replace(/`(.+?)`/g, '$1')
-      .replace(/\[(.+?)\]\(.+?\)/g, '$1')
-      .replace(/^[-*+]\s+/, '')
-      .trim())
-    .filter(Boolean);
-}
+    .map(l => l.trim())
+    .filter(l => l.length > 5);
 
-function MdLines({ lines }: { lines: string[] }) {
+  if (impacts.length === 0 && lines.length === 0) return null;
+
   return (
-    <>
+    <ul className="mt-1 space-y-0.5">
+      {impacts.map(s => (
+        <li key={s.id} className="text-[11px] leading-relaxed flex gap-1.5">
+          <span className="text-blue-700/40 shrink-0 mt-0.5">·</span>
+          <span>
+            <span className="font-bold font-mono text-blue-700">{s.metric}</span>
+            {s.title && <span className="text-slate-700"> {s.title}</span>}
+            {s.before && s.after && (
+              <span className="text-slate-400 font-mono text-[10px]"> ({s.before} → {s.after})</span>
+            )}
+          </span>
+        </li>
+      ))}
       {lines.map((line, i) => (
-        <span key={i}>{line}{i < lines.length - 1 && <br />}</span>
+        <li key={i} className="text-[11px] text-slate-500 leading-relaxed flex gap-1.5">
+          <span className="text-blue-700/40 shrink-0 mt-0.5">·</span>
+          <span>{line}</span>
+        </li>
       ))}
-    </>
-  );
-}
-
-
-const RESUME_SECTIONS = [
-  { pattern: /어떤/, label: '목적' },
-  { pattern: /문제/, label: '과정' },
-  { pattern: /기술/, label: '기술' },
-  { pattern: /결과/, label: '성과' },
-];
-
-function ResumeDesc({ text }: { text: string }) {
-  const sections = RESUME_SECTIONS.map(({ pattern, label }) => {
-    const m = text.match(new RegExp(`##[^\\n]*${pattern.source}[^\\n]*\\n([\\s\\S]+?)(?=\\n##|$)`, 'i'));
-    return m ? { label, lines: stripMd(m[1]) } : null;
-  }).filter(Boolean);
-
-  if (sections.length === 0) {
-    return <p className="text-[11px] text-slate-500 mt-1 leading-relaxed"><MdLines lines={stripMd(text)} /></p>;
-  }
-
-  return (
-    <div className="mt-1.5 space-y-0.5">
-      {sections.map((s, i) => (
-        <p key={i} className="text-[11px] leading-relaxed">
-          <span className="font-bold text-blue-700/60 mr-1.5">{s!.label}</span>
-          <span className="text-slate-500"><MdLines lines={s!.lines} /></span>
-        </p>
-      ))}
-    </div>
+    </ul>
   );
 }
 
@@ -244,8 +228,7 @@ export default function ResumePrintClient({
             <div className="space-y-4">
               {projects.map(p => {
                 const impacts = (impactByProject[p.project_key ?? p.title] ?? [])
-                  .filter(s => /[0-9%×↑→~]/.test(s.metric))
-                  .slice(0, 2);
+                  .filter(s => /[0-9%×↑→~]/.test(s.metric));
                 return (
                   <div key={p.id} className="avoid-break">
                     {/* 프로젝트 헤더 */}
@@ -257,52 +240,29 @@ export default function ResumePrintClient({
                       {p.type && (
                         <span className="text-[9px] font-mono text-slate-400 uppercase">{p.type}</span>
                       )}
+                      {p.project_url && (
+                        <a href={p.project_url} className="text-[9px] font-mono text-blue-500 hover:underline">
+                          ↗ {p.project_url.replace(/^https?:\/\//, '')}
+                        </a>
+                      )}
+                      {p.github_url && (
+                        <a href={p.github_url} className="text-[9px] font-mono text-slate-400 hover:underline">
+                          ↗ {p.github_url.replace('https://github.com/', 'github/')}
+                        </a>
+                      )}
                     </div>
-                    {(p.project_url || p.github_url) && (
-                      <div className="flex gap-3 mt-0.5">
-                        {p.project_url && (
-                          <a href={p.project_url} className="text-[9px] font-mono text-blue-500 hover:underline">
-                            ↗ {p.project_url.replace(/^https?:\/\//, '')}
-                          </a>
-                        )}
-                        {p.github_url && (
-                          <a href={p.github_url} className="text-[9px] font-mono text-slate-400 hover:underline">
-                            ↗ {p.github_url.replace('https://github.com/', 'github/')}
-                          </a>
-                        )}
-                      </div>
-                    )}
-
-                    {/* 프로젝트별 임팩트 */}
-                    {impacts.length > 0 && (
-                      <div className="flex flex-wrap gap-x-5 gap-y-1 mt-1.5">
-                        {impacts.map(s => (
-                          <div key={s.id} className="flex items-baseline gap-1.5">
-                            <span className="text-[14px] font-black font-mono text-blue-700 leading-none">{s.metric}</span>
-                            <span className="text-[11px] text-slate-600">{s.title}</span>
-                            {s.before && s.after && (
-                              <span className="text-[10px] font-mono text-slate-400">
-                                <span className="line-through">{s.before}</span>
-                                {' → '}
-                                <span className="text-emerald-600 font-semibold">{s.after}</span>
-                              </span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
 
                     {/* 기술 태그 */}
                     {p.tags && p.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1.5">
+                      <div className="flex flex-wrap gap-1 mt-0.5">
                         {p.tags.slice(0, 5).map(tag => (
                           <span key={tag} className="print-no-bg text-[10px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">{tag}</span>
                         ))}
                       </div>
                     )}
 
-                    {/* 설명 — 어떤 서비스인지 + 결과/성과 조합 */}
-                    {p.description && <ResumeDesc text={p.description} />}
+                    {/* 임팩트 + 설명 — · 불릿 통합 */}
+                    <ProjectDesc text={p.description ?? ''} impacts={impacts} />
                   </div>
                 );
               })}
