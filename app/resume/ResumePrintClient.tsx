@@ -9,7 +9,7 @@ interface Career       { year: string; company: string; title_ko: string; desc_k
 interface Stack        { name_ko: string; items: string[]; }
 interface Impact       { id: string; project?: string; metric: string; title: string; before?: string; after?: string; context?: string; }
 interface Project      { id: string; title: string; description?: string; tags?: string[]; type?: string; status?: string; project_url?: string; github_url?: string; project_key?: string; }
-interface Education    { year: string; institution: string; title: string; desc?: string; }
+interface Education    { year: string; institution: string; title: string; desc?: string; project_desc?: string; }
 interface Contact      { email?: string; github?: string; linkedin?: string; }
 interface CoverSection { id: string; title: string; content: string; }
 interface CoverLetter  { company: string; position: string; sections: CoverSection[]; isGeneral?: boolean; }
@@ -245,6 +245,16 @@ export default function ResumePrintClient({
                     <p className="text-[13px] font-bold text-slate-900">{edu.institution}</p>
                     <p className="text-[11px] text-blue-700">{edu.title}</p>
                     {edu.desc && <p className="text-[11px] text-slate-500 mt-0.5">{edu.desc}</p>}
+                    {edu.project_desc && (
+                      <ul className="mt-1 space-y-0.5">
+                        {edu.project_desc.split('\n').filter(Boolean).map((line, li) => (
+                          <li key={li} className="text-[11px] text-slate-500 leading-relaxed flex gap-1.5">
+                            <span className="text-blue-700/40 shrink-0 mt-0.5">·</span>
+                            <span>{line}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 </div>
               ))}
