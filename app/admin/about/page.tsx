@@ -46,8 +46,10 @@ interface Education {
   institution: string;
   title: string;
   desc?: string;
+  project_desc?: string;
+  project_keys?: string[];
 }
-const defaultEducation = (): Education => ({ year: '', institution: '', title: '', desc: '' });
+const defaultEducation = (): Education => ({ year: '', institution: '', title: '', desc: '', project_desc: '', project_keys: [] });
 
 export default function AdminAboutPage() {
   const router  = useRouter();
@@ -68,6 +70,8 @@ export default function AdminAboutPage() {
   const [projectKeys, setProjectKeys] = useState<string[]>([]);
   const [newProjectKey, setNewProjectKey] = useState('');
   const [activeCareerProject, setActiveCareerProject] = useState<number | null>(null);
+  const [newEduProjectKey, setNewEduProjectKey] = useState('');
+  const [activeEduProject, setActiveEduProject] = useState<number | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -86,7 +90,7 @@ export default function AdminAboutPage() {
       if (bioData?.value)       setBio(p => ({ ...p, ...bioData.value }));
       if (careerData?.value)    setCareer((careerData.value as Career[]).map(c => ({ ...defaultCareer(), ...c })));
       if (stackData?.value)     setStack(stackData.value);
-      if (educationData?.value) setEducation(educationData.value);
+      if (educationData?.value) setEducation((educationData.value as Education[]).map(e => ({ ...defaultEducation(), ...e })));
       setLoading(false);
     };
     init();
@@ -185,6 +189,16 @@ export default function AdminAboutPage() {
     [arr[i], arr[j]] = [arr[j], arr[i]];
     setEducation(arr);
   };
+
+  const addEducationProject = (i: number) => {
+    const key = newEduProjectKey.trim();
+    if (!key || (education[i].project_keys ?? []).includes(key)) return;
+    setEducation(prev => prev.map((e, idx) => idx === i ? { ...e, project_keys: [...(e.project_keys ?? []), key] } : e));
+    setNewEduProjectKey('');
+  };
+
+  const removeEducationProject = (i: number, key: string) =>
+    setEducation(prev => prev.map((e, idx) => idx === i ? { ...e, project_keys: (e.project_keys ?? []).filter(k => k !== key) } : e));
 
   if (loading) return (
     <div className="min-h-[60vh] flex items-center justify-center">
@@ -396,6 +410,36 @@ export default function AdminAboutPage() {
                 <div className="form-control">
                   <label className="label"><span className="label-text">비고 (선택)</span></label>
                   <input placeholder="GPA, 수상 등" className="input input-bordered input-sm bg-base-100" value={edu.desc ?? ''} onChange={e => updateEducation(i, 'desc', e.target.value)} />
+                </div>
+                <div className="form-control md:col-span-2">
+                  <label className="label"><span className="label-text">이 과정에서 한 일 (줄바꿈으로 구분)</span></label>
+                  <textarea placeholder="프로젝트에서 구체적으로 기여한 부분" className="textarea textarea-bordered textarea-sm h-24 bg-base-100" value={edu.project_desc ?? ''} onChange={e => updateEducation(i, 'project_desc', e.target.value)} />
+                </div>
+              </div>
+
+              <div>
+                <label className="label"><span className="label-text text-sm">연동 포트폴리오 프로젝트</span></label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {(edu.project_keys ?? []).map(key => (
+                    <span key={key} className="badge badge-ghost border-base-content/10 gap-1 py-3">
+                      {key}
+                      <button onClick={() => removeEducationProject(i, key)} className="opacity-50 hover:opacity-100 hover:text-error transition-colors">×</button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    list="career-project-keys"
+                    placeholder="포트폴리오에 등록된 프로젝트명"
+                    className="input input-bordered input-sm bg-base-100 flex-1"
+                    value={activeEduProject === i ? newEduProjectKey : ''}
+                    onFocus={() => setActiveEduProject(i)}
+                    onChange={e => setNewEduProjectKey(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addEducationProject(i); } }}
+                  />
+                  <button onClick={() => addEducationProject(i)} className="btn btn-sm btn-outline rounded-xl gap-1">
+                    <Plus className="w-3 h-3" /> 연결
+                  </button>
                 </div>
               </div>
             </div>

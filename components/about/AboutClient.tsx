@@ -23,7 +23,7 @@ interface Career {
   project_keys?: string[];
 }
 interface Stack  { name_ko?: string; name_en?: string; icon?: string; items: string[] }
-interface Education { year: string; institution: string; title: string; desc?: string; }
+interface Education { year: string; institution: string; title: string; desc?: string; project_desc?: string; project_keys?: string[]; }
 interface Project { title: string; project_key?: string }
 
 export default function AboutClient({
@@ -198,23 +198,51 @@ export default function AboutClient({
             <GraduationCap className="w-6 h-6 text-accent" /> {lang === 'ko' ? '학력 / 교육' : 'Education'}
           </h2>
           <div className="space-y-4">
-            {education.map((edu, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                className="flex gap-6 items-start"
-              >
-                <time className="text-xs font-mono text-primary w-28 shrink-0 pt-1">{edu.year}</time>
-                <div className="flex-1 pb-4 border-b border-base-content/5 last:border-0">
-                  <p className="font-bold">{edu.institution}</p>
-                  <p className="text-sm text-base-content/70 mt-0.5">{edu.title}</p>
-                  {edu.desc && <p className="text-xs text-base-content/40 mt-0.5">{edu.desc}</p>}
-                </div>
-              </motion.div>
-            ))}
+            {education.map((edu, i) => {
+              const projectDescLines = (edu.project_desc ?? '').split('\n').map(line => line.replace(/^[▎\-•\s]+/, '').trim()).filter(Boolean);
+              const linkedProjects = (edu.project_keys ?? [])
+                .map(key => projects.find(p => (p.project_key || p.title) === key))
+                .filter((p): p is Project => !!p);
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.05 }}
+                  className="flex gap-6 items-start"
+                >
+                  <time className="text-xs font-mono text-primary w-28 shrink-0 pt-1">{edu.year}</time>
+                  <div className="flex-1 pb-4 border-b border-base-content/5 last:border-0">
+                    <p className="font-bold">{edu.institution}</p>
+                    <p className="text-sm text-base-content/70 mt-0.5">{edu.title}</p>
+                    {edu.desc && <p className="text-xs text-base-content/40 mt-0.5">{edu.desc}</p>}
+                    {projectDescLines.length > 0 && (
+                      <div className="space-y-1.5 mt-3">
+                        {projectDescLines.map((line, li) => (
+                          <p key={li} className="text-sm text-base-content/80 bg-primary/5 border border-primary/10 rounded-lg px-3 py-2 leading-relaxed">
+                            {line}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                    {linkedProjects.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {linkedProjects.map(p => (
+                          <Link
+                            key={p.project_key || p.title}
+                            href={`/portfolio/${encodeURIComponent(p.project_key || p.title)}`}
+                            className="badge badge-outline badge-primary gap-1 py-3 hover:bg-primary hover:text-primary-content transition-colors"
+                          >
+                            <ExternalLink className="w-3 h-3" /> {p.title}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </section>
       )}
