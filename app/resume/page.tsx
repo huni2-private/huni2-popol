@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import ResumePrintClient from './ResumePrintClient';
 
 interface CoverSection { id: string; title: string; content: string; }
-interface CoverLetter  { id: string; company: string; position: string; sections: CoverSection[]; }
+interface CoverLetter  { id: string; company: string; position: string; sections: CoverSection[]; isGeneral?: boolean; }
 interface CoverMeta    { active_id: string | null; enabled: boolean; }
 
 export default async function ResumePage() {
@@ -39,9 +39,9 @@ export default async function ResumePage() {
   let activeCoverLetter: CoverLetter | null = null;
   if (isAdmin) {
     const meta = (coverMetaData?.value ?? {}) as CoverMeta;
-    if (meta.enabled && meta.active_id) {
+    if (meta.enabled) {
       const letters = Array.isArray(coverLettersData?.value) ? (coverLettersData.value as CoverLetter[]) : [];
-      activeCoverLetter = letters.find(l => l.id === meta.active_id) ?? null;
+      activeCoverLetter = letters.find(l => l.id === meta.active_id) ?? letters.find(l => l.isGeneral) ?? null;
     }
   }
 

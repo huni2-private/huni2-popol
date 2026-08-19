@@ -6,14 +6,14 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import {
   Loader2, Plus, Trash2, ArrowUp, ArrowDown,
-  Save, FileText, ExternalLink, CheckCircle2, Eye, EyeOff, Building2
+  Save, FileText, ExternalLink, CheckCircle2, Eye, EyeOff, Building2, Star
 } from 'lucide-react';
 
 interface Section     { id: string; title: string; content: string; }
-interface CoverLetter { id: string; company: string; position: string; sections: Section[]; }
+interface CoverLetter { id: string; company: string; position: string; sections: Section[]; isGeneral?: boolean; }
 interface CoverMeta   { active_id: string | null; enabled: boolean; }
 
-const newLetter  = (): CoverLetter => ({ id: crypto.randomUUID(), company: '', position: '', sections: [] });
+const newLetter  = (): CoverLetter => ({ id: crypto.randomUUID(), company: '', position: '', sections: [], isGeneral: false });
 const newSection = (): Section     => ({ id: crypto.randomUUID(), title: '', content: '' });
 
 export default function AdminCoverPage() {
@@ -77,6 +77,10 @@ export default function AdminCoverPage() {
   const updateLetter = useCallback((id: string, field: 'company' | 'position', val: string) => {
     setLetters(ls => ls.map(l => l.id === id ? { ...l, [field]: val } : l));
   }, []);
+
+  const setGeneral = (id: string) => {
+    setLetters(ls => ls.map(l => ({ ...l, isGeneral: l.id === id ? !l.isGeneral : false })));
+  };
 
   /* ── 섹션 조작 ── */
   const cur = letters.find(l => l.id === selectedId) ?? null;
@@ -155,6 +159,14 @@ export default function AdminCoverPage() {
                 {l.company || <span className="opacity-30 italic">이름 없음</span>}
               </span>
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                {/* 범용 자소서 지정 버튼 */}
+                <button
+                  title="항상 보여줄 범용 자기소개서로 지정"
+                  onClick={e => { e.stopPropagation(); setGeneral(l.id); }}
+                  className={`btn btn-ghost btn-xs btn-square ${l.isGeneral ? 'text-warning' : ''}`}
+                >
+                  <Star className="w-3.5 h-3.5" />
+                </button>
                 {/* 활성화 버튼 */}
                 <button
                   title="이력서에 첨부할 자기소개서로 설정"
@@ -170,6 +182,9 @@ export default function AdminCoverPage() {
                   <Trash2 className="w-3 h-3" />
                 </button>
               </div>
+              {l.isGeneral && (
+                <span className="badge badge-warning badge-xs font-bold shrink-0">범용</span>
+              )}
               {meta.active_id === l.id && (
                 <span className="badge badge-success badge-xs font-bold shrink-0">활성</span>
               )}

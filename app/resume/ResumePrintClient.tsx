@@ -12,7 +12,7 @@ interface Project      { id: string; title: string; description?: string; tags?:
 interface Education    { year: string; institution: string; title: string; desc?: string; }
 interface Contact      { email?: string; github?: string; linkedin?: string; }
 interface CoverSection { id: string; title: string; content: string; }
-interface CoverLetter  { company: string; position: string; sections: CoverSection[]; }
+interface CoverLetter  { company: string; position: string; sections: CoverSection[]; isGeneral?: boolean; }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
@@ -326,15 +326,12 @@ export default function ResumePrintClient({
             <header className="avoid-break flex items-end justify-between pb-5 border-b-2 border-slate-900">
               <div>
                 <h1 className="text-[28px] font-black tracking-tight leading-none text-slate-900">자기소개서</h1>
-                {(coverLetter.company || coverLetter.position) && (
+                {(coverLetter.isGeneral || coverLetter.company || coverLetter.position) && (
                   <p className="text-[13px] font-semibold text-blue-700 mt-1.5">
-                    {[coverLetter.company, coverLetter.position].filter(Boolean).join(' · ')}
+                    {coverLetter.isGeneral ? '범용' : [coverLetter.company, coverLetter.position].filter(Boolean).join(' · ')}
                   </p>
                 )}
               </div>
-              <p className="text-[11px] font-mono text-slate-400 shrink-0">
-                {new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
-              </p>
             </header>
             {coverLetter.sections.map((s, i) => (
               <div key={s.id} className="avoid-break">

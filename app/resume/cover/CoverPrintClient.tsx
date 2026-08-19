@@ -5,7 +5,7 @@ import { Printer, ChevronDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface Section     { id: string; title: string; content: string; }
-interface CoverLetter { id: string; company: string; position: string; sections: Section[]; }
+interface CoverLetter { id: string; company: string; position: string; sections: Section[]; isGeneral?: boolean; }
 
 interface Props {
   letters: CoverLetter[];
@@ -14,8 +14,6 @@ interface Props {
 
 export default function CoverPrintClient({ letters, initialActive }: Props) {
   const [active, setActive] = useState<CoverLetter | null>(initialActive);
-
-  const today = new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
 
   const [scale, setScale] = useState(1);
   useEffect(() => {
@@ -58,7 +56,7 @@ export default function CoverPrintClient({ letters, initialActive }: Props) {
               >
                 {letters.map(l => (
                   <option key={l.id} value={l.id}>
-                    {l.company}{l.position ? ` · ${l.position}` : ''}
+                    {l.isGeneral ? '범용' : l.company}{l.position ? ` · ${l.position}` : ''}
                   </option>
                 ))}
               </select>
@@ -67,7 +65,7 @@ export default function CoverPrintClient({ letters, initialActive }: Props) {
           )}
           {letters.length === 1 && active && (
             <span className="text-sm font-bold text-slate-600">
-              {active.company}{active.position ? ` · ${active.position}` : ''}
+              {active.isGeneral ? '범용' : active.company}{active.position ? ` · ${active.position}` : ''}
             </span>
           )}
         </div>
@@ -101,15 +99,14 @@ export default function CoverPrintClient({ letters, initialActive }: Props) {
               <div className="flex items-end justify-between">
                 <div>
                   <h1 className="text-[34px] font-black tracking-tight leading-none text-slate-900">자기소개서</h1>
-                  {(active.company || active.position) && (
+                  {(active.isGeneral || active.company || active.position) && (
                     <p className="text-[14px] text-blue-700 font-semibold mt-2">
-                      {[active.company, active.position].filter(Boolean).join(' · ')}
+                      {active.isGeneral ? '범용' : [active.company, active.position].filter(Boolean).join(' · ')}
                     </p>
                   )}
                 </div>
                 <div className="text-right text-[12px] text-slate-400 font-mono space-y-0.5">
                   <p className="font-bold text-slate-700">허창훈</p>
-                  <p>{today}</p>
                 </div>
               </div>
             </header>

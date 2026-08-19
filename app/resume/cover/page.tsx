@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import CoverPrintClient from './CoverPrintClient';
 
 interface CoverSection { id: string; title: string; content: string; }
-interface CoverLetter  { id: string; company: string; position: string; sections: CoverSection[]; }
+interface CoverLetter  { id: string; company: string; position: string; sections: CoverSection[]; isGeneral?: boolean; }
 interface CoverMeta    { active_id: string | null; enabled: boolean; }
 
 export default async function CoverPage() {
@@ -20,7 +20,7 @@ export default async function CoverPage() {
 
   const letters: CoverLetter[] = Array.isArray(lettersData?.value) ? lettersData.value : [];
   const meta = (metaData?.value ?? { active_id: null, enabled: false }) as CoverMeta;
-  const active = letters.find(l => l.id === meta.active_id) ?? letters[0] ?? null;
+  const active = letters.find(l => l.id === meta.active_id) ?? letters.find(l => l.isGeneral) ?? letters[0] ?? null;
 
   return <CoverPrintClient letters={letters} initialActive={active} />;
 }
