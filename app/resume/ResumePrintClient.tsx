@@ -336,9 +336,9 @@ export default function ResumePrintClient({
             <header className="avoid-break flex items-end justify-between pb-5 border-b-2 border-slate-900">
               <div>
                 <h1 className="text-[28px] font-black tracking-tight leading-none text-slate-900">자기소개서</h1>
-                {(coverLetter.isGeneral || coverLetter.company || coverLetter.position) && (
+                {!coverLetter.isGeneral && (coverLetter.company || coverLetter.position) && (
                   <p className="text-[13px] font-semibold text-blue-700 mt-1.5">
-                    {coverLetter.isGeneral ? '범용' : [coverLetter.company, coverLetter.position].filter(Boolean).join(' · ')}
+                    {[coverLetter.company, coverLetter.position].filter(Boolean).join(' · ')}
                   </p>
                 )}
               </div>
