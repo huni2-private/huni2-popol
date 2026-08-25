@@ -39,6 +39,7 @@ interface Log {
 interface Project {
   id: string;
   title: string;
+  project_key?: string;
   description?: string;
   tags?: string[];
   type?: string;
@@ -100,6 +101,17 @@ function MagicCard({
   );
 }
 
+function getExcerpt(description: string | undefined, max = 110) {
+  if (!description) return '';
+  const clean = description
+    .replace(/^#{1,6}\s.*$/gm, '')
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/[*_`>]/g, '')
+    .replace(/\n+/g, ' ')
+    .trim();
+  return clean.length > max ? clean.slice(0, max).trim() + '…' : clean;
+}
+
 export default function HomeClient({
   bio,
   projects,
@@ -112,6 +124,11 @@ export default function HomeClient({
   impactStats: ImpactStat[];
 }) {
   const { lang } = useI18n();
+
+  const FEATURED_TITLES = ['RoundWait(대규모 행사 대기열 관리)', 'SalesPulse(VIP 세일즈 대시보드)', 'TimeSlot(행사 예약 운영 플랫폼)'];
+  const featuredProjects = FEATURED_TITLES
+    .map(title => projects.find(p => p.title === title))
+    .filter((p): p is Project => Boolean(p));
 
   const title = lang === 'ko'
     ? (bio.title_ko || '3,000명이 실제로 쓴 서비스를 만든 백엔드 중심 풀스택 개발자입니다.')
@@ -146,7 +163,7 @@ export default function HomeClient({
           </div>
           <div className="space-y-3 relative z-10">
             <div className="flex flex-wrap gap-1.5">
-              {['Next.js', 'TypeScript', 'Firebase', 'Go', 'Tailwind CSS'].map(t => (
+              {['Go', 'Spring Boot', 'TypeScript', 'Redis', 'Next.js', 'AWS'].map(t => (
                 <span key={t} className="badge badge-sm badge-outline border-primary/30 text-primary/80 font-mono">{t}</span>
               ))}
             </div>
@@ -358,6 +375,56 @@ export default function HomeClient({
         </MagicCard>
 
       </div>
+
+      {/* ── 대표 프로젝트 ── */}
+      {featuredProjects.length > 0 && (
+        <motion.section
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-80px' }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="space-y-4"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-widest text-primary opacity-70">
+              {lang === 'ko' ? '대표 프로젝트' : 'Featured Projects'}
+            </span>
+            <Link href="/portfolio" className="text-xs font-bold text-primary flex items-center gap-1">
+              {lang === 'ko' ? '전체 보기' : 'View all'} <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {featuredProjects.map(p => (
+              <Link
+                key={p.id}
+                href={`/portfolio/${encodeURIComponent(p.project_key || p.id)}`}
+                className="card bg-base-200 border border-base-content/5 hover:border-primary/30 hover:-translate-y-1 transition-all p-5 space-y-2"
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-4 h-4 rounded shrink-0"
+                    style={{ background: MINI_COLORS[miniHash(p.title)] }}
+                  />
+                  <h3 className="font-bold text-sm truncate">{p.title}</h3>
+                  {p.status === 'live' && (
+                    <span className="shrink-0 text-[9px] font-bold text-success ml-auto">LIVE</span>
+                  )}
+                </div>
+                <p className="text-xs text-base-content/50 leading-relaxed line-clamp-2">
+                  {getExcerpt(p.description)}
+                </p>
+                {p.tags && p.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 pt-1">
+                    {p.tags.slice(0, 3).map(t => (
+                      <span key={t} className="badge badge-ghost badge-xs font-mono">{t}</span>
+                    ))}
+                  </div>
+                )}
+              </Link>
+            ))}
+          </div>
+        </motion.section>
+      )}
 
     </div>
   );
