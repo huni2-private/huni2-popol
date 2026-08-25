@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ExternalLink, ArrowRight, Zap, BookOpen } from 'lucide-react';
+import { ExternalLink, ArrowRight, Zap, BookOpen, Search, X } from 'lucide-react';
 import { Github } from '@/components/icons/SocialIcons';
 import { useState, useMemo } from 'react';
 import ProjectThumbnail from '@/components/portfolio/ProjectThumbnail';
@@ -54,8 +54,20 @@ export default function PortfolioClient({
   const router = useRouter();
   const [view, setView] = useState<'projects' | 'impact'>('projects');
   const [filter, setFilter] = useState<'all' | 'personal' | 'company'>('all');
+  const [search, setSearch] = useState('');
 
-  const filteredProjects = initialProjects.filter(p => filter === 'all' || p.type === filter);
+  const filteredProjects = useMemo(() => {
+    const searchLower = search.toLowerCase();
+    return initialProjects.filter(p => {
+      const matchesFilter = filter === 'all' || p.type === filter;
+      const matchesSearch =
+        !searchLower ||
+        p.title.toLowerCase().includes(searchLower) ||
+        p.description.toLowerCase().includes(searchLower) ||
+        p.tags.some(tag => tag.toLowerCase().includes(searchLower));
+      return matchesFilter && matchesSearch;
+    });
+  }, [initialProjects, filter, search]);
 
   const impactByProject = useMemo(() => {
     const groups: Record<string, ImpactStat[]> = {};
@@ -89,15 +101,52 @@ export default function PortfolioClient({
       {/* ── Projects 탭 ── */}
       {view === 'projects' && (
         <div className="space-y-8">
-          <div className="flex justify-center gap-2">
-            {(['all', 'personal', 'company'] as const).map((f) => (
-              <button key={f} onClick={() => setFilter(f)}
-                className={`btn btn-sm rounded-full px-6 transition-all ${filter === f ? 'btn-primary' : 'btn-ghost bg-base-200'}`}>
-                {f.charAt(0).toUpperCase() + f.slice(1)}
-              </button>
-            ))}
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div className="relative group w-full md:max-w-md">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/30 group-focus-within:text-primary transition-colors" />
+              <input
+                type="text"
+                placeholder="Search projects..."
+                className="input input-bordered pl-12 bg-base-200 rounded-2xl w-full h-12 focus:ring-2 focus:ring-primary/20 border-base-content/10"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-base-300 rounded-full transition-colors"
+                >
+                  <X className="w-3 h-3 opacity-50" />
+                </button>
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              {(['all', 'personal', 'company'] as const).map((f) => (
+                <button key={f} onClick={() => setFilter(f)}
+                  className={`btn btn-sm rounded-full px-6 transition-all ${filter === f ? 'btn-primary' : 'btn-ghost bg-base-200'}`}>
+                  {f.charAt(0).toUpperCase() + f.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
 
+          {filteredProjects.length === 0 ? (
+            <div className="text-center py-32 space-y-4 bg-base-200/50 rounded-3xl border border-dashed border-base-content/10">
+              <div className="bg-base-300 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="w-8 h-8 opacity-20" />
+              </div>
+              <p className="text-lg font-bold opacity-40">검색 결과가 없습니다.</p>
+              {(search || filter !== 'all') && (
+                <button
+                  onClick={() => { setSearch(''); setFilter('all'); }}
+                  className="btn btn-outline btn-sm rounded-xl px-6"
+                >
+                  Clear all filters
+                </button>
+              )}
+            </div>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProjects.map((project, index) => {
               const matchKey = (project.project_key || project.title).toLowerCase();
@@ -187,6 +236,7 @@ export default function PortfolioClient({
               );
             })}
           </div>
+          )}
         </div>
       )}
 
