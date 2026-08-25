@@ -168,9 +168,6 @@ export default function HomeClient({
           </div>
 
           <div className="flex flex-wrap items-center gap-3 mt-2 relative z-10">
-            <div className="inline-flex items-center px-2.5 py-1 border border-success/50 text-success text-xs font-mono font-bold tracking-wider rounded">
-              {lang === 'ko' ? '구직 중' : 'Available for Work'}
-            </div>
             <Link href="/about" className="btn btn-primary btn-lg rounded-full gap-2">
               {lang === 'ko' ? '소개 보기' : 'About Me'} <ArrowRight className="w-4 h-4" />
             </Link>
