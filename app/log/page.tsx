@@ -22,7 +22,10 @@ export default async function LogPage({
   if (tag) query = query.contains('tags', [tag]);
   if (project) query = query.eq('project', project);
 
-  const { data: logs } = await query;
+  const [{ data: logs }, { data: impactData }] = await Promise.all([
+    query,
+    supabase.from('site_settings').select('value').eq('key', 'impact_stats').single(),
+  ]);
 
   const logsWithMeta = (logs || []).map(({ content, ...log }) => ({
     ...log,
@@ -36,7 +39,12 @@ export default async function LogPage({
         <p className="text-base-content/70">Insights, tutorials, and troubleshooting notes.</p>
       </div>
 
-      <LogListClient initialLogs={logsWithMeta} activeTag={tag} activeProject={project} />
+      <LogListClient
+        initialLogs={logsWithMeta}
+        activeTag={tag}
+        activeProject={project}
+        impactStats={Array.isArray(impactData?.value) ? impactData.value : []}
+      />
     </div>
   );
 }

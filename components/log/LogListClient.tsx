@@ -3,7 +3,7 @@
 // 로그 목록 클라이언트 — 검색 필터링, 무한 스크롤, 태그 클라우드 최적화
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, ChevronRight, Search, Tag, X, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { Calendar, Clock, ChevronRight, Search, Tag, X, ChevronDown, ChevronUp, Loader2, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 interface Log {
@@ -17,6 +17,16 @@ interface Log {
   project?: string | null;
 }
 
+interface ImpactStat {
+  id: string;
+  project?: string;
+  metric: string;
+  title: string;
+  before?: string;
+  after?: string;
+  context: string;
+}
+
 const ITEMS_PER_PAGE = 10;
 const INITIAL_TAGS_COUNT = 12;
 
@@ -24,10 +34,12 @@ export default function LogListClient({
   initialLogs,
   activeTag: initialActiveTag,
   activeProject: initialActiveProject,
+  impactStats = [],
 }: {
   initialLogs: Log[];
   activeTag?: string;
   activeProject?: string;
+  impactStats?: ImpactStat[];
 }) {
   const [search, setSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(initialActiveTag || null);
@@ -55,6 +67,12 @@ export default function LogListClient({
   }, [initialLogs]);
 
   const displayedTags = showAllTags ? allTags : allTags.slice(0, INITIAL_TAGS_COUNT);
+
+  // 선택된 프로젝트의 임팩트 수치
+  const projectImpactStats = useMemo(() => {
+    if (!selectedProject) return [];
+    return impactStats.filter(s => s.project?.toLowerCase() === selectedProject.toLowerCase());
+  }, [impactStats, selectedProject]);
 
   // 검색 및 태그/프로젝트 필터링 로직
   const filteredLogs = useMemo(() => {
@@ -194,6 +212,32 @@ export default function LogListClient({
           )}
         </div>
       </div>
+
+      {/* 선택된 프로젝트의 임팩트 요약 */}
+      {projectImpactStats.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+        >
+          {projectImpactStats.map(stat => (
+            <div key={stat.id} className="card bg-base-200 border border-base-content/5">
+              <div className="card-body p-6 gap-2">
+                <p className="text-4xl font-black font-mono text-primary leading-none">{stat.metric}</p>
+                <p className="font-bold text-sm">{stat.title}</p>
+                {(stat.before || stat.after) && (
+                  <div className="flex items-center gap-1.5 text-xs font-mono">
+                    {stat.before && <span className="text-base-content/40 line-through">{stat.before}</span>}
+                    {stat.before && stat.after && <ArrowRight className="w-3 h-3 text-base-content/30 shrink-0" />}
+                    {stat.after && <span className="text-success font-bold">{stat.after}</span>}
+                  </div>
+                )}
+                {stat.context && <p className="text-xs text-base-content/40 font-mono leading-relaxed">{stat.context}</p>}
+              </div>
+            </div>
+          ))}
+        </motion.div>
+      )}
 
       <div className="grid gap-6">
         <AnimatePresence mode="popLayout">
