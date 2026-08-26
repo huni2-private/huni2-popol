@@ -129,6 +129,8 @@ export default function HomeClient({
   const featuredProjects = FEATURED_TITLES
     .map(title => projects.find(p => p.title === title))
     .filter((p): p is Project => Boolean(p));
+  const liveCount = projects.filter(p => p.status === 'live').length;
+  const companyCount = projects.filter(p => p.type === 'company').length;
 
   const title = lang === 'ko'
     ? (bio.title_ko || '3,000명이 실제로 쓴 서비스를 만든 백엔드 중심 풀스택 개발자입니다.')
@@ -275,7 +277,7 @@ export default function HomeClient({
             <Package className="w-3.5 h-3.5 text-primary" />
             Portfolio
           </div>
-          <div className="flex-1 flex flex-col justify-center gap-2 my-2">
+          <div className="flex-1 flex flex-col justify-center gap-3 my-2">
             <div className="flex items-baseline gap-1.5">
               <span className="text-4xl font-black font-mono text-primary leading-none">
                 {projects.length > 0 ? projects.length : '–'}
@@ -284,22 +286,13 @@ export default function HomeClient({
                 {lang === 'ko' ? '개 프로젝트' : 'Projects'}
               </span>
             </div>
-            {projects.length > 0 && (
-              <div className="space-y-1.5 border-t border-base-content/5 pt-2">
-                {projects.slice(0, 4).map(p => (
-                  <div key={p.id} className="flex items-center gap-2 text-xs">
-                    <span
-                      className="w-5 h-5 rounded shrink-0"
-                      style={{ background: MINI_COLORS[miniHash(p.title)] }}
-                    />
-                    <span className="truncate font-medium text-base-content/70">{p.title}</span>
-                    {p.status === 'live' && (
-                      <span className="shrink-0 text-[9px] font-bold text-success ml-auto">LIVE</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="flex items-center gap-3 text-xs text-base-content/50 border-t border-base-content/5 pt-2">
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-success" />
+                {liveCount}{lang === 'ko' ? '개 운영 중' : ' live'}
+              </span>
+              <span>{companyCount}{lang === 'ko' ? '개 실무' : ' work'}</span>
+            </div>
           </div>
           <Link
             href="/portfolio"
