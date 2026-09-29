@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export type Language = 'ko' | 'en';
 
@@ -37,15 +37,31 @@ const translations = {
       resume_btn: '이력서 다운로드',
     },
     portfolio: {
-      page_title: '작업물',
-      page_desc: '개인 실험부터 엔터프라이즈 솔루션까지 다양한 프로젝트를 소개합니다.',
+      page_title: '직접 만들고 운영한 것들',
+      page_desc: '실무와 사이드 프로젝트, 지금도 살아있는 프로덕트들.',
       filter_all: '전체', filter_personal: '개인', filter_company: '기업',
+      tab_projects: '프로젝트', tab_impact: '임팩트',
+      search_placeholder: '프로젝트 검색...',
+      no_results: '검색 결과가 없습니다.',
+      clear_filters: '필터 초기화',
+      tagline: '완벽보다는 완성, 완성 후에는 개선을.',
+      no_impact: '등록된 수치가 없습니다.',
+      dev_log_link: '개발 로그',
     },
     log: {
       page_title: '로그',
       page_desc: '인사이트, 튜토리얼, 트러블슈팅 노트.',
       search_placeholder: '로그 검색...',
       read_more: '더 보기',
+      active_filter: '적용된 필터',
+      all: '전체',
+      more_tags: '태그 더 보기',
+      less_tags: '접기',
+      loading_more: '더 불러오는 중...',
+      no_results: '검색 결과와 일치하는 글이 없습니다.',
+      clear_filters: '필터 초기화',
+      read_now: '읽으러 가기',
+      min_read: '분 읽기',
     },
     common: {
       back: '뒤로',
@@ -88,15 +104,31 @@ const translations = {
       resume_btn: 'Download Resume (PDF)',
     },
     portfolio: {
-      page_title: 'Curated Works',
-      page_desc: 'A showcase of projects ranging from personal experiments to enterprise solutions.',
+      page_title: 'Built and Shipped Myself',
+      page_desc: 'Work and side projects — still alive and running today.',
       filter_all: 'All', filter_personal: 'Personal', filter_company: 'Company',
+      tab_projects: 'Projects', tab_impact: 'Impact',
+      search_placeholder: 'Search projects...',
+      no_results: 'No projects match your search.',
+      clear_filters: 'Clear all filters',
+      tagline: 'Done beats perfect. Improve after it ships.',
+      no_impact: 'No metrics recorded yet.',
+      dev_log_link: 'Dev Log',
     },
     log: {
       page_title: 'Tech Logs',
       page_desc: 'Insights, tutorials, and troubleshooting notes.',
       search_placeholder: 'Search logs...',
       read_more: 'Read Article',
+      active_filter: 'Active Filter',
+      all: 'All',
+      more_tags: 'More Tags',
+      less_tags: 'Less',
+      loading_more: 'Loading more logs...',
+      no_results: 'No logs found matching your search.',
+      clear_filters: 'Clear all filters',
+      read_now: 'Read Now',
+      min_read: 'min read',
     },
     common: {
       back: 'Back',
@@ -120,15 +152,22 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Language>(() => {
-    if (typeof window === 'undefined') return 'ko';
+  // 서버는 항상 'ko'로 렌더링하므로 초기값을 'ko'로 고정하고,
+  // 마운트 후에만 저장된 언어로 전환해 hydration mismatch(React #418)를 피한다.
+  const [lang, setLang] = useState<Language>('ko');
+
+  useEffect(() => {
     const saved = localStorage.getItem('pref-lang') as Language;
-    return (saved === 'ko' || saved === 'en') ? saved : 'ko';
-  });
+    if (saved === 'ko' || saved === 'en') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLang(saved);
+    }
+  }, []);
 
   const handleSetLang = (newLang: Language) => {
     setLang(newLang);
     localStorage.setItem('pref-lang', newLang);
+    document.documentElement.setAttribute('lang', newLang);
   };
 
   return (

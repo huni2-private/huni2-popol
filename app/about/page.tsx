@@ -1,5 +1,11 @@
+import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import AboutClient from '@/components/about/AboutClient';
+
+export const metadata: Metadata = {
+  title: '소개 | HUNI²',
+  description: '측정하고, 개선하고, 배포하는 백엔드 중심 풀스택 개발자 허창훈의 커리어·기술 스택 소개.',
+};
 
 export default async function AboutPage() {
   const supabase = await createClient();

@@ -94,7 +94,7 @@ export default function AboutClient({
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <Briefcase className="w-6 h-6 text-primary" /> {t.about.career_title}
           </h2>
-          <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-base-content/10 before:to-transparent">
+          <div className="space-y-8 relative before:absolute before:left-5 before:top-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-base-content/10 before:to-transparent">
             {career.map((item, i) => {
               const isOpen = expanded.has(i);
               const role = lang === 'ko' ? item.desc_ko : item.desc_en;
@@ -111,14 +111,12 @@ export default function AboutClient({
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
-                  className="relative flex items-start gap-4 md:grid md:grid-cols-[1fr_2.5rem_1fr] md:items-start md:gap-x-6 group"
+                  className="relative flex items-start gap-4 group"
                 >
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full border border-base-content/10 bg-base-100 group-hover:border-primary group-hover:text-primary transition-colors shrink-0 mt-4 md:col-start-2 md:justify-self-center">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full border border-base-content/10 bg-base-100 group-hover:border-primary group-hover:text-primary transition-colors shrink-0 mt-4">
                     <Code className="w-5 h-5" />
                   </div>
-                  <div
-                    className={`flex-1 min-w-0 rounded-xl border border-base-content/5 bg-base-200/50 backdrop-blur-sm group-hover:border-primary/20 transition-colors overflow-hidden ${i % 2 === 0 ? 'md:col-start-1' : 'md:col-start-3'}`}
-                  >
+                  <div className="flex-1 min-w-0 rounded-xl border border-base-content/5 bg-base-200/50 backdrop-blur-sm group-hover:border-primary/20 transition-colors overflow-hidden">
                     <button type="button" onClick={() => toggleCareer(i)} className="w-full text-left p-4">
                       <div className="flex items-start gap-3">
                         {item.logo_url ? (
@@ -133,8 +131,8 @@ export default function AboutClient({
                             <time className="text-xs font-mono text-primary">{item.year}</time>
                             {status && <span className="badge badge-xs badge-primary badge-outline">{status}</span>}
                           </div>
-                          <h3 className="font-bold mt-0.5 truncate">{item.company}</h3>
-                          <span className="text-sm opacity-60">
+                          <h3 className="font-bold mt-0.5 break-words">{item.company}</h3>
+                          <span className="text-sm opacity-60 break-words">
                             {[item.department, lang === 'ko' ? item.title_ko : item.title_en].filter(Boolean).join(' · ')}
                           </span>
                         </div>
@@ -172,9 +170,9 @@ export default function AboutClient({
                                   <Link
                                     key={p.project_key || p.title}
                                     href={`/portfolio/${encodeURIComponent(p.project_key || p.title)}`}
-                                    className="badge badge-outline badge-primary gap-1 py-3 hover:bg-primary hover:text-primary-content transition-colors"
+                                    className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 px-3 py-1.5 text-xs font-bold text-primary leading-snug whitespace-normal hover:bg-primary hover:text-primary-content transition-colors"
                                   >
-                                    <ExternalLink className="w-3 h-3" /> {p.title}
+                                    <ExternalLink className="w-3 h-3 shrink-0" /> {p.title}
                                   </Link>
                                 ))}
                               </div>
