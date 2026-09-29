@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
@@ -6,6 +7,24 @@ import rehypeSlug from 'rehype-slug';
 import { Calendar, Clock, ArrowLeft, Tag } from 'lucide-react';
 import Link from 'next/link';
 import LogSidebar from '@/components/log/LogSidebar';
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { data: log } = await supabase.from('logs').select('title, excerpt').eq('slug', slug).single();
+
+  if (!log) return { title: 'Dev Log | HUNI²' };
+
+  const title = `${log.title} | HUNI² Dev Log`;
+  const description = log.excerpt || undefined;
+
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+    twitter: { title, description },
+  };
+}
 
 export default async function LogDetail({ params }: { params: { slug: string } }) {
   const { slug } = await params;
@@ -26,10 +45,17 @@ export default async function LogDetail({ params }: { params: { slug: string } }
 
   const readingMinutes = Math.max(1, Math.ceil(log.content.split(' ').length / 200));
 
-  const otherLogs = (others ?? []).map(({ content, ...l }) => ({
-    ...l,
-    readingMinutes: Math.max(1, Math.ceil(content.split(' ').length / 200)),
-  }));
+  const otherLogs = (others ?? [])
+    .map(({ content, ...l }) => ({
+      ...l,
+      readingMinutes: Math.max(1, Math.ceil(content.split(' ').length / 200)),
+    }))
+    // 같은 프로젝트 글을 먼저 — 모바일 인라인 목록과 데스크톱 사이드바 초기 정렬에 공통 적용
+    .sort((a, b) => {
+      const aSame = log.project && a.project?.toLowerCase() === log.project.toLowerCase() ? 1 : 0;
+      const bSame = log.project && b.project?.toLowerCase() === log.project.toLowerCase() ? 1 : 0;
+      return bSame - aSame;
+    });
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -134,7 +160,7 @@ export default async function LogDetail({ params }: { params: { slug: string } }
         </article>
 
         {/* 데스크톱 sticky 사이드바 */}
-        <LogSidebar logs={otherLogs} currentTags={log.tags ?? []} />
+        <LogSidebar logs={otherLogs} currentTags={log.tags ?? []} currentProject={log.project} />
       </div>
     </div>
   );

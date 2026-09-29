@@ -7,17 +7,26 @@ interface SidebarLog {
   title: string;
   created_at: string;
   tags?: string[];
+  project?: string | null;
   readingMinutes: number;
 }
 
 export default function LogSidebar({
   logs,
   currentTags,
+  currentProject,
 }: {
   logs: SidebarLog[];
   currentTags: string[];
+  currentProject?: string | null;
 }) {
+  // 같은 프로젝트 글을 먼저 보여준다 — 방금 읽던 사례에서 멀어지지 않도록.
+  // 그다음은 태그 겹침 개수로 정렬.
   const sorted = [...logs].sort((a, b) => {
+    const aSameProject = currentProject && a.project?.toLowerCase() === currentProject.toLowerCase() ? 1 : 0;
+    const bSameProject = currentProject && b.project?.toLowerCase() === currentProject.toLowerCase() ? 1 : 0;
+    if (aSameProject !== bSameProject) return bSameProject - aSameProject;
+
     const aOverlap = (a.tags ?? []).filter(t => currentTags.includes(t)).length;
     const bOverlap = (b.tags ?? []).filter(t => currentTags.includes(t)).length;
     return bOverlap - aOverlap;

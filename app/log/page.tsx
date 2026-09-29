@@ -1,9 +1,14 @@
 // 로그 목록 페이지 — tag 쿼리 파라미터로 서버 사이드 필터링 지원
+import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import LogListClient from '@/components/log/LogListClient';
-import { Tag } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: 'Dev Log | HUNI²',
+  description: '실무·사이드 프로젝트를 만들며 겪은 문제와 해결 과정을 기록한 개발 로그.',
+};
 
 export default async function LogPage({
   searchParams,
@@ -13,14 +18,13 @@ export default async function LogPage({
   const { tag, project } = await searchParams;
   const supabase = await createClient();
 
-  let query = supabase
+  // tag·project는 초기 선택 상태로만 쓰고 목록 자체는 항상 전체를 내려준다 —
+  // 서버에서 미리 걸러버리면 클라이언트의 "All" 버튼이 원래 데이터를 복원할 수 없다.
+  const query = supabase
     .from('logs')
     .select('id, slug, title, excerpt, tags, project, category, published, created_at, content')
     .eq('published', true)
     .order('created_at', { ascending: false });
-
-  if (tag) query = query.contains('tags', [tag]);
-  if (project) query = query.eq('project', project);
 
   const [{ data: logs }, { data: impactData }] = await Promise.all([
     query,
@@ -34,11 +38,6 @@ export default async function LogPage({
 
   return (
     <div className="max-w-4xl mx-auto space-y-12">
-      <div className="space-y-4">
-        <h1 className="text-4xl font-bold italic">Tech <span className="text-primary underline">Logs</span></h1>
-        <p className="text-base-content/70">Insights, tutorials, and troubleshooting notes.</p>
-      </div>
-
       <LogListClient
         initialLogs={logsWithMeta}
         activeTag={tag}

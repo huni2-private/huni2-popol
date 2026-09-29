@@ -5,6 +5,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Clock, ChevronRight, Search, Tag, X, ChevronDown, ChevronUp, Loader2, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { useI18n } from '@/lib/i18n';
 
 interface Log {
   id: string;
@@ -41,6 +42,7 @@ export default function LogListClient({
   activeProject?: string;
   impactStats?: ImpactStat[];
 }) {
+  const { lang, t } = useI18n();
   const [search, setSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(initialActiveTag || null);
   const [selectedProject, setSelectedProject] = useState<string | null>(initialActiveProject || null);
@@ -116,19 +118,24 @@ export default function LogListClient({
 
   return (
     <div className="space-y-8">
+      <div className="space-y-4">
+        <h1 className="text-4xl font-bold italic">{t.log.page_title}</h1>
+        <p className="text-base-content/70">{t.log.page_desc}</p>
+      </div>
+
       {/* 상단 필터 영역 */}
       <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
         <div className="relative group w-full md:max-w-md">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/30 group-focus-within:text-primary transition-colors" />
           <input
             type="text"
-            placeholder="Search logs..."
+            placeholder={t.log.search_placeholder}
             className="input input-bordered pl-12 bg-base-200 rounded-2xl w-full h-12 focus:ring-2 focus:ring-primary/20 border-base-content/10"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
           {search && (
-            <button 
+            <button
               onClick={() => setSearch('')}
               className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-base-300 rounded-full transition-colors"
             >
@@ -139,7 +146,7 @@ export default function LogListClient({
 
         {selectedTag && (
           <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
-            <span className="text-xs font-bold uppercase tracking-widest text-base-content/30">Active Filter</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-base-content/30">{t.log.active_filter}</span>
             <button
               onClick={() => setSelectedTag(null)}
               className="badge badge-primary badge-lg gap-2 py-4 px-4 font-bold cursor-pointer hover:badge-ghost transition-all"
@@ -159,7 +166,7 @@ export default function LogListClient({
             onClick={() => setSelectedProject(null)}
             className={`btn btn-xs rounded-lg px-3 normal-case font-bold ${selectedProject === null ? 'btn-primary' : 'btn-ghost bg-base-200'}`}
           >
-            All
+            {t.log.all}
           </button>
           {allProjects.map(p => (
             <button
@@ -182,7 +189,7 @@ export default function LogListClient({
               selectedTag === null ? 'btn-primary' : 'btn-ghost bg-base-200'
             }`}
           >
-            All
+            {t.log.all}
           </button>
           {displayedTags.map(([tag, count]) => (
             <button
@@ -204,9 +211,9 @@ export default function LogListClient({
               className="btn btn-sm btn-ghost rounded-xl px-4 normal-case font-bold gap-2 text-primary"
             >
               {showAllTags ? (
-                <>Less <ChevronUp className="w-4 h-4" /></>
+                <>{t.log.less_tags} <ChevronUp className="w-4 h-4" /></>
               ) : (
-                <>More Tags (+{allTags.length - INITIAL_TAGS_COUNT}) <ChevronDown className="w-4 h-4" /></>
+                <>{t.log.more_tags} (+{allTags.length - INITIAL_TAGS_COUNT}) <ChevronDown className="w-4 h-4" /></>
               )}
             </button>
           )}
@@ -258,11 +265,11 @@ export default function LogListClient({
                       <div className="flex flex-wrap gap-4 text-xs font-mono text-base-content/50 mb-4">
                         <span className="flex items-center gap-1.5">
                           <Calendar className="w-3.5 h-3.5" />
-                          {new Date(log.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                          {new Date(log.created_at).toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                         </span>
                         <span className="flex items-center gap-1.5">
                           <Clock className="w-3.5 h-3.5" />
-                          {log.readingMinutes}분 읽기
+                          {lang === 'ko' ? `${log.readingMinutes}${t.log.min_read}` : `${log.readingMinutes} ${t.log.min_read}`}
                         </span>
                       </div>
 
@@ -305,7 +312,7 @@ export default function LogListClient({
                           ))}
                         </div>
                         <span className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-primary opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0 shrink-0">
-                          Read Now <ChevronRight className="w-4 h-4" />
+                          {t.log.read_now} <ChevronRight className="w-4 h-4" />
                         </span>
                       </div>
                     </div>
@@ -324,15 +331,15 @@ export default function LogListClient({
               </div>
               <p className="text-lg font-bold opacity-40">
                 {selectedTag
-                  ? `'${selectedTag}' 태그와 일치하는 검색 결과가 없습니다.`
-                  : 'No logs found matching your search.'}
+                  ? (lang === 'ko' ? `'${selectedTag}' 태그와 일치하는 검색 결과가 없습니다.` : `No logs found for tag "${selectedTag}".`)
+                  : t.log.no_results}
               </p>
               {(search || selectedTag) && (
-                <button 
+                <button
                   onClick={() => { setSearch(''); setSelectedTag(null); }}
                   className="btn btn-outline btn-sm rounded-xl px-6"
                 >
-                  Clear all filters
+                  {t.log.clear_filters}
                 </button>
               )}
             </motion.div>
@@ -345,7 +352,7 @@ export default function LogListClient({
         <div ref={observerTarget} className="flex justify-center py-12">
           <div className="flex flex-col items-center gap-2 text-base-content/30 font-bold uppercase tracking-widest text-xs">
             <Loader2 className="w-6 h-6 animate-spin" />
-            Loading more logs...
+            {t.log.loading_more}
           </div>
         </div>
       )}
