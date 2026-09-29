@@ -92,6 +92,54 @@ body {
   z-index: 1;
 }
 
+/* 전역 앰비언트 배경 — 카드 UI가 평면 배경 위에 붕 뜨지 않도록 인디고·바이올렛 톤을 깔아준다 */
+.ambient-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(110px);
+  opacity: 0.35;
+  animation: ambient-drift 26s ease-in-out infinite alternate;
+  will-change: transform;
+}
+.ambient-blob--a {
+  top: -12%;
+  left: -8%;
+  width: 44vw;
+  height: 44vw;
+  background: color-mix(in srgb, var(--color-primary) 55%, transparent);
+}
+.ambient-blob--b {
+  top: 4%;
+  right: -10%;
+  width: 38vw;
+  height: 38vw;
+  background: color-mix(in srgb, var(--color-secondary) 50%, transparent);
+  animation-delay: -8s;
+  animation-duration: 30s;
+}
+.ambient-blob--c {
+  bottom: -14%;
+  left: 22%;
+  width: 40vw;
+  height: 40vw;
+  background: color-mix(in srgb, var(--color-primary) 35%, transparent);
+  animation-delay: -16s;
+  animation-duration: 34s;
+}
+[data-theme='light'] .ambient-blob {
+  opacity: 0.32;
+}
+[data-theme='dark'] .ambient-blob {
+  opacity: 0.45;
+}
+@keyframes ambient-drift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(3%, 4%, 0) scale(1.08); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ambient-blob { animation: none; }
+}
+
 h1, h2, h3, h4, h5 {
   text-wrap: balance;
 }
@@ -109,7 +157,7 @@ h1, h2, h3, h4, h5 {
 
 /* 인쇄 시 레이아웃 크롬 숨김 */
 @media print {
-  header, footer, nav { display: none !important; }
+  .site-header, footer, nav, .ambient-bg { display: none !important; }
   main { padding: 0 !important; }
   body { background: white !important; background-image: none !important; }
 }

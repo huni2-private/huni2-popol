@@ -7,6 +7,8 @@ import NextTopLoader from "nextjs-toploader";
 import { LanguageProvider } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 import ChatbotScript from "@/components/layout/ChatbotScript";
+import AmbientBackground from "@/components/layout/AmbientBackground";
+import { isAdminUser } from "@/lib/isAdminUser";
 import PageViewTracker from "@/components/layout/PageViewTracker";
 import ScrollToTop from "@/components/layout/ScrollToTop";
 import { Analytics } from "@vercel/analytics/react";
@@ -57,7 +59,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const isAdmin = !!user;
+  const isAdmin = isAdminUser(user?.email);
 
   return (
     <html lang="ko" suppressHydrationWarning className={`${pretendard.variable} ${geistMono.variable}`}>
@@ -69,6 +71,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         />
       </head>
       <body className="antialiased min-h-screen bg-base-100 font-sans">
+        <AmbientBackground />
         <LanguageProvider>
           <NextTopLoader color="#7c6af8" showSpinner={false} />
           <Header />

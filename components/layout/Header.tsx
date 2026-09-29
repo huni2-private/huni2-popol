@@ -6,20 +6,29 @@ import { Sun, Moon, Menu, X, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { createClient } from '@/lib/supabase/client';
+import { isAdminUser } from '@/lib/isAdminUser';
 
 export default function Header() {
   const pathname = usePathname();
-  const [theme, setTheme] = useState<string>(() => {
-    if (typeof window === 'undefined') return 'light';
-    return document.documentElement.getAttribute('data-theme') || 'light';
-  });
+  // 서버는 항상 'light'로 렌더링하므로 초기값을 'light'로 고정하고,
+  // 마운트 후에만 FOUC 방지 스크립트가 세팅한 실제 data-theme으로 전환해
+  // hydration mismatch(Sun/Moon 아이콘 불일치)를 피한다.
+  const [theme, setTheme] = useState<string>('light');
   const [menuOpen, setMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const { lang, setLang, t } = useI18n();
 
   useEffect(() => {
+    const current = document.documentElement.getAttribute('data-theme');
+    if (current === 'dark' || current === 'light') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setTheme(current);
+    }
+  }, []);
+
+  useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => setIsAdmin(!!user));
+    supabase.auth.getUser().then(({ data: { user } }) => setIsAdmin(isAdminUser(user?.email)));
   }, []);
 
   // 페이지 이동 시 모바일 메뉴 닫기
@@ -71,7 +80,7 @@ export default function Header() {
   );
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-base-100/80 backdrop-blur-md border-b border-base-content/5">
+    <header className="site-header sticky top-0 z-50 w-full bg-base-100/80 backdrop-blur-md border-b border-base-content/5">
       <div className="container mx-auto px-4 h-14 flex items-center justify-between">
         <Link href="/" className="font-black text-lg tracking-tight">
           HUNI<sup className="text-primary text-[10px] align-super">2</sup>
