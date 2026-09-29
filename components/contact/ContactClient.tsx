@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Mail, Download, Send, CheckCircle, AlertCircle, Loader, FileText } from 'lucide-react';
+import { Mail, Download, Send, CheckCircle, AlertCircle, Loader, FileText, Copy, Check } from 'lucide-react';
 import { Github, Linkedin, Twitter } from '@/components/icons/SocialIcons';
 import { useI18n } from '@/lib/i18n';
 import { useState } from 'react';
@@ -25,6 +25,18 @@ export default function ContactClient({ info }: { info: ContactInfo }) {
   const [email, setEmail]     = useState('');
   const [message, setMessage] = useState('');
   const [status, setStatus]   = useState<Status>('idle');
+  const [copied, setCopied]   = useState(false);
+
+  const copyEmail = async () => {
+    if (!info.email) return;
+    try {
+      await navigator.clipboard.writeText(info.email);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // 클립보드 API가 막혀 있으면 조용히 무시 — mailto 링크는 여전히 동작한다
+    }
+  };
 
   const greeting = lang === 'ko' ? info.greeting_ko : info.greeting_en;
 
@@ -83,19 +95,34 @@ export default function ContactClient({ info }: { info: ContactInfo }) {
         >
           {info.email && (
             <div className="space-y-4">
-              <h2 className="text-xl font-bold">{t.contact.details_title}</h2>
-              <a
-                href={`mailto:${info.email}`}
-                className="flex items-center gap-4 p-4 rounded-xl border border-base-content/5 bg-base-200 hover:border-primary/50 transition-all group"
-              >
-                <div className="p-3 rounded-lg bg-base-300 text-primary group-hover:scale-110 transition-transform">
-                  <Mail className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-xs opacity-50 uppercase font-bold tracking-widest">Email</p>
-                  <p className="font-mono">{info.email}</p>
-                </div>
-              </a>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-bold">{t.contact.details_title}</h2>
+                <span className="badge badge-primary badge-sm font-bold">
+                  {lang === 'ko' ? '채용 문의 권장' : 'Preferred for hiring'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 p-4 rounded-xl border border-primary/30 bg-primary/5">
+                <a
+                  href={`mailto:${info.email}`}
+                  className="flex items-center gap-4 flex-1 min-w-0 group"
+                >
+                  <div className="p-3 rounded-lg bg-base-300 text-primary group-hover:scale-110 transition-transform shrink-0">
+                    <Mail className="w-6 h-6" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs opacity-50 uppercase font-bold tracking-widest">Email</p>
+                    <p className="font-mono truncate">{info.email}</p>
+                  </div>
+                </a>
+                <button
+                  type="button"
+                  onClick={copyEmail}
+                  className="btn btn-ghost btn-sm btn-circle shrink-0"
+                  aria-label={lang === 'ko' ? '이메일 복사' : 'Copy email'}
+                >
+                  {copied ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
           )}
 
@@ -148,38 +175,41 @@ export default function ContactClient({ info }: { info: ContactInfo }) {
           <form onSubmit={handleSubmit} className="card-body gap-4">
             <h2 className="card-title">{t.contact.form_title}</h2>
 
-            <div className="form-control">
-              <label className="label"><span className="label-text">{lang === 'ko' ? '이름' : 'Name'}</span></label>
+            <div className="space-y-1.5">
+              <label className="block text-sm font-semibold text-base-content/70" htmlFor="contact-name">{lang === 'ko' ? '이름' : 'Name'}</label>
               <input
+                id="contact-name"
                 type="text"
                 required
                 placeholder={t.contact.name_placeholder}
-                className="input input-bordered bg-base-100"
+                className="input input-bordered bg-base-100 w-full"
                 value={name}
                 onChange={e => setName(e.target.value)}
                 disabled={status === 'sending' || status === 'success'}
               />
             </div>
 
-            <div className="form-control">
-              <label className="label"><span className="label-text">Email</span></label>
+            <div className="space-y-1.5">
+              <label className="block text-sm font-semibold text-base-content/70" htmlFor="contact-email">Email</label>
               <input
+                id="contact-email"
                 type="email"
                 required
                 placeholder={t.contact.email_placeholder}
-                className="input input-bordered bg-base-100"
+                className="input input-bordered bg-base-100 w-full"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 disabled={status === 'sending' || status === 'success'}
               />
             </div>
 
-            <div className="form-control">
-              <label className="label"><span className="label-text">{lang === 'ko' ? '메시지' : 'Message'}</span></label>
+            <div className="space-y-1.5">
+              <label className="block text-sm font-semibold text-base-content/70" htmlFor="contact-message">{lang === 'ko' ? '메시지' : 'Message'}</label>
               <textarea
+                id="contact-message"
                 required
                 placeholder={t.contact.message_placeholder}
-                className="textarea textarea-bordered h-32 bg-base-100"
+                className="textarea textarea-bordered h-32 bg-base-100 w-full"
                 value={message}
                 onChange={e => setMessage(e.target.value)}
                 disabled={status === 'sending' || status === 'success'}
