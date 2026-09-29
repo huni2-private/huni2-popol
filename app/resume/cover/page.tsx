@@ -1,5 +1,6 @@
 // 자기소개서 인쇄 전용 페이지 — 어드민만 접근 가능
 import { createClient } from '@/lib/supabase/server';
+import { isAdminUser } from '@/lib/isAdminUser';
 import { redirect } from 'next/navigation';
 import CoverPrintClient from './CoverPrintClient';
 
@@ -11,7 +12,7 @@ export default async function CoverPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) redirect('/resume');
+  if (!isAdminUser(user?.email)) redirect('/resume');
 
   const [{ data: lettersData }, { data: metaData }] = await Promise.all([
     supabase.from('site_settings').select('value').eq('key', 'cover_letters').single(),

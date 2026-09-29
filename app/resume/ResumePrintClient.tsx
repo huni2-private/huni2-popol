@@ -8,7 +8,7 @@ interface Bio          { title_ko?: string; desc_ko?: string; photo_url?: string
 interface Career       { year: string; company: string; title_ko: string; desc_ko: string; }
 interface Stack        { name_ko: string; items: string[]; }
 interface Impact       { id: string; project?: string; metric: string; title: string; before?: string; after?: string; context?: string; }
-interface Project      { id: string; title: string; description?: string; tags?: string[]; type?: string; status?: string; project_url?: string; github_url?: string; project_key?: string; }
+interface Project      { id: string; title: string; description?: string; resume_summary?: string; tags?: string[]; type?: string; status?: string; project_url?: string; github_url?: string; project_key?: string; }
 interface Education    { year: string; institution: string; title: string; desc?: string; project_desc?: string; }
 interface Contact      { email?: string; github?: string; linkedin?: string; }
 interface CoverSection { id: string; title: string; content: string; }
@@ -22,7 +22,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ProjectDesc({ text, impacts }: { text: string; impacts: Impact[] }) {
+function ProjectDesc({ text, impacts, summary }: { text: string; impacts: Impact[]; summary?: string }) {
   const clean = text
     .replace(/\*\*(.+?)\*\*/g, '$1')
     .replace(/\*(.+?)\*/g, '$1')
@@ -30,17 +30,31 @@ function ProjectDesc({ text, impacts }: { text: string; impacts: Impact[] }) {
     .replace(/\[(.+?)\]\(.+?\)/g, '$1');
 
   const firstSentence = (s: string) => {
-    const m = s.trim().match(/^[\s\S]+?[.。!?]/);
-    return m ? m[0].trim() : s.trim().slice(0, 120);
+    // 문장 끝 판정: 마침표 뒤가 공백/끝일 때만 — "timeslot.congkong.net"처럼
+    // 단어 중간의 마침표(URL·도메인)는 문장 끝으로 보지 않는다.
+    const m = s.trim().match(/^[\s\S]+?[.。!?](?=\s|$)/);
+    if (m) return m[0].trim();
+
+    // 마침표를 못 찾으면 120자에서 자르되, 괄호가 안 닫힌 채 끝나거나
+    // 단어 중간에서 잘리지 않도록 안전한 경계까지만 사용한다.
+    let cut = s.trim().slice(0, 120);
+    const openParen = cut.lastIndexOf('(');
+    const closeParen = cut.lastIndexOf(')');
+    if (openParen > closeParen) cut = cut.slice(0, openParen).trim();
+    const lastSpace = cut.lastIndexOf(' ');
+    if (lastSpace > 40) cut = cut.slice(0, lastSpace);
+    return cut.trim();
   };
 
-  let desc = '';
+  // 이력서 전용 요약이 있으면 description 자동 요약 대신 그대로 쓴다 —
+  // URL·괄호가 섞인 문장을 정규식으로 자르다 생기는 부자연스러운 절단을 원천 차단.
+  let desc = summary?.trim() ?? '';
   let bullets: string[] = [];
 
   if (/^##/m.test(clean)) {
     // ## 섹션 구조 — 첫 섹션은 서비스 설명, 나머지는 불릿
     const parts = clean.split(/^##[^\n]*/m).map(s => s.trim()).filter(Boolean);
-    desc = firstSentence(parts[0] ?? '');
+    if (!desc) desc = firstSentence(parts[0] ?? '');
     bullets = parts.slice(1, 5).map(s => {
       const bulletLine = s.match(/^[-*+]\s+(.+)/m);
       return bulletLine ? bulletLine[1].trim() : firstSentence(s);
@@ -53,7 +67,7 @@ function ProjectDesc({ text, impacts }: { text: string; impacts: Impact[] }) {
       .map(l => l.replace(/^[-*+]\s+/, '').trim())
       .filter(l => l.length > 5)
       .slice(0, 4);
-    if (bullets.length === 0)
+    if (!desc && bullets.length === 0)
       desc = clean.split('\n').find(l => l.trim().length > 5)?.trim() ?? '';
   }
 
@@ -136,7 +150,7 @@ export default function ResumePrintClient({
       <style>{`
         @media print {
           .no-print { display: none !important; }
-          header, #ck-chatbot-root { display: none !important; }
+          #ck-chatbot-root { display: none !important; }
           *, *::before, *::after {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
@@ -322,7 +336,7 @@ export default function ResumePrintClient({
                     )}
 
                     {/* 임팩트 + 설명 — · 불릿 통합 */}
-                    <ProjectDesc text={p.description ?? ''} impacts={impacts} />
+                    <ProjectDesc text={p.description ?? ''} impacts={impacts} summary={p.resume_summary} />
                   </div>
                 );
               })}

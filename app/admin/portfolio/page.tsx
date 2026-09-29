@@ -13,6 +13,8 @@ interface Project {
   title: string;
   project_key: string;
   description: string;
+  resume_summary: string;
+  role_summary: string;
   type: 'personal' | 'company';
   status: 'live' | 'wip' | 'archived';
   tags: string[];
@@ -26,7 +28,7 @@ interface Project {
 }
 
 const EMPTY: Omit<Project, 'id' | 'created_at'> = {
-  title: '', project_key: '', description: '', type: 'personal', status: 'live',
+  title: '', project_key: '', description: '', resume_summary: '', role_summary: '', type: 'personal', status: 'live',
   tags: [], image_url: '', project_url: '', github_url: '', pdf_url: '', display_order: 0,
   show_in_resume: true,
 };
@@ -83,6 +85,8 @@ export default function AdminPortfolio() {
       ...p,
       project_key: p.project_key ?? '',
       description: p.description ?? '',
+      resume_summary: p.resume_summary ?? '',
+      role_summary: p.role_summary ?? '',
       image_url: p.image_url ?? '',
       project_url: p.project_url ?? '',
       github_url: p.github_url ?? '',
@@ -355,6 +359,34 @@ export default function AdminPortfolio() {
                   className="textarea textarea-bordered bg-base-200 resize-y h-48 font-mono text-xs"
                   value={form.description}
                   onChange={e => field('description', e.target.value)}
+                />
+              </div>
+
+              {/* Resume Summary */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-bold">이력서 요약</span>
+                  <span className="label-text-alt opacity-40">비워두면 설명에서 자동으로 한 문장을 뽑아 씁니다</span>
+                </label>
+                <textarea
+                  placeholder="이력서 프로젝트 항목에만 쓰일 한 줄 요약. 마침표로 끝내지 않아도 되고, URL·괄호가 있어도 그대로 노출됩니다."
+                  className="textarea textarea-bordered bg-base-200 resize-y h-20 text-sm"
+                  value={form.resume_summary}
+                  onChange={e => field('resume_summary', e.target.value)}
+                />
+              </div>
+
+              {/* Role Summary */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-bold">상세 상단 요약</span>
+                  <span className="label-text-alt opacity-40">프로젝트 상세 페이지 제목 바로 아래에 표시</span>
+                </label>
+                <textarea
+                  placeholder="예: 2025.11–2026.01 · 6인 팀 · AS/정기점검 스케줄링, CI/CD 담당"
+                  className="textarea textarea-bordered bg-base-200 resize-y h-20 text-sm"
+                  value={form.role_summary}
+                  onChange={e => field('role_summary', e.target.value)}
                 />
               </div>
 

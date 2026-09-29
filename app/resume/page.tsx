@@ -1,5 +1,6 @@
 // 이력서 인쇄 전용 페이지 — Supabase 데이터를 서버에서 패칭해 렌더링
 import { createClient } from '@/lib/supabase/server';
+import { isAdminUser } from '@/lib/isAdminUser';
 import ResumePrintClient from './ResumePrintClient';
 
 interface CoverSection { id: string; title: string; content: string; }
@@ -27,13 +28,13 @@ export default async function ResumePage() {
     supabase.from('site_settings').select('value').eq('key', 'tech_stack').single(),
     supabase.from('site_settings').select('value').eq('key', 'education').single(),
     supabase.from('site_settings').select('value').eq('key', 'impact_stats').single(),
-    supabase.from('projects').select('id, title, description, tags, type, status, project_url, github_url, project_key').eq('show_in_resume', true).order('display_order', { ascending: true }),
+    supabase.from('projects').select('id, title, description, resume_summary, tags, type, status, project_url, github_url, project_key').eq('show_in_resume', true).order('display_order', { ascending: true }),
     supabase.from('site_settings').select('value').eq('key', 'contact_info').single(),
     supabase.from('site_settings').select('value').eq('key', 'cover_letters').single(),
     supabase.from('site_settings').select('value').eq('key', 'cover_letter_meta').single(),
   ]);
 
-  const isAdmin = !!user;
+  const isAdmin = isAdminUser(user?.email);
 
   // 어드민 + enabled + active_id가 있을 때만 자기소개서 표시
   let activeCoverLetter: CoverLetter | null = null;
