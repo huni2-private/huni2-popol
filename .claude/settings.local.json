@@ -2,7 +2,16 @@
   "permissions": {
     "allow": [
       "Bash(node -e \"const d = require\\('./node_modules/daisyui/package.json'\\); console.log\\(d.version\\)\")",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(break)",
+      "mcp__plugin_bkit_bkit-pdca__bkit_feature_detail",
+      "mcp__plugin_bkit_bkit-pdca__bkit_plan_read",
+      "mcp__plugin_bkit_bkit-pdca__bkit_design_read",
+      "Bash(git *)",
+      "Bash(curl -s https://huni2-popol.vercel.app/)",
+      "Bash(curl *)",
+      "Read(//tmp/**)"
     ]
   }
 }
