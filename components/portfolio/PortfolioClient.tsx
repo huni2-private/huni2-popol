@@ -9,6 +9,8 @@ import { ExternalLink, ArrowRight, Zap, BookOpen, Search, X } from 'lucide-react
 import { Github } from '@/components/icons/SocialIcons';
 import { useState, useMemo } from 'react';
 import ProjectThumbnail from '@/components/portfolio/ProjectThumbnail';
+import { projectStatusMeta } from '@/lib/projectStatus';
+import { useI18n } from '@/lib/i18n';
 
 interface Project {
   id: string;
@@ -17,6 +19,8 @@ interface Project {
   type: 'personal' | 'company';
   status: 'live' | 'wip' | 'archived';
   description: string;
+  resume_summary?: string;
+  role_summary?: string;
   tags: string[];
   image_url: string;
   project_url?: string;
@@ -52,6 +56,7 @@ export default function PortfolioClient({
   logs?: Log[];
 }) {
   const router = useRouter();
+  const { lang, t } = useI18n();
   const [view, setView] = useState<'projects' | 'impact'>('projects');
   const [filter, setFilter] = useState<'all' | 'personal' | 'company'>('all');
   const [search, setSearch] = useState('');
@@ -88,12 +93,17 @@ export default function PortfolioClient({
 
   return (
     <div className="space-y-8">
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl font-bold italic">{t.portfolio.page_title}</h1>
+        <p className="text-base-content/70">{t.portfolio.page_desc}</p>
+      </div>
+
       {/* 최상위 탭 */}
       <div className="flex justify-center gap-2">
         {(['projects', 'impact'] as const).map((v) => (
           <button key={v} onClick={() => setView(v)}
             className={`btn btn-sm rounded-full px-6 transition-all ${view === v ? 'btn-primary' : 'btn-ghost bg-base-200'}`}>
-            {v === 'projects' ? 'Projects' : 'Impact'}
+            {v === 'projects' ? t.portfolio.tab_projects : t.portfolio.tab_impact}
           </button>
         ))}
       </div>
@@ -106,7 +116,7 @@ export default function PortfolioClient({
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/30 group-focus-within:text-primary transition-colors" />
               <input
                 type="text"
-                placeholder="Search projects..."
+                placeholder={t.portfolio.search_placeholder}
                 className="input input-bordered pl-12 bg-base-200 rounded-2xl w-full h-12 focus:ring-2 focus:ring-primary/20 border-base-content/10"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -125,7 +135,7 @@ export default function PortfolioClient({
               {(['all', 'personal', 'company'] as const).map((f) => (
                 <button key={f} onClick={() => setFilter(f)}
                   className={`btn btn-sm rounded-full px-6 transition-all ${filter === f ? 'btn-primary' : 'btn-ghost bg-base-200'}`}>
-                  {f.charAt(0).toUpperCase() + f.slice(1)}
+                  {f === 'all' ? t.portfolio.filter_all : f === 'personal' ? t.portfolio.filter_personal : t.portfolio.filter_company}
                 </button>
               ))}
             </div>
@@ -136,13 +146,13 @@ export default function PortfolioClient({
               <div className="bg-base-300 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="w-8 h-8 opacity-20" />
               </div>
-              <p className="text-lg font-bold opacity-40">검색 결과가 없습니다.</p>
+              <p className="text-lg font-bold opacity-40">{t.portfolio.no_results}</p>
               {(search || filter !== 'all') && (
                 <button
                   onClick={() => { setSearch(''); setFilter('all'); }}
                   className="btn btn-outline btn-sm rounded-xl px-6"
                 >
-                  Clear all filters
+                  {t.portfolio.clear_filters}
                 </button>
               )}
             </div>
@@ -151,6 +161,8 @@ export default function PortfolioClient({
             {filteredProjects.map((project, index) => {
               const matchKey = (project.project_key || project.title).toLowerCase();
               const stat = impactStats.find(s => s.project?.toLowerCase() === matchKey);
+              const meta = projectStatusMeta(project.status, lang);
+              const typeLabel = project.type === 'company' ? t.portfolio.filter_company : t.portfolio.filter_personal;
               return (
                 <motion.div
                   key={project.id}
@@ -159,7 +171,7 @@ export default function PortfolioClient({
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.25, delay: index * 0.04 }}
                   onClick={() => router.push(`/portfolio/${encodeURIComponent(project.project_key || project.id)}`)}
-                  className="card bg-base-200 border border-base-content/5 hover:border-primary/30 overflow-hidden group cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5"
+                  className="relative card bg-base-200 border border-base-content/5 hover:border-primary/30 overflow-hidden group cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5"
                 >
                   {/* 이미지 */}
                   <figure className="relative h-44 overflow-hidden bg-base-300">
@@ -179,19 +191,40 @@ export default function PortfolioClient({
                     ) : (
                       <ProjectThumbnail title={project.title} type={project.type} />
                     )}
-                    {project.status === 'live' && (
-                      <span className="absolute top-2 right-2 z-20 text-[9px] font-bold text-success bg-success/10 border border-success/30 px-1.5 py-0.5 rounded-full">LIVE</span>
-                    )}
                   </figure>
 
                   <div className="card-body p-5 gap-3">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md ${
-                        project.type === 'personal' ? 'bg-primary/10 text-primary' : 'bg-secondary/10 text-secondary'
-                      }`}>{project.type}</span>
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest">
+                      <span className={`inline-flex h-1.5 w-1.5 rounded-full ${meta.dotClass}`} />
+                      <span className={meta.textClass}>{meta.label}</span>
+                      <span className="ml-auto normal-case tracking-normal text-base-content/30">
+                        {typeLabel}
+                      </span>
                     </div>
 
-                    <h2 className="font-bold text-base leading-snug group-hover:text-primary transition-colors">{project.title}</h2>
+                    <h2 className="font-bold text-base leading-snug">
+                      <Link
+                        href={`/portfolio/${encodeURIComponent(project.project_key || project.id)}`}
+                        className="rounded-sm group-hover:text-primary transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        {project.title}
+                      </Link>
+                    </h2>
+
+                    {/* 서비스 요약 */}
+                    {project.resume_summary && (
+                      <p className="text-xs text-base-content/60 leading-relaxed line-clamp-2">
+                        {project.resume_summary}
+                      </p>
+                    )}
+
+                    {/* 담당 역할 (있을 때만) */}
+                    {project.role_summary && (
+                      <p className="text-[11px] text-base-content/40 leading-relaxed line-clamp-1">
+                        {project.role_summary}
+                      </p>
+                    )}
 
                     {/* 임팩트 수치 (있을 때만) */}
                     {stat && (
@@ -204,10 +237,14 @@ export default function PortfolioClient({
                     {/* 태그 */}
                     <div className="flex flex-wrap gap-1.5">
                       {[...new Set(project.tags)].slice(0, 4).map(tag => (
-                        <span key={tag} className="badge badge-ghost text-[10px] py-2.5">{tag}</span>
+                        <span key={tag} className="font-mono text-[9px] px-1.5 py-0.5 rounded border border-base-content/10 text-base-content/40">
+                          {tag}
+                        </span>
                       ))}
                       {[...new Set(project.tags)].length > 4 && (
-                        <span className="badge badge-ghost text-[10px] py-2.5">+{[...new Set(project.tags)].length - 4}</span>
+                        <span className="font-mono text-[9px] px-1.5 py-0.5 rounded border border-base-content/10 text-base-content/40">
+                          +{[...new Set(project.tags)].length - 4}
+                        </span>
                       )}
                     </div>
 
@@ -243,9 +280,9 @@ export default function PortfolioClient({
       {/* ── Impact 탭 ── */}
       {view === 'impact' && (
         <div className="space-y-10">
-          <p className="text-center text-base-content/50 text-sm font-mono">완벽보다는 완성, 완성 후에는 개선을.</p>
+          <p className="text-center text-base-content/50 text-sm font-mono">{t.portfolio.tagline}</p>
           {impactStats.length === 0 ? (
-            <p className="text-base-content/40 italic py-8 text-center">등록된 수치가 없습니다.</p>
+            <p className="text-base-content/40 italic py-8 text-center">{t.portfolio.no_impact}</p>
           ) : (
             <>
               {Object.entries(impactByProject.groups).map(([proj, stats], gi) => (
@@ -279,7 +316,7 @@ export default function PortfolioClient({
                           {stat.log_slug && (
                             <Link href={`/log/${stat.log_slug}`}
                               className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline mt-1 w-fit">
-                              <Zap className="w-3 h-3" /> 개발 로그 <ArrowRight className="w-3 h-3" />
+                              <Zap className="w-3 h-3" /> {t.portfolio.dev_log_link} <ArrowRight className="w-3 h-3" />
                             </Link>
                           )}
                         </div>
