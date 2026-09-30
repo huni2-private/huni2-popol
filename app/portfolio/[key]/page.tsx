@@ -104,11 +104,9 @@ export default async function PortfolioDetail({ params }: { params: Promise<{ ke
 
       {/* 헤더 */}
       <div className="space-y-3">
-        <div className="flex items-center gap-1.5 flex-wrap text-[10px] font-bold uppercase tracking-widest">
-          <span className={`inline-flex h-1.5 w-1.5 rounded-full ${statusMeta.dotClass}`} />
-          <span className={statusMeta.textClass}>{statusMeta.label}</span>
-          <span className="text-base-content/20">·</span>
-          <span className="normal-case tracking-normal text-base-content/40">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className={statusMeta.badgeClass}>{statusMeta.label}</span>
+          <span className="text-[10px] text-base-content/40">
             {project.type === 'company' ? '기업' : '개인'}
           </span>
         </div>

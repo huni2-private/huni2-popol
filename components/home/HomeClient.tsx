@@ -297,10 +297,7 @@ export default function HomeClient({
                   className="group relative overflow-hidden rounded-2xl border border-base-content/10 bg-base-200 hover:border-primary/30 hover:-translate-y-1 transition-all"
                 >
                   <div className="p-5 space-y-2.5">
-                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest">
-                      <span className={`inline-flex h-1.5 w-1.5 rounded-full ${meta.dotClass}`} />
-                      <span className={meta.textClass}>{meta.label}</span>
-                    </div>
+                    <span className={meta.badgeClass}>{meta.label}</span>
                     <h3 className="font-bold text-sm group-hover:text-primary transition-colors">{p.title}</h3>
                     <p className="text-xs text-base-content/50 leading-relaxed line-clamp-2">
                       {p.resume_summary || getExcerpt(p.description)}

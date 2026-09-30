@@ -10,15 +10,13 @@ const LABELS = {
   en: { live: 'Live', wip: 'In Progress', archived: 'Archived' },
 } as const;
 
+// 카드 하단 기술 태그와 같은 아웃라인 칩 스타일로 통일 (점+원색 텍스트 조합은
+// 상태별 색만 다를 뿐 위치/역할이 같아 badgeClass 하나로 공용 처리한다).
+const BADGE_CLASS =
+  'inline-flex items-center rounded border border-base-content/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-base-content/50';
+
 export function projectStatusMeta(status: ProjectStatus | string, lang: 'ko' | 'en' = 'ko') {
   const labels = LABELS[lang];
-  switch (status) {
-    case 'live':
-      return { label: labels.live, dotClass: 'bg-success', textClass: 'text-success' };
-    case 'wip':
-      return { label: labels.wip, dotClass: 'bg-warning', textClass: 'text-warning' };
-    case 'archived':
-    default:
-      return { label: labels.archived, dotClass: 'bg-base-content/30', textClass: 'text-base-content/40' };
-  }
+  const label = status === 'live' || status === 'wip' ? labels[status] : labels.archived;
+  return { label, badgeClass: BADGE_CLASS };
 }

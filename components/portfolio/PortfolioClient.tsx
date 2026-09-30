@@ -194,10 +194,9 @@ export default function PortfolioClient({
                   </figure>
 
                   <div className="card-body p-5 gap-3">
-                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest">
-                      <span className={`inline-flex h-1.5 w-1.5 rounded-full ${meta.dotClass}`} />
-                      <span className={meta.textClass}>{meta.label}</span>
-                      <span className="ml-auto normal-case tracking-normal text-base-content/30">
+                    <div className="flex items-center gap-1.5">
+                      <span className={meta.badgeClass}>{meta.label}</span>
+                      <span className="ml-auto text-[10px] text-base-content/30">
                         {typeLabel}
                       </span>
                     </div>
