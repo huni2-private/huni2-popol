@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 import { Github, Linkedin, Twitter } from '@/components/icons/SocialIcons';
 import { useI18n } from '@/lib/i18n';
 
@@ -28,6 +30,9 @@ export default function Footer({ contact }: { contact: ContactInfo }) {
           {lang === 'ko' ? 'Next.js와 Supabase로 직접 만들었습니다.' : 'Built with Next.js & Supabase.'}
         </p>
         <div className="flex items-center gap-4">
+          <Link href="/contact" className="flex items-center gap-1 font-bold text-primary hover:opacity-70 transition-opacity">
+            {lang === 'ko' ? '연락하기' : 'Get in touch'} <ArrowRight className="w-3 h-3" />
+          </Link>
           {contact.email && (
             <a href={`mailto:${contact.email}`} className="font-mono hover:text-primary transition-colors">
               {contact.email}
