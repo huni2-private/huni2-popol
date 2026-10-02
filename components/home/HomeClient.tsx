@@ -299,17 +299,19 @@ export default function HomeClient({
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">
-            {/* 텍스트 패널을 DOM상 먼저 둬서, 모바일 시각 순서(글 먼저)와
-                스크린리더/키보드 탐색 순서가 항상 일치하게 한다. 데스크톱 "이미지
-                왼쪽" 배치는 order로만 시각적으로 재배열 — 실제 콘텐츠 우선순위는
-                바뀌지 않는다 */}
+          {/* 모바일: 프로젝트 선택(nav) → 설명(panel) → 이미지(image) 순서로 배치해
+              "다른 프로젝트 선택" 직후 바뀐 설명이 바로 보이게 한다. 데스크톱은
+              이미지 왼쪽 · 설명 오른쪽, nav는 이미지 아래에 — named grid area로
+              DOM 순서와 무관하게 배치만 breakpoint별로 바꾼다 */}
+          <div
+            className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4 lg:gap-10 items-start lg:items-center [grid-template-areas:'nav'_'panel'_'image'] lg:[grid-template-areas:'image_panel'_'nav_panel']"
+          >
             <motion.div
               key={activeProject.id}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="space-y-4 lg:order-2"
+              className="space-y-4 [grid-area:panel]"
             >
               <span className={activeMeta.badgeClass}>{activeMeta.label}</span>
               <h3 className="font-black text-2xl md:text-3xl leading-tight">{activeProject.title}</h3>
@@ -370,9 +372,8 @@ export default function HomeClient({
               )}
             </motion.div>
 
-            {/* 3D 코버플로우 — 데스크톱에서만 왼쪽으로 시각 재배치(lg:order-1).
-                모바일은 DOM 순서 그대로 패널 다음(아래)에 나온다 */}
-            <div className="relative lg:order-1">
+            {/* 3D 코버플로우 이미지 */}
+            <div className="relative [grid-area:image]">
               <div
                 className="relative h-[320px] sm:h-[380px] overflow-hidden"
                 style={{ perspective: '1600px' }}
@@ -419,47 +420,50 @@ export default function HomeClient({
                   );
                 })}
               </div>
-              {featuredProjects.length > 1 && (
-                <div className="flex items-center justify-center gap-4 mt-3">
-                  <button
-                    type="button"
-                    onClick={() => goTo(activeIndex - 1)}
-                    disabled={activeIndex === 0}
-                    aria-label={lang === 'ko' ? '이전 프로젝트' : 'Previous project'}
-                    className="flex items-center justify-center w-9 h-9 rounded-full border border-base-content/15 hover:border-primary/40 hover:text-primary disabled:opacity-30 disabled:pointer-events-none transition-colors"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-                    {featuredProjects.map((p, i) => {
-                      const label = p.project_key || p.title || `${lang === 'ko' ? '프로젝트' : 'Project'} ${i + 1}`;
-                      return (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => goTo(i)}
-                          aria-label={label}
-                          className={`text-xs font-bold whitespace-nowrap transition-colors ${
-                            i === activeIndex ? 'text-primary' : 'text-base-content/35 hover:text-base-content/60'
-                          }`}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => goTo(activeIndex + 1)}
-                    disabled={activeIndex === featuredProjects.length - 1}
-                    aria-label={lang === 'ko' ? '다음 프로젝트' : 'Next project'}
-                    className="flex items-center justify-center w-9 h-9 rounded-full border border-base-content/15 hover:border-primary/40 hover:text-primary disabled:opacity-30 disabled:pointer-events-none transition-colors"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
             </div>
+
+            {/* 프로젝트 선택(이전/다음 + 이름 탭) — 모바일에서는 이미지보다 먼저,
+                데스크톱에서는 이미지 바로 아래에 붙는다 */}
+            {featuredProjects.length > 1 && (
+              <div className="flex items-center justify-center gap-4 [grid-area:nav]">
+                <button
+                  type="button"
+                  onClick={() => goTo(activeIndex - 1)}
+                  disabled={activeIndex === 0}
+                  aria-label={lang === 'ko' ? '이전 프로젝트' : 'Previous project'}
+                  className="flex items-center justify-center w-9 h-9 rounded-full border border-base-content/15 hover:border-primary/40 hover:text-primary disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+                  {featuredProjects.map((p, i) => {
+                    const label = p.project_key || p.title || `${lang === 'ko' ? '프로젝트' : 'Project'} ${i + 1}`;
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => goTo(i)}
+                        aria-label={label}
+                        className={`text-xs font-bold whitespace-nowrap transition-colors ${
+                          i === activeIndex ? 'text-primary' : 'text-base-content/35 hover:text-base-content/60'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => goTo(activeIndex + 1)}
+                  disabled={activeIndex === featuredProjects.length - 1}
+                  aria-label={lang === 'ko' ? '다음 프로젝트' : 'Next project'}
+                  className="flex items-center justify-center w-9 h-9 rounded-full border border-base-content/15 hover:border-primary/40 hover:text-primary disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         </section>
       )}
