@@ -185,7 +185,7 @@ export default function HomeClient({
             </span>
           </p>
           <h1
-            className="font-black leading-[0.98]"
+            className="font-black leading-[0.98] break-keep"
             style={{ fontSize: 'clamp(2rem, 5.4vw, 4rem)', letterSpacing: '-0.035em' }}
           >
             {title.replace('\n', ' ')}
@@ -269,10 +269,10 @@ export default function HomeClient({
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-ghost btn-sm rounded-full gap-2 opacity-60 hover:opacity-100"
-            aria-label="GitHub 소스 코드"
+            aria-label="이 사이트 소스 코드"
           >
             <Github className="w-4 h-4" />
-            {lang === 'ko' ? '소스 코드' : 'Source'}
+            {lang === 'ko' ? '이 사이트 소스' : 'This Site’s Source'}
           </a>
         </div>
       </MagicCard>
@@ -300,96 +300,16 @@ export default function HomeClient({
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">
-            {/* 왼쪽: 3D 코버플로우 — 이미지 중심, 텍스트는 오른쪽 패널로 */}
-            <div className="relative">
-              <div
-                className="relative h-[320px] sm:h-[380px] overflow-hidden"
-                style={{ perspective: '1600px' }}
-              >
-                {featuredProjects.map((p, i) => {
-                  const offset = i - activeIndex;
-                  const abs = Math.abs(offset);
-                  const isActive = offset === 0;
-                  if (abs > 2) return null;
-                  return (
-                    <motion.div
-                      key={p.id}
-                      className="absolute inset-0 m-auto w-[78%] sm:w-[64%] h-full"
-                      animate={{
-                        x: `${offset * 78}%`,
-                        rotateY: offset === 0 ? 0 : offset > 0 ? -34 : 34,
-                        scale: isActive ? 1 : 0.82,
-                        opacity: 1 - abs * 0.32,
-                        zIndex: 10 - abs,
-                      }}
-                      transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-                    >
-                      <Link
-                        href={`/portfolio/${encodeURIComponent(p.project_key || p.id)}`}
-                        tabIndex={isActive ? 0 : -1}
-                        aria-hidden={!isActive}
-                        onClick={e => { if (!isActive) { e.preventDefault(); goTo(i); } }}
-                        className="group relative block h-full w-full overflow-hidden rounded-3xl border border-base-content/10 bg-base-200 shadow-2xl shadow-black/20 hover:border-primary/30 transition-colors cursor-pointer"
-                      >
-                        {p.image_url ? (
-                          <>
-                            <Image src={p.image_url} alt="" fill aria-hidden="true"
-                              className="object-cover blur-xl scale-110 opacity-30 group-hover:opacity-50 transition-opacity duration-500"
-                              sizes="(max-width: 640px) 78vw, 32vw" />
-                            <Image src={p.image_url} alt={p.title} fill
-                              className="object-contain p-6"
-                              sizes="(max-width: 640px) 78vw, 32vw" />
-                          </>
-                        ) : (
-                          <ProjectThumbnail title={p.title} type={p.type === 'company' ? 'company' : 'personal'} />
-                        )}
-                      </Link>
-                    </motion.div>
-                  );
-                })}
-              </div>
-              {featuredProjects.length > 1 && (
-                <div className="flex items-center justify-center gap-4 mt-3">
-                  <button
-                    type="button"
-                    onClick={() => goTo(activeIndex - 1)}
-                    disabled={activeIndex === 0}
-                    aria-label={lang === 'ko' ? '이전 프로젝트' : 'Previous project'}
-                    className="flex items-center justify-center w-9 h-9 rounded-full border border-base-content/15 hover:border-primary/40 hover:text-primary disabled:opacity-30 disabled:pointer-events-none transition-colors"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <div className="flex items-center gap-1.5">
-                    {featuredProjects.map((p, i) => (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => goTo(i)}
-                        aria-label={`${i + 1}`}
-                        className={`h-1.5 rounded-full transition-all ${i === activeIndex ? 'w-6 bg-primary' : 'w-1.5 bg-base-content/20 hover:bg-base-content/40'}`}
-                      />
-                    ))}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => goTo(activeIndex + 1)}
-                    disabled={activeIndex === featuredProjects.length - 1}
-                    aria-label={lang === 'ko' ? '다음 프로젝트' : 'Next project'}
-                    className="flex items-center justify-center w-9 h-9 rounded-full border border-base-content/15 hover:border-primary/40 hover:text-primary disabled:opacity-30 disabled:pointer-events-none transition-colors"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* 오른쪽: 선택된 프로젝트 설명 + 관련 로그 */}
+            {/* 텍스트 패널을 DOM상 먼저 둬서, 모바일 시각 순서(글 먼저)와
+                스크린리더/키보드 탐색 순서가 항상 일치하게 한다. 데스크톱 "이미지
+                왼쪽" 배치는 order로만 시각적으로 재배열 — 실제 콘텐츠 우선순위는
+                바뀌지 않는다 */}
             <motion.div
               key={activeProject.id}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="space-y-4"
+              className="space-y-4 lg:order-2"
             >
               <span className={activeMeta.badgeClass}>{activeMeta.label}</span>
               <h3 className="font-black text-2xl md:text-3xl leading-tight">{activeProject.title}</h3>
@@ -449,6 +369,97 @@ export default function HomeClient({
                 </div>
               )}
             </motion.div>
+
+            {/* 3D 코버플로우 — 데스크톱에서만 왼쪽으로 시각 재배치(lg:order-1).
+                모바일은 DOM 순서 그대로 패널 다음(아래)에 나온다 */}
+            <div className="relative lg:order-1">
+              <div
+                className="relative h-[320px] sm:h-[380px] overflow-hidden"
+                style={{ perspective: '1600px' }}
+              >
+                {featuredProjects.map((p, i) => {
+                  const offset = i - activeIndex;
+                  const abs = Math.abs(offset);
+                  const isActive = offset === 0;
+                  if (abs > 2) return null;
+                  return (
+                    <motion.div
+                      key={p.id}
+                      className="absolute inset-0 m-auto w-[78%] sm:w-[64%] h-full"
+                      animate={{
+                        x: `${offset * 78}%`,
+                        rotateY: offset === 0 ? 0 : offset > 0 ? -34 : 34,
+                        scale: isActive ? 1 : 0.82,
+                        opacity: 1 - abs * 0.32,
+                        zIndex: 10 - abs,
+                      }}
+                      transition={{ type: 'spring', stiffness: 260, damping: 28 }}
+                    >
+                      <Link
+                        href={`/portfolio/${encodeURIComponent(p.project_key || p.id)}`}
+                        tabIndex={isActive ? 0 : -1}
+                        aria-hidden={!isActive}
+                        onClick={e => { if (!isActive) { e.preventDefault(); goTo(i); } }}
+                        className="group relative block h-full w-full overflow-hidden rounded-3xl border border-base-content/10 bg-base-200 shadow-2xl shadow-black/20 hover:border-primary/30 transition-colors cursor-pointer"
+                      >
+                        {p.image_url ? (
+                          <>
+                            <Image src={p.image_url} alt="" fill aria-hidden="true"
+                              className="object-cover blur-xl scale-110 opacity-30 group-hover:opacity-50 transition-opacity duration-500"
+                              sizes="(max-width: 640px) 78vw, 32vw" />
+                            <Image src={p.image_url} alt={p.title} fill
+                              className="object-contain p-6"
+                              sizes="(max-width: 640px) 78vw, 32vw" />
+                          </>
+                        ) : (
+                          <ProjectThumbnail title={p.title} type={p.type === 'company' ? 'company' : 'personal'} />
+                        )}
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </div>
+              {featuredProjects.length > 1 && (
+                <div className="flex items-center justify-center gap-4 mt-3">
+                  <button
+                    type="button"
+                    onClick={() => goTo(activeIndex - 1)}
+                    disabled={activeIndex === 0}
+                    aria-label={lang === 'ko' ? '이전 프로젝트' : 'Previous project'}
+                    className="flex items-center justify-center w-9 h-9 rounded-full border border-base-content/15 hover:border-primary/40 hover:text-primary disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+                    {featuredProjects.map((p, i) => {
+                      const label = p.project_key || p.title || `${lang === 'ko' ? '프로젝트' : 'Project'} ${i + 1}`;
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => goTo(i)}
+                          aria-label={label}
+                          className={`text-xs font-bold whitespace-nowrap transition-colors ${
+                            i === activeIndex ? 'text-primary' : 'text-base-content/35 hover:text-base-content/60'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => goTo(activeIndex + 1)}
+                    disabled={activeIndex === featuredProjects.length - 1}
+                    aria-label={lang === 'ko' ? '다음 프로젝트' : 'Next project'}
+                    className="flex items-center justify-center w-9 h-9 rounded-full border border-base-content/15 hover:border-primary/40 hover:text-primary disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </section>
       )}
@@ -470,7 +481,7 @@ export default function HomeClient({
             {lang === 'ko' ? '숫자 뒤에 있는 사람이 궁금하다면' : 'Curious about the person behind the numbers?'}
           </h3>
           <p className="text-sm text-base-content/50">
-            {lang === 'ko' ? '커리어, 일하는 방식, 이 사이트를 만든 이유.' : 'My career, how I work, and why I built this site.'}
+            {lang === 'ko' ? '커리어, 기술 스택, 그리고 일하는 방식.' : 'My career, tech stack, and how I work.'}
           </p>
         </div>
         <span className="relative z-10 flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-primary/30 text-primary shrink-0 transition-all group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-content">
