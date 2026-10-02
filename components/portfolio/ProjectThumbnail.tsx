@@ -16,20 +16,15 @@ function hashTitle(s: string) {
 
 export default function ProjectThumbnail({ title, type }: { title: string; type: 'personal' | 'company' }) {
   const p = THUMB_PALETTES[hashTitle(title)];
-  const initials = title.replace(/[^A-Za-z가-힣]/g, '').slice(0, 2).toUpperCase() || title.slice(0, 2).toUpperCase();
   return (
     <div className="relative w-full h-full overflow-hidden bg-base-300">
       <div className={`absolute inset-0 bg-gradient-to-br ${p.grad}`} />
-      <div className="absolute inset-0 opacity-[0.09]"
-        style={{ backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
-      <div className={`absolute -top-8 -right-8 w-44 h-44 rounded-full blur-3xl opacity-50 ${p.blob1}`} />
-      <div className={`absolute -bottom-8 -left-8 w-32 h-32 rounded-full blur-3xl opacity-35 ${p.blob2}`} />
-      <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[96px] font-black font-mono leading-none select-none opacity-[0.12] pointer-events-none">
-        {initials}
-      </span>
+      <div className={`absolute -top-12 -right-12 w-56 h-56 rounded-full blur-3xl opacity-40 ${p.blob1}`} />
+      <div className={`absolute -bottom-12 -left-12 w-40 h-40 rounded-full blur-3xl opacity-25 ${p.blob2}`} />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/0" />
       <div className="absolute bottom-0 left-0 right-0 p-4">
-        <p className="text-[9px] font-bold uppercase tracking-[0.25em] opacity-50 font-mono">{type}</p>
-        <p className="text-sm font-black leading-tight truncate">{title}</p>
+        <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-white/70 font-mono">{type}</p>
+        <p className="text-base font-black leading-tight text-white truncate">{title}</p>
       </div>
     </div>
   );

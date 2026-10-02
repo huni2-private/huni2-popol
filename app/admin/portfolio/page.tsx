@@ -24,13 +24,14 @@ interface Project {
   pdf_url: string;
   display_order: number;
   show_in_resume: boolean;
+  featured: boolean;
   created_at: string;
 }
 
 const EMPTY: Omit<Project, 'id' | 'created_at'> = {
   title: '', project_key: '', description: '', resume_summary: '', role_summary: '', type: 'personal', status: 'live',
   tags: [], image_url: '', project_url: '', github_url: '', pdf_url: '', display_order: 0,
-  show_in_resume: true,
+  show_in_resume: true, featured: false,
 };
 
 const STATUS_BADGE: Record<Project['status'], string> = {
@@ -243,6 +244,9 @@ export default function AdminPortfolio() {
                   <span className={`badge badge-sm ${STATUS_BADGE[p.status]}`}>{p.status}</span>
                   {p.show_in_resume === false && (
                     <span className="badge badge-ghost badge-sm text-[9px] opacity-50">이력서 제외</span>
+                  )}
+                  {p.featured && (
+                    <span className="badge badge-outline badge-primary badge-sm text-[9px]">대표</span>
                   )}
                 </div>
 
@@ -571,6 +575,22 @@ export default function AdminPortfolio() {
                   <div>
                     <p className="label-text font-bold">이력서(/resume)에 포함</p>
                     <p className="text-xs opacity-40">체크 해제 시 PDF 이력서에서 숨겨집니다.</p>
+                  </div>
+                </label>
+              </div>
+
+              {/* 홈 대표 프로젝트 */}
+              <div className="form-control">
+                <label className="label cursor-pointer justify-start gap-3 py-3 px-4 rounded-xl bg-base-300/50 hover:bg-base-300 transition-colors">
+                  <input
+                    type="checkbox"
+                    className="checkbox checkbox-primary checkbox-sm"
+                    checked={form.featured ?? false}
+                    onChange={e => field('featured', e.target.checked)}
+                  />
+                  <div>
+                    <p className="label-text font-bold">홈 대표 프로젝트로 표시</p>
+                    <p className="text-xs opacity-40">메인 페이지 &quot;대표 프로젝트&quot; 캐러셀에 노출됩니다. 표시 순서(위)로 정렬됩니다.</p>
                   </div>
                 </label>
               </div>
