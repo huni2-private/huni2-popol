@@ -45,6 +45,7 @@ function AdminWriteInner() {
   const [createdAt, setCreatedAt] = useState(() => new Date().toISOString().slice(0, 16));
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [initialLoad, setInitialLoad] = useState(false);
+  const [originalSlug, setOriginalSlug] = useState<string | null>(null);
   const [projectKeys, setProjectKeys] = useState<string[]>([]);
   const { toast, showToast } = useAdminToast();
   const router = useRouter();
@@ -77,6 +78,7 @@ function AdminWriteInner() {
         setTags((data.tags ?? []).join(', '));
         setPublished(data.published);
         setCreatedAt(new Date(data.created_at).toISOString().slice(0, 16));
+        setOriginalSlug(data.slug);
       }
       setInitialLoad(false);
     })();
@@ -90,7 +92,6 @@ function AdminWriteInner() {
     }
     setSaveStatus('saving');
 
-    const slug    = slugify(title) || `post-${Date.now()}`;
     const excerpt = extractExcerpt(content);
     const tagArr  = tags.split(',').map(t => t.trim()).filter(Boolean);
     const projectVal = project.trim() || null;
@@ -98,9 +99,12 @@ function AdminWriteInner() {
     const created_at = new Date(createdAt).toISOString();
 
     if (editId) {
+      // 슬러그는 글 생성 시 한 번만 정하고 이후 수정에서는 그대로 유지한다 —
+      // 제목이 같은 글이 둘 이상 생기면 매번 슬러그를 재생성할 때 unique 제약 충돌로
+      // 저장이 조용히 실패하는 문제가 있었다.
       const { error } = await supabase
         .from('logs')
-        .update({ title, slug, excerpt, content, category, project: projectVal, tags: tagArr, published, created_at })
+        .update({ title, slug: originalSlug, excerpt, content, category, project: projectVal, tags: tagArr, published, created_at })
         .eq('id', editId);
 
       if (error) { showToast(`저장 실패: ${error.message}`, 'error'); setSaveStatus('idle'); return; }
@@ -108,6 +112,7 @@ function AdminWriteInner() {
       showToast('저장됨', 'success');
       setTimeout(() => setSaveStatus('idle'), 2000);
     } else {
+      const slug = slugify(title) || `post-${Date.now()}`;
       const { error } = await supabase
         .from('logs')
         .insert({ title, slug, excerpt, content, category, project: projectVal, tags: tagArr, published, created_at });
@@ -210,7 +215,7 @@ function AdminWriteInner() {
                 <input
                   type="text"
                   list="project-keys"
-                  placeholder="RoundWait, Timeslot, ..."
+                  placeholder="RoundWait, TimeSlot, ..."
                   className="input input-bordered input-sm w-full bg-base-100"
                   value={project}
                   onChange={e => setProject(e.target.value)}
