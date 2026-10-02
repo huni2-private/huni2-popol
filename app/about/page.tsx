@@ -15,7 +15,7 @@ export default async function AboutPage() {
     supabase.from('site_settings').select('value').eq('key', 'career_timeline').single(),
     supabase.from('site_settings').select('value').eq('key', 'tech_stack').single(),
     supabase.from('site_settings').select('value').eq('key', 'education').single(),
-    supabase.from('projects').select('title, project_key'),
+    supabase.from('projects').select('id, title, project_key'),
   ]);
 
   return (

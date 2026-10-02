@@ -24,7 +24,7 @@ interface Career {
 }
 interface Stack  { name_ko?: string; name_en?: string; icon?: string; items: string[] }
 interface Education { year: string; institution: string; title: string; desc?: string; project_desc?: string; project_keys?: string[]; }
-interface Project { title: string; project_key?: string }
+interface Project { id: string; title: string; project_key?: string }
 
 export default function AboutClient({
   bio, career, stack, education, projects,
@@ -168,8 +168,8 @@ export default function AboutClient({
                               <div className="flex flex-wrap gap-2 mt-3">
                                 {linkedProjects.map(p => (
                                   <Link
-                                    key={p.project_key || p.title}
-                                    href={`/portfolio/${encodeURIComponent(p.project_key || p.title)}`}
+                                    key={p.id}
+                                    href={`/portfolio/${encodeURIComponent(p.project_key || p.id)}`}
                                     className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 px-3 py-1.5 text-xs font-bold text-primary leading-snug whitespace-normal hover:bg-primary hover:text-primary-content transition-colors"
                                   >
                                     <ExternalLink className="w-3 h-3 shrink-0" /> {p.title}
@@ -228,8 +228,8 @@ export default function AboutClient({
                       <div className="flex flex-wrap gap-2 mt-3">
                         {linkedProjects.map(p => (
                           <Link
-                            key={p.project_key || p.title}
-                            href={`/portfolio/${encodeURIComponent(p.project_key || p.title)}`}
+                            key={p.id}
+                            href={`/portfolio/${encodeURIComponent(p.project_key || p.id)}`}
                             className="badge badge-outline badge-primary gap-1 py-3 hover:bg-primary hover:text-primary-content transition-colors"
                           >
                             <ExternalLink className="w-3 h-3" /> {p.title}
