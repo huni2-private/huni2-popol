@@ -3,6 +3,7 @@ import { Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 import NextTopLoader from "nextjs-toploader";
 import { LanguageProvider } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
@@ -58,8 +59,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const [{ data: { user } }, { data: contactData }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from('site_settings').select('value').eq('key', 'contact_info').single(),
+  ]);
   const isAdmin = isAdminUser(user?.email);
+  const contact = contactData?.value ?? {};
 
   return (
     <html lang="ko" suppressHydrationWarning className={`${pretendard.variable} ${geistMono.variable}`}>
@@ -78,6 +83,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           <main className="container mx-auto px-4 py-8">
             {children}
           </main>
+          <Footer contact={contact} />
         </LanguageProvider>
         <ScrollToTop />
         <ChatbotScript />

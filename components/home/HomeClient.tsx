@@ -3,7 +3,7 @@
 // 홈 벤토 그리드 — 뷰포트 한 화면 레이아웃 + 마우스 빛 반사 + 인라인 섹션 확장
 import { useRef, useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, ChevronLeft, ChevronRight, Calendar, Package } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useI18n } from '@/lib/i18n';
@@ -283,10 +283,17 @@ export default function HomeClient({
           id="featured-projects"
           className="space-y-4 scroll-mt-20"
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-widest text-primary opacity-70">
-              {lang === 'ko' ? '대표 프로젝트' : 'Featured Projects'}
-            </span>
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+            <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+              <span className="text-xs font-bold uppercase tracking-widest text-primary opacity-70">
+                {lang === 'ko' ? '대표 프로젝트' : 'Featured Projects'}
+              </span>
+              <span className="text-xs text-base-content/40">
+                {lang === 'ko'
+                  ? `실무 ${companyCount}개 · 전체 ${projects.length}개 · ${liveCount}개 운영 중`
+                  : `${companyCount} professional · ${projects.length} total · ${liveCount} live`}
+              </span>
+            </div>
             <Link href="/portfolio" className="text-xs font-bold text-primary flex items-center gap-1">
               {lang === 'ko' ? '전체 보기' : 'View all'} <ArrowRight className="w-3 h-3" />
             </Link>
@@ -446,33 +453,30 @@ export default function HomeClient({
         </section>
       )}
 
-      {/* ── Portfolio 요약 ── */}
-      <MagicCard className="flex flex-col justify-between p-6 group min-h-[120px]">
-        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-base-content/40">
-          <Package className="w-3.5 h-3.5 text-primary" />
-          Portfolio
-        </div>
-        <div className="flex-1 flex flex-col justify-center gap-2 my-2">
-          <p className="text-xl font-black">
-            <span className="font-mono text-primary">{companyCount}</span>
-            <span className="text-sm font-bold text-base-content/50">{lang === 'ko' ? '개 실무' : ' work'}</span>
-            <span className="text-base-content/30 mx-1.5">·</span>
-            <span className="text-sm font-bold text-base-content/50">
-              {lang === 'ko' ? `전체 ${projects.length}개` : `${projects.length} total`}
-            </span>
-          </p>
-          <span className="flex items-center gap-1.5 text-xs text-base-content/50">
-            <span className="w-1.5 h-1.5 rounded-full bg-success" />
-            {liveCount}{lang === 'ko' ? '개 운영 중' : ' live'}
+      {/* ── About로 이어주는 클로징 배너 — 반복되는 카드 그리드와 다른 단독 레이아웃 ── */}
+      <Link
+        href="/about"
+        className="group relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 overflow-hidden rounded-3xl border border-base-content/10 bg-base-200 px-8 py-10 sm:px-12 sm:py-14 transition-colors hover:border-primary/40"
+      >
+        <div
+          className="pointer-events-none absolute -right-16 -top-16 w-64 h-64 rounded-full bg-primary/10 blur-3xl transition-colors group-hover:bg-primary/20"
+          aria-hidden="true"
+        />
+        <div className="relative z-10 space-y-2 max-w-lg">
+          <span className="text-xs font-bold uppercase tracking-widest text-primary/70">
+            {lang === 'ko' ? '사람' : 'About'}
           </span>
+          <h3 className="text-2xl sm:text-3xl font-black leading-snug">
+            {lang === 'ko' ? '숫자 뒤에 있는 사람이 궁금하다면' : 'Curious about the person behind the numbers?'}
+          </h3>
+          <p className="text-sm text-base-content/50">
+            {lang === 'ko' ? '커리어, 일하는 방식, 이 사이트를 만든 이유.' : 'My career, how I work, and why I built this site.'}
+          </p>
         </div>
-        <Link
-          href="/portfolio"
-          className="flex items-center gap-1 text-xs font-bold text-primary sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 focus-visible:opacity-100 transition-opacity"
-        >
-          {lang === 'ko' ? '포트폴리오 보기' : 'View Portfolio'} <ArrowRight className="w-3 h-3" />
-        </Link>
-      </MagicCard>
+        <span className="relative z-10 flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-primary/30 text-primary shrink-0 transition-all group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-content">
+          <ArrowRight className="w-5 h-5" />
+        </span>
+      </Link>
     </div>
   );
 }
