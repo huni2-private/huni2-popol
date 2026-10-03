@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import Image from 'next/image';
 import {
   Plus, Pencil, Trash2, ExternalLink, GitFork, FileText,
-  Loader2, X, GripVertical, Globe, Package, Upload, ImageIcon, Check
+  Loader2, X, GripVertical, Globe, Package, Upload, Check
 } from 'lucide-react';
 import { AdminToast, useAdminToast } from '@/components/admin/AdminToast';
 
@@ -222,10 +223,12 @@ export default function AdminPortfolio() {
               {/* Image */}
               <figure className="relative h-44 bg-base-300 overflow-hidden">
                 {p.image_url ? (
-                  <img
+                  <Image
                     src={p.image_url}
                     alt={p.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center opacity-20">
@@ -442,7 +445,7 @@ export default function AdminPortfolio() {
                 {/* Preview */}
                 {preview && (
                   <div className="relative mb-3 rounded-xl overflow-hidden h-40 bg-base-300">
-                    <img src={preview} alt="preview" className="w-full h-full object-cover" />
+                    <Image src={preview} alt="preview" fill sizes="512px" className="object-cover" />
                     <button
                       type="button"
                       onClick={() => { setPreview(''); field('image_url', ''); }}

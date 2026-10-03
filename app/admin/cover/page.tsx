@@ -44,7 +44,7 @@ export default function AdminCoverPage() {
       setLoading(false);
     };
     init();
-  }, [router, supabase]); // eslint-disable-line
+  }, [router, supabase]);
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 2000); };
 

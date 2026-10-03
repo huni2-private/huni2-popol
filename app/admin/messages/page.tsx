@@ -36,7 +36,7 @@ export default function MessagesPage() {
       setLoading(false);
     };
     init();
-  }, [router, supabase]); // eslint-disable-line
+  }, [router, supabase]);
 
   const markRead = async (msg: Message) => {
     setSelected(msg);

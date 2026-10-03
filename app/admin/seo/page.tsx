@@ -127,6 +127,7 @@ export default function AdminSeoPage() {
 
           {meta.og_image && (
             <div className="relative rounded-xl overflow-hidden border border-base-content/10">
+              {/* eslint-disable-next-line @next/next/no-img-element -- og_image는 임의의 외부 URL(수동 입력 가능)이라 next/image 도메인 화이트리스트에 걸릴 수 있음 */}
               <img src={meta.og_image} alt="OG Preview" className="w-full h-48 object-cover" />
               <div className="absolute inset-0 bg-base-100/60 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                 <a href={meta.og_image} target="_blank" className="btn btn-sm btn-ghost gap-1">
@@ -177,7 +178,12 @@ export default function AdminSeoPage() {
         <div className="card-body gap-3">
           <h2 className="card-title text-lg">미리보기</h2>
           <div className="rounded-xl border border-base-content/10 overflow-hidden text-sm">
-            {meta.og_image && <div className="h-32 bg-base-300"><img src={meta.og_image} className="w-full h-full object-cover" alt="" /></div>}
+            {meta.og_image && (
+              <div className="h-32 bg-base-300">
+                {/* eslint-disable-next-line @next/next/no-img-element -- og_image는 임의의 외부 URL이라 next/image 도메인 화이트리스트에 걸릴 수 있음 */}
+                <img src={meta.og_image} className="w-full h-full object-cover" alt="" />
+              </div>
+            )}
             <div className="p-3 space-y-1">
               <p className="text-xs opacity-40 uppercase">huni2-popol.vercel.app</p>
               <p className="font-bold">{meta.og_title || meta.title}</p>

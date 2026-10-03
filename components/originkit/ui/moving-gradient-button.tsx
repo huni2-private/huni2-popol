@@ -570,6 +570,7 @@ export default function MovingGradientButton(props: Props) {
 
       {hasIcon &&
         (iconMode === "image" ? (
+          // eslint-disable-next-line @next/next/no-img-element -- 범용 UI 프리미티브: iconSrc·크기가 임의 props로 전달돼 next/image 도메인·고정 크기 제약과 맞지 않음
           <img
             src={iconSrc}
             alt=""

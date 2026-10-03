@@ -54,7 +54,7 @@ export default function AdminPage() {
       setLoading(false);
     };
     init();
-  }, [router, supabase]); // eslint-disable-line
+  }, [router, supabase]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();

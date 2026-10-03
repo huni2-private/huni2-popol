@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft, Plus, Trash2, Save, Loader2, ChevronUp, ChevronDown, Upload } from 'lucide-react';
 import { AdminToast, useAdminToast } from '@/components/admin/AdminToast';
 
@@ -227,7 +228,7 @@ export default function AdminAboutPage() {
           <h2 className="card-title text-lg">소개 문구</h2>
           <div className="flex items-center gap-3">
             {bio.photo_url
-              ? <img src={bio.photo_url} alt="" className="w-16 h-16 rounded-xl object-cover border border-base-content/10" />
+              ? <Image src={bio.photo_url} alt="" width={64} height={64} className="w-16 h-16 rounded-xl object-cover border border-base-content/10" />
               : <div className="w-16 h-16 rounded-xl bg-base-300 shrink-0" />}
             <label className={`flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border-2 border-dashed border-base-content/20 hover:border-primary/50 cursor-pointer transition-all text-sm ${uploadingPhoto ? 'opacity-50 pointer-events-none' : ''}`}>
               {uploadingPhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4 text-base-content/40" />}
@@ -278,7 +279,7 @@ export default function AdminAboutPage() {
               </div>
               <div className="flex items-center gap-3">
                 {c.logo_url
-                  ? <img src={c.logo_url} alt="" className="w-12 h-12 rounded-lg object-contain bg-base-100 border border-base-content/10" />
+                  ? <Image src={c.logo_url} alt="" width={48} height={48} className="w-12 h-12 rounded-lg object-contain bg-base-100 border border-base-content/10" />
                   : <div className="w-12 h-12 rounded-lg bg-base-300 shrink-0" />}
                 <label className={`flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border-2 border-dashed border-base-content/20 hover:border-primary/50 cursor-pointer transition-all text-sm ${uploadingLogo === i ? 'opacity-50 pointer-events-none' : ''}`}>
                   {uploadingLogo === i ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4 text-base-content/40" />}

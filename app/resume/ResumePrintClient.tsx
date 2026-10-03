@@ -3,6 +3,7 @@
 // 이력서 인쇄 전용 클라이언트 — window.print() 트리거 + @media print 레이아웃
 import { Printer } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 interface Bio          { title_ko?: string; desc_ko?: string; photo_url?: string; }
 interface Career       { year: string; company: string; title_ko: string; desc_ko: string; }
@@ -194,9 +195,12 @@ export default function ResumePrintClient({
         <header className="avoid-break flex items-start justify-between gap-6 pb-5 border-b-2 border-slate-900">
           <div className="flex items-center gap-5">
             {bio.photo_url && (
-              <img
+              <Image
                 src={bio.photo_url}
                 alt=""
+                width={112}
+                height={112}
+                priority
                 className="w-28 h-28 rounded-lg object-cover object-top border border-slate-300 shrink-0"
               />
             )}

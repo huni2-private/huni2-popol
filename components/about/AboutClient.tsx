@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Briefcase, Building2, ChevronDown, Code, ExternalLink, GraduationCap, Layout, Server, Database } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
@@ -51,13 +52,19 @@ export default function AboutClient({
       {/* Bio */}
       <section className="flex flex-col sm:flex-row items-center gap-8">
         {bio.photo_url && (
-          <motion.img
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            src={bio.photo_url}
-            alt=""
-            className="w-44 h-44 sm:w-56 sm:h-56 rounded-2xl object-cover object-top border border-base-content/10 shrink-0"
-          />
+            className="relative w-44 h-44 sm:w-56 sm:h-56 rounded-2xl overflow-hidden border border-base-content/10 shrink-0"
+          >
+            <Image
+              src={bio.photo_url}
+              alt=""
+              fill
+              sizes="(max-width: 640px) 176px, 224px"
+              className="object-cover object-top"
+            />
+          </motion.div>
         )}
         <div className="space-y-6">
           <motion.h1
@@ -120,7 +127,7 @@ export default function AboutClient({
                     <button type="button" onClick={() => toggleCareer(i)} className="w-full text-left p-4">
                       <div className="flex items-start gap-3">
                         {item.logo_url ? (
-                          <img src={item.logo_url} alt={item.company} className="w-10 h-10 rounded-lg object-contain bg-base-100 border border-base-content/10 shrink-0" />
+                          <Image src={item.logo_url} alt={item.company} width={40} height={40} className="w-10 h-10 rounded-lg object-contain bg-base-100 border border-base-content/10 shrink-0" />
                         ) : (
                           <div className="w-10 h-10 rounded-lg bg-base-300 flex items-center justify-center shrink-0">
                             <Building2 className="w-5 h-5 opacity-40" />
