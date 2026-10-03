@@ -31,14 +31,39 @@ function ProjectDesc({ text, impacts, summary }: { text: string; impacts: Impact
     .replace(/\[(.+?)\]\(.+?\)/g, '$1');
 
   const firstSentence = (s: string) => {
+    const trimmed = s.trim();
+    const MAX = 130;
+
     // 문장 끝 판정: 마침표 뒤가 공백/끝일 때만 — "timeslot.congkong.net"처럼
     // 단어 중간의 마침표(URL·도메인)는 문장 끝으로 보지 않는다.
-    const m = s.trim().match(/^[\s\S]+?[.。!?](?=\s|$)/);
-    if (m) return m[0].trim();
+    // 길이 예산(MAX) 안에서 문장을 최대한 이어 붙인다 — 첫 문장만 잘라내면
+    // "6개 행사·2,447건"처럼 핵심 수치가 다음 문장에 묻혀 사라지기 때문.
+    const sentences = [...trimmed.matchAll(/[\s\S]*?[.。!?](?=\s|$)/g)].map(m => m[0].trim());
+    if (sentences.length > 0) {
+      let combined = '';
+      for (const sentence of sentences) {
+        const next = combined ? `${combined} ${sentence}` : sentence;
+        if (combined && next.length > MAX) break;
+        combined = next;
+        if (combined.length >= MAX) break;
+      }
+      return combined;
+    }
 
-    // 마침표를 못 찾으면 120자에서 자르되, 괄호가 안 닫힌 채 끝나거나
-    // 단어 중간에서 잘리지 않도록 안전한 경계까지만 사용한다.
-    let cut = s.trim().slice(0, 120);
+    // 마침표를 못 찾으면(기술 스택 나열 등 줄바꿈 구조) 완결된 줄 단위로
+    // 예산 안까지만 담아 "Solapi 카카오"처럼 줄 중간에서 잘리지 않게 한다.
+    const lines = trimmed.split('\n').map(l => l.trim()).filter(Boolean);
+    let out = '';
+    for (const line of lines) {
+      const next = out ? `${out} ${line}` : line;
+      if (out && next.length > MAX) break;
+      out = next;
+      if (out.length >= MAX) break;
+    }
+    if (out) return out;
+
+    // 그래도 없으면(줄바꿈도 없는 긴 한 줄) 안전한 경계까지만 자른다.
+    let cut = trimmed.slice(0, MAX);
     const openParen = cut.lastIndexOf('(');
     const closeParen = cut.lastIndexOf(')');
     if (openParen > closeParen) cut = cut.slice(0, openParen).trim();
