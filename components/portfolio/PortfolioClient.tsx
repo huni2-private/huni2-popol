@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ExternalLink, ArrowRight, Zap, BookOpen, Search, X } from 'lucide-react';
 import { Github } from '@/components/icons/SocialIcons';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import ProjectThumbnail from '@/components/portfolio/ProjectThumbnail';
 import { projectStatusMeta } from '@/lib/projectStatus';
 import { useI18n } from '@/lib/i18n';
@@ -60,6 +60,31 @@ export default function PortfolioClient({
   const [view, setView] = useState<'projects' | 'impact'>('projects');
   const [filter, setFilter] = useState<'all' | 'personal' | 'company'>('all');
   const [search, setSearch] = useState('');
+
+  // 검색·필터를 URL에 반영해 상세 페이지에서 "목록으로" 돌아올 때 복원되게 한다.
+  // 서버 렌더는 window에 접근할 수 없어 기본값(all/'')으로 내려오므로, 하이드레이션
+  // 후 1회 URL을 읽어 보정하는 효과 — 외부 시스템(브라우저 URL) 동기화의 표준 예외.
+  const didInit = useRef(false);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const type = params.get('type');
+    const q = params.get('q');
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 하이드레이션 이후 1회만 URL에서 복원
+    if (type === 'personal' || type === 'company') setFilter(type);
+    if (q) setSearch(q);
+    didInit.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (!didInit.current) return;
+    const params = new URLSearchParams();
+    if (filter !== 'all') params.set('type', filter);
+    if (search) params.set('q', search);
+    const qs = params.toString();
+    const url = qs ? `/portfolio?${qs}` : '/portfolio';
+    router.replace(url, { scroll: false });
+    sessionStorage.setItem('portfolio-list-url', url);
+  }, [filter, search, router]);
 
   const filteredProjects = useMemo(() => {
     const searchLower = search.toLowerCase();
