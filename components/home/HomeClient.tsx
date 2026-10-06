@@ -162,12 +162,9 @@ export default function HomeClient({
         <div className="relative z-10 order-1 flex flex-wrap items-center justify-between gap-3">
           <Link
             href="/portfolio"
-            className="inline-flex items-center gap-2 rounded-full border border-success/30 bg-success/10 px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-widest text-success hover:bg-success/20 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-success hover:text-success/70 transition-colors"
           >
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-success" />
-            </span>
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-success" />
             {lang === 'ko' ? '실서비스 운영 중' : 'Running Live Services'}
           </Link>
           <div className="flex flex-wrap gap-1.5">
@@ -457,7 +454,7 @@ export default function HomeClient({
                               className="object-cover blur-xl scale-110 opacity-30 group-hover:opacity-50 transition-opacity duration-500"
                               sizes="(max-width: 640px) 78vw, 32vw" />
                             <Image src={p.image_url} alt={p.title} fill
-                              className="object-contain p-6"
+                              className="object-contain"
                               sizes="(max-width: 640px) 78vw, 32vw" />
                           </>
                         ) : (
