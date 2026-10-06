@@ -242,41 +242,64 @@ export default function ResumePrintClient({
           </div>
         </header>
 
-        {/* ── 소개 ── */}
-        <section className="avoid-break">
-          <SectionTitle>About</SectionTitle>
-          <p className="text-[13px] leading-relaxed text-slate-600">{desc}</p>
-        </section>
+        {/* ── 1페이지: 좌(About·Skills) / 우(Experience 전체) 2단 ── */}
+        <div className="grid gap-x-10" style={{ gridTemplateColumns: '230px 1fr' }}>
+          {/* 좌: 소개 + 기술 스택 */}
+          <div className="space-y-7">
+            <section className="avoid-break">
+              <SectionTitle>About</SectionTitle>
+              <p className="text-[13px] leading-relaxed text-slate-600">{desc}</p>
+            </section>
 
-        {/* ── 경력 ── */}
-        {career.length > 0 && (
-          <section className="avoid-break">
-            <SectionTitle>Experience</SectionTitle>
-            <div className="space-y-4">
-              {career.map((c, i) => (
-                <div key={i} className="avoid-break grid gap-x-4" style={{ gridTemplateColumns: '110px 1fr' }}>
-                  <p className="text-[11px] font-mono text-slate-400 mt-0.5 leading-snug">{c.year}</p>
-                  <div>
-                    <p className="text-[13px] font-bold text-slate-900">{c.company}</p>
-                    <p className="text-[11px] font-semibold text-blue-700">{c.title_ko}</p>
-                    {c.desc_ko && (
-                      <ul className="mt-1 space-y-0.5">
-                        {c.desc_ko.split('\n').filter(Boolean).map((line, li) => (
-                          <li key={li} className="text-[11px] text-slate-500 leading-relaxed flex gap-1.5">
-                            <span className="text-blue-700/40 shrink-0 mt-0.5">·</span>
-                            <span>{line}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+            <section className="avoid-break">
+              <SectionTitle>Skills</SectionTitle>
+              <div className="space-y-3">
+                {skillList.map((s, i) => (
+                  <div key={i}>
+                    <p className="text-[11px] font-bold text-slate-500 mb-1">{s.name_ko}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {s.items.map(item => (
+                        <span key={item} className="print-no-bg text-[11px] font-mono text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+                ))}
+              </div>
+            </section>
+          </div>
 
-        {/* ── 학력 ── */}
+          {/* 우: 경력 (전체) */}
+          {career.length > 0 && (
+            <section className="avoid-break">
+              <SectionTitle>Experience</SectionTitle>
+              <div className="space-y-4">
+                {career.map((c, i) => (
+                  <div key={i} className="avoid-break grid gap-x-4" style={{ gridTemplateColumns: '100px 1fr' }}>
+                    <p className="text-[11px] font-mono text-slate-400 mt-0.5 leading-snug">{c.year}</p>
+                    <div>
+                      <p className="text-[13px] font-bold text-slate-900">{c.company}</p>
+                      <p className="text-[11px] font-semibold text-blue-700">{c.title_ko}</p>
+                      {c.desc_ko && (
+                        <ul className="mt-1 space-y-0.5">
+                          {c.desc_ko.split('\n').filter(Boolean).map((line, li) => (
+                            <li key={li} className="text-[11px] text-slate-500 leading-relaxed flex gap-1.5">
+                              <span className="text-blue-700/40 shrink-0 mt-0.5">·</span>
+                              <span>{line}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+
+        {/* ── 학력 — 전체 폭 1단. 2단 블록에 이어 자연스럽게 흐르고, 안 들어가면 다음 페이지로 ── */}
         {education.length > 0 && (
           <section className="avoid-break">
             <SectionTitle>Education</SectionTitle>
@@ -304,25 +327,6 @@ export default function ResumePrintClient({
             </div>
           </section>
         )}
-
-        {/* ── 기술 스택 ── */}
-        <section className="avoid-break">
-          <SectionTitle>Skills</SectionTitle>
-          <div className="space-y-2">
-            {skillList.map((s, i) => (
-              <div key={i} className="grid items-start gap-x-4" style={{ gridTemplateColumns: '110px 1fr' }}>
-                <span className="text-[11px] font-bold text-slate-500 pt-0.5">{s.name_ko}</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {s.items.map(item => (
-                    <span key={item} className="print-no-bg text-[11px] font-mono text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
 
         {/* ── 프로젝트 ── */}
         {projects.length > 0 && (
