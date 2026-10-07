@@ -72,17 +72,19 @@ export default function AboutClient({
             animate={{ opacity: 1, x: 0 }}
             className="text-4xl font-bold"
           >
-            {lang === 'ko' ? (
-              <>
-                {bio.title_ko ?? 'AI로 실서비스를 만드는'}{' '}
-                <span className="text-primary italic">개발자</span>
-              </>
-            ) : (
-              <>
-                {bio.title_en ?? 'AI-augmented developer shipping real products on the'}{' '}
-                <span className="text-primary italic">Web</span>
-              </>
-            )}
+            {(() => {
+              const title = lang === 'ko'
+                ? (bio.title_ko ?? 'AI로 실서비스를 만드는 개발자')
+                : (bio.title_en ?? 'AI-augmented developer shipping real products on the Web');
+              const lastSpace = title.lastIndexOf(' ');
+              if (lastSpace === -1) return title;
+              return (
+                <>
+                  {title.slice(0, lastSpace + 1)}
+                  <span className="text-primary italic">{title.slice(lastSpace + 1)}</span>
+                </>
+              );
+            })()}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, x: -20 }}

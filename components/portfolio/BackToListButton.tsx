@@ -17,8 +17,8 @@ export default function BackToListButton() {
   }, []);
 
   return (
-    <Link href={href} className="btn btn-ghost btn-sm gap-2">
-      <ArrowLeft className="w-4 h-4" /> 목록으로
+    <Link href={href} className="btn btn-ghost btn-lg gap-2">
+      <ArrowLeft className="w-6 h-6" /> 목록으로
     </Link>
   );
 }

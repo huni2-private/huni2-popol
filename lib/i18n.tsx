@@ -37,8 +37,8 @@ const translations = {
       resume_btn: '이력서 다운로드',
     },
     portfolio: {
-      page_title: '직접 만들고 운영한 것들',
-      page_desc: '실무와 사이드 프로젝트, 지금도 살아있는 프로덕트들.',
+      page_title: '직접 만들고 참여한 프로젝트들',
+      page_desc: '실무와 사이드 프로젝트를 가리지 않고 직접 만들었습니다.',
       filter_all: '전체', filter_personal: '개인', filter_company: '기업',
       tab_projects: '프로젝트', tab_impact: '임팩트',
       search_placeholder: '프로젝트 검색...',
@@ -104,8 +104,8 @@ const translations = {
       resume_btn: 'Download Resume (PDF)',
     },
     portfolio: {
-      page_title: 'Built and Shipped Myself',
-      page_desc: 'Work and side projects — still alive and running today.',
+      page_title: 'Projects I Built and Worked On',
+      page_desc: 'Work and side projects — all built by hand.',
       filter_all: 'All', filter_personal: 'Personal', filter_company: 'Company',
       tab_projects: 'Projects', tab_impact: 'Impact',
       search_placeholder: 'Search projects...',

@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ExternalLink, ArrowRight, Zap, BookOpen, Search, X } from 'lucide-react';
+import { ExternalLink, ArrowRight, Zap, BookOpen, Search } from 'lucide-react';
 import { Github } from '@/components/icons/SocialIcons';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import ProjectThumbnail from '@/components/portfolio/ProjectThumbnail';
@@ -59,19 +59,16 @@ export default function PortfolioClient({
   const { lang, t } = useI18n();
   const [view, setView] = useState<'projects' | 'impact'>('projects');
   const [filter, setFilter] = useState<'all' | 'personal' | 'company'>('all');
-  const [search, setSearch] = useState('');
 
-  // 검색·필터를 URL에 반영해 상세 페이지에서 "목록으로" 돌아올 때 복원되게 한다.
-  // 서버 렌더는 window에 접근할 수 없어 기본값(all/'')으로 내려오므로, 하이드레이션
+  // 필터를 URL에 반영해 상세 페이지에서 "목록으로" 돌아올 때 복원되게 한다.
+  // 서버 렌더는 window에 접근할 수 없어 기본값(all)으로 내려오므로, 하이드레이션
   // 후 1회 URL을 읽어 보정하는 효과 — 외부 시스템(브라우저 URL) 동기화의 표준 예외.
   const didInit = useRef(false);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const type = params.get('type');
-    const q = params.get('q');
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 하이드레이션 이후 1회만 URL에서 복원
     if (type === 'personal' || type === 'company') setFilter(type);
-    if (q) setSearch(q);
     didInit.current = true;
   }, []);
 
@@ -79,25 +76,15 @@ export default function PortfolioClient({
     if (!didInit.current) return;
     const params = new URLSearchParams();
     if (filter !== 'all') params.set('type', filter);
-    if (search) params.set('q', search);
     const qs = params.toString();
     const url = qs ? `/portfolio?${qs}` : '/portfolio';
     router.replace(url, { scroll: false });
     sessionStorage.setItem('portfolio-list-url', url);
-  }, [filter, search, router]);
+  }, [filter, router]);
 
   const filteredProjects = useMemo(() => {
-    const searchLower = search.toLowerCase();
-    return initialProjects.filter(p => {
-      const matchesFilter = filter === 'all' || p.type === filter;
-      const matchesSearch =
-        !searchLower ||
-        p.title.toLowerCase().includes(searchLower) ||
-        p.description.toLowerCase().includes(searchLower) ||
-        p.tags.some(tag => tag.toLowerCase().includes(searchLower));
-      return matchesFilter && matchesSearch;
-    });
-  }, [initialProjects, filter, search]);
+    return initialProjects.filter(p => filter === 'all' || p.type === filter);
+  }, [initialProjects, filter]);
 
   const impactByProject = useMemo(() => {
     const groups: Record<string, ImpactStat[]> = {};
@@ -127,7 +114,7 @@ export default function PortfolioClient({
       <div className="flex justify-center gap-2">
         {(['projects', 'impact'] as const).map((v) => (
           <button key={v} onClick={() => setView(v)}
-            className={`btn btn-sm rounded-full px-6 transition-all ${view === v ? 'btn-primary' : 'btn-ghost bg-base-200'}`}>
+            className={`btn btn-lg rounded-full px-8 transition-all ${view === v ? 'btn-primary' : 'btn-ghost bg-base-200'}`}>
             {v === 'projects' ? t.portfolio.tab_projects : t.portfolio.tab_impact}
           </button>
         ))}
@@ -136,26 +123,7 @@ export default function PortfolioClient({
       {/* ── Projects 탭 ── */}
       {view === 'projects' && (
         <div className="space-y-8">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div className="relative group w-full md:max-w-md">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/30 group-focus-within:text-primary transition-colors" />
-              <input
-                type="text"
-                placeholder={t.portfolio.search_placeholder}
-                className="input input-bordered pl-12 bg-base-200 rounded-2xl w-full h-12 focus:ring-2 focus:ring-primary/20 border-base-content/10"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              {search && (
-                <button
-                  onClick={() => setSearch('')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-base-300 rounded-full transition-colors"
-                >
-                  <X className="w-3 h-3 opacity-50" />
-                </button>
-              )}
-            </div>
-
+          <div className="flex items-center justify-center">
             <div className="flex gap-2">
               {(['all', 'personal', 'company'] as const).map((f) => (
                 <button key={f} onClick={() => setFilter(f)}
@@ -172,9 +140,9 @@ export default function PortfolioClient({
                 <Search className="w-8 h-8 opacity-20" />
               </div>
               <p className="text-lg font-bold opacity-40">{t.portfolio.no_results}</p>
-              {(search || filter !== 'all') && (
+              {filter !== 'all' && (
                 <button
-                  onClick={() => { setSearch(''); setFilter('all'); }}
+                  onClick={() => setFilter('all')}
                   className="btn btn-outline btn-sm rounded-xl px-6"
                 >
                   {t.portfolio.clear_filters}
