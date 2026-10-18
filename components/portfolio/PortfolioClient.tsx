@@ -1,10 +1,10 @@
 'use client';
 
-// 포트폴리오 — 컴팩트 카드 + 클릭 시 상세 페이지로 이동
+// 포트폴리오 — 넓은 2열 카드 + 클릭 시 상세 페이지로 이동
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { ExternalLink, ArrowRight, Zap, BookOpen, Search } from 'lucide-react';
 import { Github } from '@/components/icons/SocialIcons';
 import { useState, useMemo, useEffect, useRef } from 'react';
@@ -57,6 +57,8 @@ export default function PortfolioClient({
 }) {
   const router = useRouter();
   const { lang, t } = useI18n();
+  const ko = lang === 'ko';
+  const reduceMotion = useReducedMotion();
   const [view, setView] = useState<'projects' | 'impact'>('projects');
   const [filter, setFilter] = useState<'all' | 'personal' | 'company'>('all');
 
@@ -103,37 +105,47 @@ export default function PortfolioClient({
     return counts;
   }, [logs]);
 
+  const fadeIn = reduceMotion
+    ? {}
+    : { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 } };
+
   return (
-    <div className="space-y-8">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold italic">{t.portfolio.page_title}</h1>
-        <p className="text-base-content/70">{t.portfolio.page_desc}</p>
+    <div className="space-y-10">
+      <div>
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight [word-break:keep-all] text-balance">
+          {t.portfolio.page_title}
+        </h1>
+        <p className="mt-3 max-w-xl text-sm sm:text-base text-base-content/60 leading-relaxed [word-break:keep-all]">
+          {t.portfolio.page_desc}
+        </p>
       </div>
 
-      {/* 최상위 탭 */}
-      <div className="flex justify-center gap-2">
-        {(['projects', 'impact'] as const).map((v) => (
-          <button key={v} onClick={() => setView(v)}
-            className={`btn btn-lg rounded-full px-8 transition-all ${view === v ? 'btn-primary' : 'btn-ghost bg-base-200'}`}>
-            {v === 'projects' ? t.portfolio.tab_projects : t.portfolio.tab_impact}
-          </button>
-        ))}
+      {/* 탭 + 필터 — 하나의 툴바로 묶어 좌측 정렬 */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="inline-flex gap-1 self-start rounded-xl bg-base-200 p-1">
+          {(['projects', 'impact'] as const).map((v) => (
+            <button key={v} onClick={() => setView(v)}
+              className={`rounded-lg px-4 py-2 text-sm font-bold motion-safe:transition-colors ${view === v ? 'bg-primary text-primary-content shadow-sm' : 'text-base-content/55 hover:text-base-content'}`}>
+              {v === 'projects' ? t.portfolio.tab_projects : t.portfolio.tab_impact}
+            </button>
+          ))}
+        </div>
+
+        {view === 'projects' && (
+          <div className="flex gap-2 self-start sm:self-auto">
+            {(['all', 'personal', 'company'] as const).map((f) => (
+              <button key={f} onClick={() => setFilter(f)}
+                className={`rounded-full px-4 py-1.5 text-xs font-bold motion-safe:transition-colors ${filter === f ? 'bg-primary text-primary-content' : 'bg-base-200 text-base-content/55 hover:text-base-content'}`}>
+                {f === 'all' ? t.portfolio.filter_all : f === 'personal' ? t.portfolio.filter_personal : t.portfolio.filter_company}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── Projects 탭 ── */}
       {view === 'projects' && (
         <div className="space-y-8">
-          <div className="flex items-center justify-center">
-            <div className="flex gap-2">
-              {(['all', 'personal', 'company'] as const).map((f) => (
-                <button key={f} onClick={() => setFilter(f)}
-                  className={`btn btn-sm rounded-full px-6 transition-all ${filter === f ? 'btn-primary' : 'btn-ghost bg-base-200'}`}>
-                  {f === 'all' ? t.portfolio.filter_all : f === 'personal' ? t.portfolio.filter_personal : t.portfolio.filter_company}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {filteredProjects.length === 0 ? (
             <div className="text-center py-32 space-y-4 bg-base-200/50 rounded-3xl border border-dashed border-base-content/10">
               <div className="bg-base-300 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -150,43 +162,49 @@ export default function PortfolioClient({
               )}
             </div>
           ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
             {filteredProjects.map((project, index) => {
               const matchKey = (project.project_key || project.title).toLowerCase();
               const stat = impactStats.find(s => s.project?.toLowerCase() === matchKey);
               const meta = projectStatusMeta(project.status, lang);
               const typeLabel = project.type === 'company' ? t.portfolio.filter_company : t.portfolio.filter_personal;
+              const href = `/portfolio/${encodeURIComponent(project.project_key || project.id)}`;
               return (
-                <motion.div
+                <motion.article
                   key={project.id}
                   layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.25, delay: index * 0.04 }}
-                  onClick={() => router.push(`/portfolio/${encodeURIComponent(project.project_key || project.id)}`)}
-                  className="relative card bg-base-200 border border-base-content/5 hover:border-primary/30 overflow-hidden group cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5"
+                  {...fadeIn}
+                  transition={reduceMotion ? undefined : { duration: 0.3, delay: index * 0.04 }}
+                  className="group relative flex flex-col overflow-hidden rounded-3xl border border-base-content/10 bg-base-200/60 motion-safe:transition-shadow hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 focus-within:ring-2 focus-within:ring-primary/40"
                 >
+                  {/* 카드 전체를 상세 페이지로 — 키보드 포커스도 받는 stretched link */}
+                  <Link
+                    href={href}
+                    aria-label={`${project.title} ${ko ? '자세히 보기' : 'view project details'}`}
+                    className="absolute inset-0 z-10 rounded-3xl"
+                  />
+
                   {/* 이미지 */}
-                  <figure className="relative h-44 overflow-hidden bg-base-300">
+                  <div className="relative aspect-[16/10] overflow-hidden bg-base-300 shrink-0">
                     {project.image_url ? (
                       <>
                         <div className="absolute inset-0 z-0" aria-hidden="true">
                           <Image src={project.image_url} alt="" fill
-                            className="object-cover blur-xl scale-110 opacity-30 group-hover:opacity-50 transition-opacity duration-500"
-                            sizes="33vw" />
+                            className="object-cover blur-2xl scale-110 opacity-25"
+                            sizes="50vw" />
                         </div>
-                        <div className="absolute inset-0 z-10">
+                        <div className="absolute inset-0 z-[1] motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-[1.03]">
                           <Image src={project.image_url} alt={project.title} fill
-                            className="object-contain p-2"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+                            className="object-contain p-4 drop-shadow-[0_18px_30px_rgba(0,0,0,0.18)]"
+                            sizes="(max-width: 1024px) 100vw, 50vw" />
                         </div>
                       </>
                     ) : (
                       <ProjectThumbnail title={project.title} type={project.type} />
                     )}
-                  </figure>
+                  </div>
 
-                  <div className="card-body p-5 gap-3">
+                  <div className="flex flex-1 flex-col gap-3 p-5 sm:p-6">
                     <div className="flex items-center gap-1.5">
                       <span className={meta.badgeClass}>{meta.label}</span>
                       <span className="ml-auto text-[10px] text-base-content/30">
@@ -194,74 +212,76 @@ export default function PortfolioClient({
                       </span>
                     </div>
 
-                    <h2 className="font-bold text-base leading-snug">
-                      <Link
-                        href={`/portfolio/${encodeURIComponent(project.project_key || project.id)}`}
-                        className="rounded-sm group-hover:text-primary transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                        onClick={e => e.stopPropagation()}
-                      >
-                        {project.title}
-                      </Link>
+                    <h2 className="font-extrabold text-lg sm:text-xl leading-snug [word-break:keep-all]">
+                      {project.title}
                     </h2>
 
                     {/* 서비스 요약 */}
                     {project.resume_summary && (
-                      <p className="text-xs text-base-content/60 leading-relaxed line-clamp-2">
+                      <p className="text-sm text-base-content/70 leading-relaxed line-clamp-2 [word-break:keep-all]">
                         {project.resume_summary}
                       </p>
                     )}
 
-                    {/* 담당 역할 (있을 때만) */}
+                    {/* 담당 역할 — 또렷하게, 잘리지 않게 */}
                     {project.role_summary && (
-                      <p className="text-[11px] text-base-content/40 leading-relaxed line-clamp-1">
+                      <p className="text-sm font-semibold text-base-content/90 leading-relaxed line-clamp-2 border-l-2 border-primary/50 pl-3 [word-break:keep-all]">
                         {project.role_summary}
                       </p>
                     )}
 
-                    {/* 임팩트 수치 (있을 때만) */}
+                    {/* 대표 성과 */}
                     {stat && (
                       <div className="flex items-baseline gap-2">
-                        <span className="text-lg font-black font-mono text-primary">{stat.metric}</span>
+                        <span className="text-xl font-black font-mono text-primary">{stat.metric}</span>
                         <span className="text-xs text-base-content/50 truncate">{stat.title}</span>
                       </div>
                     )}
 
                     {/* 태그 */}
                     <div className="flex flex-wrap gap-1.5">
-                      {[...new Set(project.tags)].slice(0, 4).map(tag => (
-                        <span key={tag} className="font-mono text-[9px] px-1.5 py-0.5 rounded border border-base-content/10 text-base-content/40">
+                      {[...new Set(project.tags)].slice(0, 5).map(tag => (
+                        <span key={tag} className="font-mono text-[10px] px-1.5 py-0.5 rounded border border-base-content/10 text-base-content/40">
                           {tag}
                         </span>
                       ))}
-                      {[...new Set(project.tags)].length > 4 && (
-                        <span className="font-mono text-[9px] px-1.5 py-0.5 rounded border border-base-content/10 text-base-content/40">
-                          +{[...new Set(project.tags)].length - 4}
+                      {[...new Set(project.tags)].length > 5 && (
+                        <span className="font-mono text-[10px] px-1.5 py-0.5 rounded border border-base-content/10 text-base-content/40">
+                          +{[...new Set(project.tags)].length - 5}
                         </span>
                       )}
                     </div>
 
-                    {/* 링크 + 로그 카운트 */}
-                    <div className="flex items-center gap-1 pt-2 border-t border-base-content/5" onClick={e => e.stopPropagation()}>
-                      {project.project_url && (
-                        <a href={project.project_url} target="_blank" rel="noopener noreferrer"
-                          className="btn btn-xs btn-ghost gap-1 rounded-full">
-                          <ExternalLink className="w-3 h-3" /> Live
-                        </a>
-                      )}
-                      {project.github_url && (
-                        <a href={project.github_url} target="_blank" rel="noopener noreferrer"
-                          className="btn btn-xs btn-ghost gap-1 rounded-full">
-                          <Github className="w-3 h-3" /> GitHub
-                        </a>
-                      )}
-                      {logCounts[matchKey] > 0 && (
-                        <span className="ml-auto flex items-center gap-1 text-[10px] text-base-content/30">
-                          <BookOpen className="w-3 h-3" /> {logCounts[matchKey]}
+                    {/* 링크 + 자세히 보기 */}
+                    <div className="relative z-20 mt-auto flex flex-wrap items-center gap-3 pt-4 border-t border-base-content/10">
+                      <div className="flex items-center gap-1">
+                        {project.project_url && (
+                          <a href={project.project_url} target="_blank" rel="noopener noreferrer"
+                            className="btn btn-xs btn-ghost gap-1 rounded-full">
+                            <ExternalLink className="w-3 h-3" /> Live
+                          </a>
+                        )}
+                        {project.github_url && (
+                          <a href={project.github_url} target="_blank" rel="noopener noreferrer"
+                            className="btn btn-xs btn-ghost gap-1 rounded-full">
+                            <Github className="w-3 h-3" /> GitHub
+                          </a>
+                        )}
+                      </div>
+                      <div className="ml-auto flex items-center gap-3">
+                        {logCounts[matchKey] > 0 && (
+                          <span className="flex items-center gap-1 text-[10px] text-base-content/30">
+                            <BookOpen className="w-3 h-3" /> {logCounts[matchKey]}
+                          </span>
+                        )}
+                        <span className="inline-flex items-center gap-1 text-sm font-bold text-primary">
+                          {ko ? '자세히 보기' : 'Details'}
+                          <ArrowRight className="w-4 h-4 motion-safe:transition-transform motion-safe:group-hover:translate-x-1" />
                         </span>
-                      )}
+                      </div>
                     </div>
                   </div>
-                </motion.div>
+                </motion.article>
               );
             })}
           </div>
@@ -272,7 +292,7 @@ export default function PortfolioClient({
       {/* ── Impact 탭 ── */}
       {view === 'impact' && (
         <div className="space-y-10">
-          <p className="text-center text-base-content/50 text-sm font-mono">{t.portfolio.tagline}</p>
+          <p className="text-sm font-mono text-base-content/50">{t.portfolio.tagline}</p>
           {impactStats.length === 0 ? (
             <p className="text-base-content/40 italic py-8 text-center">{t.portfolio.no_impact}</p>
           ) : (
@@ -291,8 +311,8 @@ export default function PortfolioClient({
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {stats.map((stat, i) => (
-                      <motion.div key={stat.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: gi * 0.05 + i * 0.05 }}
+                      <motion.div key={stat.id} {...fadeIn}
+                        transition={reduceMotion ? undefined : { delay: gi * 0.05 + i * 0.05 }}
                         className="card bg-base-200 border border-base-content/5 hover:border-primary/20 transition-colors">
                         <div className="card-body p-6 gap-2">
                           <p className="text-5xl font-black font-mono text-primary leading-none">{stat.metric}</p>
@@ -320,8 +340,8 @@ export default function PortfolioClient({
               {impactByProject.ungrouped.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {impactByProject.ungrouped.map((stat, i) => (
-                    <motion.div key={stat.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05 }}
+                    <motion.div key={stat.id} {...fadeIn}
+                      transition={reduceMotion ? undefined : { delay: i * 0.05 }}
                       className="card bg-base-200 border border-base-content/5">
                       <div className="card-body p-6 gap-2">
                         <p className="text-5xl font-black font-mono text-primary leading-none">{stat.metric}</p>
