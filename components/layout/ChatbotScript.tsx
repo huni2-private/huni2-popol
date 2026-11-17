@@ -8,8 +8,8 @@ export default function ChatbotScript() {
   if (pathname === '/resume') return null;
   return (
     <Script
-      src="https://chatbot.congkong.net/widget.js"
-      data-site-id="acme"
+      src="https://huni-chatbot.vercel.app/widget.js"
+      data-site-id="huni2-popol"
       strategy="afterInteractive"
     />
   );
