@@ -10,7 +10,7 @@ export default function PrivacyPage() {
     <article className="max-w-2xl mx-auto space-y-10 text-base-content">
       <header>
         <h1 className="text-2xl font-bold mb-1">개인정보 처리방침</h1>
-        <p className="text-sm text-base-content/50">시행일자 2026-11-16</p>
+        <p className="text-sm text-base-content/50">시행일자 2026-11-19</p>
         <p className="text-sm text-base-content/60 mt-4 leading-relaxed">
           이 페이지는 사이트 우측 하단 AI 챗봇 위젯이 수집하는 개인정보에 대한 처리방침입니다.
           사이트 운영자(이하 &ldquo;운영자&rdquo;)는 허창훈 개인이며, 본 챗봇은 포트폴리오 사이트 방문자 응대 목적의
@@ -21,9 +21,11 @@ export default function PrivacyPage() {
       <section>
         <h2 className="text-lg font-semibold mb-2">1. 수집하는 개인정보의 항목</h2>
         <p className="text-sm text-base-content/70 leading-relaxed">
-          챗봇 이용 과정에서 대화 내용(질문·응답), 세션 식별자(브라우저 <code>localStorage</code>에 저장되는 임의의
-          식별값), 접속 시각이 자동으로 수집됩니다. 이용자가 대화 중 자발적으로 이름, 이메일, 연락처 등을 입력하면
-          해당 내용도 대화 내용의 일부로 저장될 수 있습니다.
+          챗봇 이용 과정에서 대화 내용(질문·응답), 대화·요청 식별자, 접속 시각, 접속 IP가 수집됩니다.
+          답변 평가를 선택하면 평가와 해당 질문·답변의 연결 정보도 저장됩니다. IP는 과도한 요청을 막기 위해 사용하며
+          대화 기록의 IP는 아래 보유 기간을 따릅니다. 별도 호출 제한 기록은 하루가 지난 뒤 매일 정리 작업에서 삭제합니다.
+          이용자가 이름, 이메일, 연락처 등을 입력하면 대화 내용의 일부로 저장될 수 있습니다.
+          첨부 이미지는 AI 응답 생성을 위해 전송하지만 운영 데이터베이스나 브라우저 저장소에는 저장하지 않습니다.
         </p>
       </section>
 
@@ -38,7 +40,7 @@ export default function PrivacyPage() {
       <section>
         <h2 className="text-lg font-semibold mb-2">3. 보유 및 이용 기간</h2>
         <p className="text-sm text-base-content/70 leading-relaxed">
-          대화 이력은 최종 활동일로부터 <strong>1년간 보관 후 자동 파기</strong>됩니다. 1년 이내라도 이용자가 삭제를
+          대화와 연결된 요청·답변 평가 기록은 최종 활동일로부터 <strong>1년간 보관 후 자동 파기</strong>됩니다. 대화 종료는 기록 삭제와 다릅니다. 1년 이내라도 이용자가 삭제를
           요청하면 즉시 파기합니다.
         </p>
       </section>
@@ -46,7 +48,7 @@ export default function PrivacyPage() {
       <section>
         <h2 className="text-lg font-semibold mb-2">4. 제3자 제공 및 국외 이전</h2>
         <p className="text-sm text-base-content/70 leading-relaxed">
-          운영자는 개인정보를 원칙적으로 외부에 제공하지 않습니다. 다만 챗봇 응답 생성을 위해 대화 내용이{' '}
+          운영자는 개인정보를 원칙적으로 외부에 제공하지 않습니다. 다만 챗봇 응답 생성을 위해 질문·최근 대화 내용과 선택한 첨부 이미지가{' '}
           <strong>Google LLC(Gemini API)</strong>의 서버(미국 등 Google 데이터센터 소재국)로 전송·처리됩니다.
           운영자는 주민등록번호, 계좌번호 등 민감정보를 별도로 수집하지 않으며, 이용자도 대화 중 이러한 정보를
           입력하지 않기를 권장합니다.
@@ -63,8 +65,10 @@ export default function PrivacyPage() {
       <section>
         <h2 className="text-lg font-semibold mb-2">6. 쿠키 등 자동 수집 장치</h2>
         <p className="text-sm text-base-content/70 leading-relaxed">
-          세션 식별자 저장을 위해 브라우저 <code>localStorage</code>를 사용합니다(서버로 전송되는 쿠키가 아님).
-          브라우저 설정에서 언제든 삭제할 수 있으며, 삭제 시 새로운 세션으로 시작됩니다.
+          현재 탭의 <code>sessionStorage</code>에 대화 식별자와 최근 60개 대화 텍스트, 답변 참고 링크·평가 선택을 보관합니다.
+          종료한 대화는 최근 10개까지 확인할 수 있으며 마지막 저장 후 24시간이 지난 기록은 복원하지 않습니다.
+          이미지 데이터는 저장하지 않습니다. 탭을 닫거나 저장소를 지우면 탭의 기록은 사라지지만 서버 대화 기록이 삭제되지는 않습니다.
+          최초 안내 표시 여부만 <code>localStorage</code>에 보관합니다. 이 저장소는 서버로 전송되는 쿠키가 아닙니다.
         </p>
       </section>
 
